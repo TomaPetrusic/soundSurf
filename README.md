@@ -15,6 +15,9 @@ Fakultet elektrotehnike i računarstva
 | **Tim** | G05.4 |
 | **Ime tima** | SoundSurfer |
 | **Nastavnik** | Vlado Sruk |
+
+
+ProAudio je namijenjen glazbenicima, producentima i svima koji eksperimentiraju sa zvukom, a žele raditi sa zvukovnim zapisima bez instaliranja posebnog softvera. U privatnoj radnoj okolini korisnici mogu uvoziti, generirati, preslušavati i obrađivati zvukovne zapise pomoću filtara te ih organizirati u strukturu direktorija. Gotove zapise mogu objaviti na svojoj javnoj stranici u obliku postova, a stranice i postove drugih korisnika pregledavati, preuzimati i spremati u favorite.
  
 ## Članovi tima
  
