@@ -23,7 +23,7 @@
 
 **Cilj:** Dok dijagram ne bude izrađen, u tablici popisati sve obrasce uporabe, njihove aktere i odnose `<<include>>`/`<<extend>>` koji stvarno postoje.
 
-Primjena filtra modelirana je kao **jedan** obrazac uporabe (UC-07): vrsta filtra (niskopropusni, visokopropusni, pojačanje, reverb ili tremolo) je parametar koji korisnik odabire unutar istog toka, a ne pet zasebnih obrazaca uporabe; odabir spremanja rezultata (nova datoteka ili prepisivanje) dio je istog glavnog toka, ne zasebnog uključenog obrasca.
+Primjena filtra i odabir njegove vrste modelirani su kao **jedan** obrazac uporabe (UC-07) i **jedan** funkcijski zahtjev (F-14): vrsta filtra (niskopropusni, visokopropusni, pojačanje, reverb ili tremolo) je parametar koji korisnik odabire unutar istog toka, a ne pet zasebnih obrazaca uporabe ili zahtjeva; odabir spremanja rezultata (nova datoteka ili prepisivanje) dio je istog glavnog toka, ne zasebnog uključenog obrasca.
 
 | ID | Naziv | Aktivni akter | Pasivni akteri | Odnosi | Povezani zahtjevi |
 | --- | --- | --- | --- | --- | --- |
@@ -33,14 +33,14 @@ Primjena filtra modelirana je kao **jedan** obrazac uporabe (UC-07): vrsta filtr
 | UC-04 | Uvoz zapisa s Freesounda | Korisnik | Freesound API | Proširuje («extend») UC-03 [isti uvjet] | F-05; NF-10 |
 | UC-05 | Izvoz zvukovnog zapisa (download) | Korisnik | — | — | F-06 |
 | UC-06 | Generiranje zvukovnog zapisa oscilatorom | Korisnik | — | — | F-12, F-13; D-02, D-04 |
-| UC-07 | Primjena filtra na zapis | Korisnik | — | — | F-14, F-15, F-16, F-17, F-18, F-19; D-03 |
-| UC-13 | Preslušavanje zapisa i prikaz waveforma | Korisnik | — | — | F-20, F-21 |
-| UC-14 | Uređivanje profila javne stranice | Korisnik | — | — | F-22 |
-| UC-15 | Objava posta | Korisnik | — | — | F-23 |
-| UC-16 | Upravljanje postovima | Korisnik | — | — | F-24, F-25, F-26 |
-| UC-17 | Pregled tuđe javne stranice | Korisnik | — | — | F-27 |
-| UC-18 | Upravljanje favoritima | Korisnik | — | — | F-28, F-29, F-30, F-31 |
-| UC-19 | Preuzimanje ili uvoz tuđeg zapisa | Korisnik | — | — | F-32, F-33 |
+| UC-07 | Primjena filtra na zapis | Korisnik | — | — | F-14, F-15; D-03 |
+| UC-13 | Preslušavanje zapisa i prikaz waveforma | Korisnik | — | — | F-16, F-17 |
+| UC-14 | Uređivanje profila javne stranice | Korisnik | — | — | F-18 |
+| UC-15 | Objava posta | Korisnik | — | — | F-19 |
+| UC-16 | Upravljanje postovima | Korisnik | — | — | F-20, F-21, F-22 |
+| UC-17 | Pregled tuđe javne stranice | Korisnik | — | — | F-23 |
+| UC-18 | Upravljanje favoritima | Korisnik | — | — | F-24, F-25, F-26, F-27 |
+| UC-19 | Preuzimanje ili uvoz tuđeg zapisa | Korisnik | — | — | F-28, F-29 |
 
 Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); tablica iznad služi kao pregled aktera i odnosa dok dijagram ne bude izrađen.
 
@@ -120,9 +120,9 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-14, F-15, F-16, F-17, F-18, F-19; D-03 |
+| **Povezani zahtjevi** | F-14, F-15; D-03 |
 | **Preduvjeti** | Odabrani zvukovni zapis postoji u radnoj okolini korisnika. |
-| **Glavni uspješni tok** | 1. Korisnik odabire zvukovni zapis i vrstu filtra kao parametar: niskopropusni ili visokopropusni (granična frekvencija, D-03), pojačanje (faktor pojačanja), reverb (vrijeme odziva i udio efekta) ili tremolo (brzina i dubina modulacije).<br>2. Korisnik zadaje parametre odabrane vrste filtra.<br>3. Aplikacija provjerava jesu li parametri unutar dopuštenog raspona (npr. D-03 za granične frekvencije).<br>4. Korisnik pokreće primjenu filtra.<br>5. Aplikacija obrađuje zapis i prikazuje rezultat, uključujući waveform (UC-13), prije konačne pohrane.<br>6. Korisnik bira hoće li rezultat spremiti kao novu datoteku ili prepisati izvornu (F-19).<br>7. Aplikacija pohranjuje rezultat prema odabiru iz koraka 6. |
+| **Glavni uspješni tok** | 1. Korisnik odabire zvukovni zapis i vrstu filtra kao parametar (F-14): niskopropusni ili visokopropusni (granična frekvencija, D-03), pojačanje (faktor pojačanja), reverb (vrijeme odziva i udio efekta) ili tremolo (brzina i dubina modulacije).<br>2. Korisnik zadaje parametre odabrane vrste filtra.<br>3. Aplikacija provjerava jesu li parametri unutar dopuštenog raspona (npr. D-03 za granične frekvencije).<br>4. Korisnik pokreće primjenu filtra.<br>5. Aplikacija obrađuje zapis i prikazuje rezultat, uključujući waveform (UC-13), prije konačne pohrane.<br>6. Korisnik bira hoće li rezultat spremiti kao novu datoteku ili prepisati izvornu (F-15).<br>7. Aplikacija pohranjuje rezultat prema odabiru iz koraka 6. |
 | **Alternativni tokovi / Iznimke** | **3a — Parametar izvan dopuštenog raspona:** aplikacija odbija vrijednost ili je ograničava na rub dopuštenog raspona i traži ispravak prije nastavka na korak 4.<br>**5a — Obrada nije uspjela:** aplikacija prijavljuje neuspjeh, izvorna datoteka ostaje nepromijenjena i rezultat se ne pohranjuje.<br>**6a — Korisnik odustane prije pohrane:** izvorna datoteka ostaje nepromijenjena; obrađeni rezultat se ne pohranjuje. |
 | **Posljedice (ishod)** | U radnoj okolini postoji obrađeni zapis — kao nova datoteka ili kao zamjena izvorne, prema odabiru korisnika u koraku 6. |
 
@@ -131,7 +131,7 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-20, F-21 |
+| **Povezani zahtjevi** | F-16, F-17 |
 | **Preduvjeti** | Zvukovni zapis postoji u radnoj okolini korisnika. |
 | **Glavni tijek** | Korisnik odabire zapis za preslušavanje; aplikacija prikazuje njegov valni oblik u vremenskoj domeni i reproducira zvuk uz mogućnost pokretanja, pauziranja i promjene položaja reprodukcije. |
 | **Posljedice (ishod)** | Korisnik je čuo (dio) zapisa i vidio njegov valni oblik. |
@@ -141,7 +141,7 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-22 |
+| **Povezani zahtjevi** | F-18 |
 | **Preduvjeti** | Korisnik je prijavljen. |
 | **Glavni tijek** | Korisnik uređuje korisničko ime, profilnu sliku i/ili kratki opis i sprema promjene; javna stranica korisnika prikazuje nove podatke. |
 | **Posljedice (ishod)** | Javna stranica korisnika prikazuje ažurirane podatke profila. |
@@ -151,9 +151,9 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-23 |
+| **Povezani zahtjevi** | F-19 |
 | **Preduvjeti** | Korisnik je prijavljen i u svojoj radnoj okolini ima barem jedan zvukovni zapis. |
-| **Glavni uspješni tok** | 1. Korisnik na svojoj javnoj stranici pokreće objavu novog posta.<br>2. Korisnik odabire zvukovni zapis iz radne okoline koji želi objaviti.<br>3. Korisnik unosi tekstualni opis posta i odabire je li post javan ili privatan (F-25).<br>4. Korisnik potvrđuje objavu.<br>5. Aplikacija pohranjuje post i prikazuje ga na javnoj stranici korisnika prema odabranoj vidljivosti. |
+| **Glavni uspješni tok** | 1. Korisnik na svojoj javnoj stranici pokreće objavu novog posta.<br>2. Korisnik odabire zvukovni zapis iz radne okoline koji želi objaviti.<br>3. Korisnik unosi tekstualni opis posta i odabire je li post javan ili privatan (F-21).<br>4. Korisnik potvrđuje objavu.<br>5. Aplikacija pohranjuje post i prikazuje ga na javnoj stranici korisnika prema odabranoj vidljivosti. |
 | **Alternativni tokovi / Iznimke** | **2a — Radna okolina je prazna:** aplikacija objašnjava da je potreban barem jedan zvukovni zapis prije objave i upućuje korisnika na uvoz ili generiranje zapisa (UC-03/UC-04/UC-06).<br>**3a — Tekstualni opis nedostaje:** aplikacija traži unos opisa prije nastavka na korak 4.<br>**5a — Pohrana nije uspjela:** aplikacija prijavljuje neuspjeh i ne prikazuje lažnu potvrdu objave; post se ne prikazuje na javnoj stranici. |
 | **Posljedice (ishod)** | Novi post postoji na javnoj stranici korisnika, vidljiv ovisno o odabranoj postavci javnosti. |
 
@@ -162,7 +162,7 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-24, F-25, F-26 |
+| **Povezani zahtjevi** | F-20, F-21, F-22 |
 | **Preduvjeti** | Post postoji na javnoj stranici korisnika. |
 | **Glavni tijek** | Korisnik uređuje tekstualni opis posta, mijenja njegovu vidljivost (javan/privatan) ili ga briše; javna stranica odmah odražava promjenu. |
 | **Posljedice (ishod)** | Post je izmijenjen, promijenjene vidljivosti ili obrisan, prema odabranoj radnji. |
@@ -172,7 +172,7 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-27 |
+| **Povezani zahtjevi** | F-23 |
 | **Preduvjeti** | Korisnik je prijavljen; tuđa javna stranica postoji. |
 | **Glavni tijek** | Korisnik otvara tuđu javnu stranicu i pregledava profil i popis javnih postova vlasnika. |
 | **Alternativni tokovi / Iznimke** | Stranica nema javnih postova → aplikacija prikazuje prazan popis uz odgovarajuću poruku. |
@@ -183,7 +183,7 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-28, F-29, F-30, F-31 |
+| **Povezani zahtjevi** | F-24, F-25, F-26, F-27 |
 | **Preduvjeti** | Korisnik je prijavljen; tuđa javna stranica ili post iz UC-17 dostupan je. |
 | **Glavni tijek** | Korisnik dodaje tuđu javnu stranicu ili pojedini post u favorite, odnosno uklanja postojeću stavku, i pregledava popis svojih favorita. |
 | **Posljedice (ishod)** | Popis favorita korisnika odražava izvedenu radnju. |
@@ -193,10 +193,10 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | Element specifikacije | Opis |
 | :--- | :--- |
 | **Primarni akter** | Korisnik (A-02) |
-| **Povezani zahtjevi** | F-32, F-33 |
+| **Povezani zahtjevi** | F-28, F-29 |
 | **Preduvjeti** | Tuđi javni post sa zvukovnim zapisom dostupan je (UC-17). |
 | **Glavni uspješni tok** | 1. Korisnik odabire preuzimanje zapisa s tuđeg posta na svoje računalo.<br>2. Aplikacija isporučuje datoteku korisniku za preuzimanje. |
-| **Alternativni tokovi / Iznimke** | **1a — Dodavanje u radnu okolinu umjesto preuzimanja (F-33):** korisnik umjesto preuzimanja odabire dodavanje zapisa u vlastitu radnu okolinu; aplikacija sprema kopiju zapisa u odabrani direktorij korisnika. |
+| **Alternativni tokovi / Iznimke** | **1a — Dodavanje u radnu okolinu umjesto preuzimanja (F-29):** korisnik umjesto preuzimanja odabire dodavanje zapisa u vlastitu radnu okolinu; aplikacija sprema kopiju zapisa u odabrani direktorij korisnika. |
 | **Posljedice (ishod)** | Korisnik ima lokalnu kopiju zapisa ili je zapis dodan u njegovu radnu okolinu, prema odabranoj radnji. |
 
 ## 3.3 Provjera dosljednosti obrazaca uporabe
@@ -211,14 +211,14 @@ Detaljne specifikacije odabranih obrazaca uporabe nalaze se u nastavku (3.2); ta
 | UC-04 | Uvoz zapisa s Freesounda | F-05 |
 | UC-05 | Izvoz zvukovnog zapisa (download) | F-06, D-01 |
 | UC-06 | Generiranje zvukovnog zapisa oscilatorom | F-12, F-13, D-02, D-04 |
-| UC-07 | Primjena filtra na zapis | F-14, F-15, F-16, F-17, F-18, F-19, D-03 |
-| UC-13 | Preslušavanje zapisa i prikaz waveforma | F-20, F-21 |
-| UC-14 | Uređivanje profila javne stranice | F-22 |
-| UC-15 | Objava posta | F-23 |
-| UC-16 | Upravljanje postovima | F-24, F-25, F-26 |
-| UC-17 | Pregled tuđe javne stranice | F-27 |
-| UC-18 | Upravljanje favoritima | F-28, F-29, F-30, F-31 |
-| UC-19 | Preuzimanje ili uvoz tuđeg zapisa | F-32, F-33 |
+| UC-07 | Primjena filtra na zapis | F-14, F-15, D-03 |
+| UC-13 | Preslušavanje zapisa i prikaz waveforma | F-16, F-17 |
+| UC-14 | Uređivanje profila javne stranice | F-18 |
+| UC-15 | Objava posta | F-19 |
+| UC-16 | Upravljanje postovima | F-20, F-21, F-22 |
+| UC-17 | Pregled tuđe javne stranice | F-23 |
+| UC-18 | Upravljanje favoritima | F-24, F-25, F-26, F-27 |
+| UC-19 | Preuzimanje ili uvoz tuđeg zapisa | F-28, F-29 |
 
 Nefunkcijski zahtjevi NF-01 do NF-10 presijecaju više obrazaca uporabe ili ne opisuju korisničku interakciju (npr. NF-09 vezan je uz UC-01, dok NF-03 do NF-06 i NF-08 vrijede za aplikaciju u cjelini); njihovo mapiranje vodi se u [2.6 Sljedivost zahtjeva](2-Analiza-zahtjeva.md#26-sljedivost-zahtjeva), a ne u ovoj tablici.
 

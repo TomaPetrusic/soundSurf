@@ -1,6 +1,5 @@
 # 2. Analiza zahtjeva
 
-
 Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.md)) i iz obaveznih pravila kolegija. Svaki zahtjev ima stabilan ID, prioritet i izvor:
 
 - **Izvor** je jedan od: **Opis teme** (izravno iz projektnog zadatka), **Pravila kolegija** (obavezni zahtjevi kolegija koji ne proizlaze izravno iz teme, npr. GitHub, dokumentacija, OO oblikovanje), **Opis teme / Pravila kolegija** (kad zahtjev proizlazi iz oboje — npr. obavezna domenski relevantna vanjska integracija) ili **Tim** (odluka ili pretpostavka tima koja razrađuje opis teme).
@@ -43,36 +42,32 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 
 | ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
 | --- | --- | --- | --- | --- |
-| F-14 | Korisnik primjenjuje niskopropusni (low-pass) filtar na zvukovni zapis uz podesivu graničnu frekvenciju. | Visok | Opis teme | Rezultirajući zapis sadrži znatno manji udio sastavnica iznad zadane granične frekvencije u odnosu na izvorni zapis. |
-| F-15 | Korisnik primjenjuje visokopropusni (high-pass) filtar na zvukovni zapis uz podesivu graničnu frekvenciju. | Visok | Opis teme | Rezultirajući zapis sadrži znatno manji udio sastavnica ispod zadane granične frekvencije u odnosu na izvorni zapis. |
-| F-16 | Korisnik primjenjuje filtar pojačanja (gain / amplify) na zvukovni zapis uz podesiv faktor pojačanja. | Visok | Opis teme | Amplituda rezultirajućeg zapisa razmjerno je promijenjena prema zadanom faktoru pojačanja u odnosu na izvorni zapis. |
-| F-17 | Korisnik primjenjuje reverb efekt na zvukovni zapis uz podesive parametre (npr. vrijeme odziva i udio efekta). | Visok | Opis teme | Rezultirajući zapis sadrži čujni odjek čije trajanje i intenzitet odgovaraju zadanim parametrima. |
-| F-18 | Korisnik primjenjuje tremolo efekt na zvukovni zapis uz podesive parametre (brzina i dubina modulacije). | Visok | Opis teme | Amplituda rezultirajućeg zapisa periodički se mijenja brzinom i dubinom koje odgovaraju zadanim parametrima. |
-| F-19 | Korisnik pri primjeni filtra bira hoće li rezultat spremiti kao novu datoteku ili prepisati izvornu datoteku. | Visok | Opis teme | Odabirom "nova datoteka" izvorna datoteka ostaje nepromijenjena i nastaje nova; odabirom "prepisivanje" sadržaj izvorne datoteke zamjenjuje se obrađenim zapisom. |
-| F-20 | Korisnik preslušava (reproducira) zvukovni zapis iz radne okoline unutar web-preglednika. | Visok | Opis teme | Odabrani zapis se reproducira s mogućnošću pokretanja, pauziranja i promjene položaja reprodukcije. |
-| F-21 | Sustav prikazuje valni oblik (waveform) zvukovnog zapisa u vremenskoj domeni tijekom preslušavanja. | Visok | Opis teme | Prikazani valni oblik odgovara amplitudi zapisa kroz vrijeme, a trenutačni položaj reprodukcije vidljiv je na prikazu. |
+| F-14 | Korisnik primjenjuje filtar na zvukovni zapis odabirom jedne od najmanje pet vrsta: niskopropusni (low-pass, podesiva granična frekvencija), visokopropusni (high-pass, podesiva granična frekvencija), pojačanje (gain, podesiv faktor pojačanja), reverb (podesivo vrijeme odziva i udio efekta) ili tremolo (podesiva brzina i dubina modulacije). | Visok | Opis teme | Za niskopropusni/visokopropusni rezultat sadrži znatno manji udio sastavnica iznad/ispod granične frekvencije; za pojačanje amplituda je razmjerno promijenjena prema faktoru; za reverb rezultat sadrži čujan odjek prema zadanim parametrima; za tremolo amplituda se periodički mijenja prema zadanim parametrima — u odnosu na izvorni zapis. |
+| F-15 | Korisnik pri primjeni filtra bira hoće li rezultat spremiti kao novu datoteku ili prepisati izvornu datoteku. | Visok | Opis teme | Odabirom "nova datoteka" izvorna datoteka ostaje nepromijenjena i nastaje nova; odabirom "prepisivanje" sadržaj izvorne datoteke zamjenjuje se obrađenim zapisom. |
+| F-16 | Korisnik preslušava (reproducira) zvukovni zapis iz radne okoline unutar web-preglednika. | Visok | Opis teme | Odabrani zapis se reproducira s mogućnošću pokretanja, pauziranja i promjene položaja reprodukcije. |
+| F-17 | Sustav prikazuje valni oblik (waveform) zvukovnog zapisa u vremenskoj domeni tijekom preslušavanja. | Visok | Opis teme | Prikazani valni oblik odgovara amplitudi zapisa kroz vrijeme, a trenutačni položaj reprodukcije vidljiv je na prikazu. |
 
 ### Javna stranica i postovi
 
 | ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
 | --- | --- | --- | --- | --- |
-| F-22 | Korisnik uređuje podatke svoje javne stranice: korisničko ime, profilnu sliku i kratki opis. | Visok | Opis teme | Nakon spremanja promjena, nova vrijednost korisničkog imena, slike ili opisa prikazuje se na javnoj stranici korisnika. |
-| F-23 | Korisnik objavljuje post odabirom zvukovnog zapisa iz svoje radne okoline i unosom tekstualnog opisa. | Visok | Opis teme | Nakon objave post se prikazuje na javnoj stranici korisnika sa zadanim zvukovnim zapisom i tekstualnim opisom. |
-| F-24 | Korisnik uređuje tekstualni opis postojećeg posta. | Visok | Opis teme | Nakon spremanja izmjene, javna stranica prikazuje izmijenjeni tekstualni opis posta. |
-| F-25 | Korisnik označava post kao javni ili privatni. | Visok | Opis teme | Post označen kao privatan prestaje biti vidljiv drugim korisnicima na javnoj stranici; post označen kao javan ponovno im je vidljiv. |
-| F-26 | Korisnik briše post sa svoje javne stranice. | Visok | Opis teme | Nakon brisanja post se ne prikazuje na javnoj stranici korisnika ni na popisu favorita drugih korisnika. |
+| F-18 | Korisnik uređuje podatke svoje javne stranice: korisničko ime, profilnu sliku i kratki opis. | Visok | Opis teme | Nakon spremanja promjena, nova vrijednost korisničkog imena, slike ili opisa prikazuje se na javnoj stranici korisnika. |
+| F-19 | Korisnik objavljuje post odabirom zvukovnog zapisa iz svoje radne okoline i unosom tekstualnog opisa. | Visok | Opis teme | Nakon objave post se prikazuje na javnoj stranici korisnika sa zadanim zvukovnim zapisom i tekstualnim opisom. |
+| F-20 | Korisnik uređuje tekstualni opis postojećeg posta. | Visok | Opis teme | Nakon spremanja izmjene, javna stranica prikazuje izmijenjeni tekstualni opis posta. |
+| F-21 | Korisnik označava post kao javni ili privatni. | Visok | Opis teme | Post označen kao privatan prestaje biti vidljiv drugim korisnicima na javnoj stranici; post označen kao javan ponovno im je vidljiv. |
+| F-22 | Korisnik briše post sa svoje javne stranice. | Visok | Opis teme | Nakon brisanja post se ne prikazuje na javnoj stranici korisnika ni na popisu favorita drugih korisnika. |
 
 ### Favoriti i preuzimanje tuđih zapisa
 
 | ID | Opis | Prioritet | Izvor | Kriteriji prihvaćanja |
 | --- | --- | --- | --- | --- |
-| F-27 | Korisnik pregledava javnu stranicu drugog korisnika i na njoj vidi samo postove koje je vlasnik označio kao javne. | Visok | Opis teme | Na tuđoj javnoj stranici prikazuju se korisničko ime, slika, opis i popis javnih postova; privatni postovi vlasnika se ne prikazuju. |
-| F-28 | Korisnik dodaje tuđu javnu stranicu u favorite. | Visok | Opis teme | Stranica dodana u favorite pojavljuje se na popisu favorita korisnika. |
-| F-29 | Korisnik dodaje pojedini tuđi javni post u favorite. | Visok | Opis teme | Post dodan u favorite pojavljuje se na popisu favorita korisnika. |
-| F-30 | Korisnik uklanja stranicu ili post iz favorita. | Visok | Opis teme | Nakon uklanjanja, stavka se ne prikazuje na popisu favorita korisnika. |
-| F-31 | Korisnik pregledava popis svojih favorita (stranice i postove). | Visok | Opis teme | Popis prikazuje sve stranice i postove koje je korisnik prethodno dodao u favorite. |
-| F-32 | Korisnik preuzima (download) zvukovni zapis s tuđeg javnog posta na svoje računalo. | Visok | Opis teme | Preuzeta datoteka sadržajno odgovara zvukovnom zapisu objavljenom u postu. |
-| F-33 | Korisnik dodaje zvukovni zapis s tuđeg javnog posta u vlastitu radnu okolinu. | Visok | Opis teme | Nakon dodavanja, kopija zapisa pojavljuje se u radnoj okolini korisnika i može se dalje obrađivati neovisno o izvornom postu. |
+| F-23 | Korisnik pregledava javnu stranicu drugog korisnika i na njoj vidi samo postove koje je vlasnik označio kao javne. | Visok | Opis teme | Na tuđoj javnoj stranici prikazuju se korisničko ime, slika, opis i popis javnih postova; privatni postovi vlasnika se ne prikazuju. |
+| F-24 | Korisnik dodaje tuđu javnu stranicu u favorite. | Visok | Opis teme | Stranica dodana u favorite pojavljuje se na popisu favorita korisnika. |
+| F-25 | Korisnik dodaje pojedini tuđi javni post u favorite. | Visok | Opis teme | Post dodan u favorite pojavljuje se na popisu favorita korisnika. |
+| F-26 | Korisnik uklanja stranicu ili post iz favorita. | Visok | Opis teme | Nakon uklanjanja, stavka se ne prikazuje na popisu favorita korisnika. |
+| F-27 | Korisnik pregledava popis svojih favorita (stranice i postove). | Visok | Opis teme | Popis prikazuje sve stranice i postove koje je korisnik prethodno dodao u favorite. |
+| F-28 | Korisnik preuzima (download) zvukovni zapis s tuđeg javnog posta na svoje računalo. | Visok | Opis teme | Preuzeta datoteka sadržajno odgovara zvukovnom zapisu objavljenom u postu. |
+| F-29 | Korisnik dodaje zvukovni zapis s tuđeg javnog posta u vlastitu radnu okolinu. | Visok | Opis teme | Nakon dodavanja, kopija zapisa pojavljuje se u radnoj okolini korisnika i može se dalje obrađivati neovisno o izvornom postu. |
 
 ## 2.2 Nefunkcijski i domenski zahtjevi
 
@@ -109,7 +104,7 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 | ID uloge ili aktera | Odnos prema sustavu | Relevantni zahtjevi |
 | --- | --- | --- |
 | A-01 Posjetitelj | Akter; dolazi na aplikaciju bez prijave. Prema opisu teme nema pristup radnoj okolini ni javnim stranicama i može jedino pokrenuti prijavu putem vanjskog pružatelja identiteta. | F-01 |
-| A-02 Korisnik | Glavni akter sustava; specijalizacija (generalizacija) aktera Posjetitelj — nakon uspješne prijave Posjetitelj postaje Korisnik i stječe sve mogućnosti upravljanja vlastitom radnom okolinom i javnom stranicom (kao vlasnik/autor) te pregleda tuđih javnih stranica, preuzimanja tuđih zapisa i upravljanja favoritima (kao posjetitelj tuđe stranice). Riječ je o istoj osobi u različitim kontekstima nakon prijave, ne o zasebnim akterima; generalizacija opisuje ulogu, a napomena o stanju prijave u [3.1](3-Obrasci-uporabe.md#31-dijagram-obrazaca-uporabe) objašnjava prijelaz iz Posjetitelja u Korisnika. | F-02 – F-33 |
+| A-02 Korisnik | Glavni akter sustava; specijalizacija (generalizacija) aktera Posjetitelj — nakon uspješne prijave Posjetitelj postaje Korisnik i stječe sve mogućnosti upravljanja vlastitom radnom okolinom i javnom stranicom (kao vlasnik/autor) te pregleda tuđih javnih stranica, preuzimanja tuđih zapisa i upravljanja favoritima (kao posjetitelj tuđe stranice). Riječ je o istoj osobi u različitim kontekstima nakon prijave, ne o zasebnim akterima; generalizacija opisuje ulogu, a napomena o stanju prijave u [3.1](3-Obrasci-uporabe.md#31-dijagram-obrazaca-uporabe) objašnjava prijelaz iz Posjetitelja u Korisnika. | F-02 – F-29 |
 | A-03 Vanjski pružatelj identiteta (OAuth 2.0 / OIDC) | Sekundarni akter (vanjski sustav). Provodi autentifikaciju korisnika pri prijavi i izdaje potvrdu identiteta koju aplikacija koristi za otvaranje sesije. | F-01; C-01; NF-09 |
 | A-04 Freesound API | Sekundarni akter (vanjski sustav). Na zahtjev korisnika isporučuje rezultate pretrage i zvukovne zapise za uvoz u radnu okolinu; ispunjava obavezu barem jedne domenski relevantne vanjske integracije (vidi C-05). | F-05; C-05; NF-10 |
 | ST-01 Nastavnik / asistent kolegija | Dionik bez izravne interakcije s aplikacijom u ulozi krajnjeg korisnika; ocjenjuje ispunjava li rješenje zahtjeve projektnog zadatka i pravila dokumentiranja. | — |
@@ -123,7 +118,7 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 | --- | --- | --- | --- | --- |
 | C-01 | Ograničenje | Prijava mora koristiti vanjskog pružatelja identiteta putem OAuth 2.0 / OIDC; sustav ne implementira vlastiti mehanizam registracije i prijave lozinkom. | Opis teme | Arhitektura mora predvidjeti OAuth klijent i sigurno rukovanje tokenima; UC-01 modelira pružatelja identiteta kao sekundarnog aktera (vidi [3. Obrasci uporabe](3-Obrasci-uporabe.md)). |
 | C-02 | Ograničenje | Uvoz i izvoz moraju podržavati najmanje tri formata zapisa: WAV, MP3 i FLAC (vidi F-04, F-06). | Opis teme | Testirati uvoz i izvoz svake kombinacije formata. |
-| C-03 | Ograničenje | Sustav mora implementirati najmanje pet filtara/efekata: low-pass, high-pass, gain, reverb i tremolo (vidi F-14–F-18). | Opis teme | Svaki filtar ima zasebne parametre i ispitni slučaj unutar UC-07. |
+| C-03 | Ograničenje | Sustav mora implementirati najmanje pet filtara/efekata: low-pass, high-pass, gain, reverb i tremolo (vidi F-14). | Opis teme | Svaki filtar ima zasebne parametre i ispitni slučaj unutar UC-07. |
 | C-04 | Ograničenje | Objava, pregled tuđih stranica i favoriti dostupni su samo prijavljenim korisnicima; aplikacija nema javno dostupan pregled bez prijave. | Opis teme | Sve rute osim prijave zahtijevaju provjeru autentifikacije; vidi NF-03. |
 | C-05 | Ograničenje | Sustav mora imati barem jednu domenski relevantnu integraciju s vanjskom uslugom; ovu obavezu ispunjava integracija s Freesound API-jem (vidi F-05). | Pravila kolegija | Vanjski pružatelj identiteta (OAuth, C-01) ne računa se kao domenski relevantna integracija jer nije specifičan za obradu zvuka; Freesound jest. |
 | C-06 | Ograničenje | Izvorni kod i dokumentacija projekta razvijaju se kontinuirano u zajedničkom GitHub repozitoriju tijekom cijelog semestra. | Pravila kolegija | Redoviti commitovi i zahtjevi za uključivanje promjena (PR) kroz semestar; vidi [A. Pregled aktivnosti grupe](A-Pregled-aktivnosti-grupe.md). |
@@ -138,9 +133,10 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 
 | Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
 | --- | --- | --- | --- |
-| 21.10.2026. | F-05, F-16–F-18, F-23–F-33 (novi brojevi), NF-10 | Freesound integracija prepoznata kao obavezna domenski relevantna vanjska integracija koju kolegij traži (ne samo poželjna značajka), pa su njezin prioritet i prioriteti ostalih zahtjeva koje opis teme ili pravila kolegija izričito traže podignuti na Visok; dodan C-05. | Interni pregled tima nakon izrade prve inačice zahtjeva. |
-| 21.10.2026. | Stari F-07, F-08, F-29 | Razdvojeni složeni zahtjevi koji su opisivali više od jedne provjerljive radnje (stvaranje direktorija/pregled stabla; preimenovanje odvojeno od imenovanja pri stvaranju; uklanjanje iz favorita/pregled popisa favorita) u zasebne zahtjeve radi provjerljivosti. | Interni pregled tima. |
+| 21.10.2026. | F-05, F-16–F-18, F-23–F-33 (brojevi u toj inačici) | Freesound integracija prepoznata kao obavezna domenski relevantna vanjska integracija koju kolegij traži (ne samo poželjna značajka), pa su njezin prioritet i prioriteti ostalih zahtjeva koje opis teme ili pravila kolegija izričito traže podignuti na Visok; dodan C-05. | Interni pregled tima nakon izrade prve inačice zahtjeva. |
+| 21.10.2026. | Stari F-07, F-08, F-29 (brojevi u toj inačici) | Razdvojeni složeni zahtjevi koji su opisivali više od jedne provjerljive radnje (stvaranje direktorija/pregled stabla; preimenovanje odvojeno od imenovanja pri stvaranju; uklanjanje iz favorita/pregled popisa favorita) u zasebne zahtjeve radi provjerljivosti. | Interni pregled tima. |
 | 21.10.2026. | Stari D-02 | Zahtjev o upozorenju prije pretvorbe u MP3 uklonjen jer uvodi značajku (upozorenje u sučelju) koja nije dio opisa teme. | Interni pregled tima. |
+| 21.10.2026. | F-14–F-18 (prethodna numeracija) → F-14 | Pet zasebnih zahtjeva za pojedinačne filtre spojeno u jedan funkcijski zahtjev (vrsta filtra kao parametar/popis), radi jednostavnijeg popisa zahtjeva; svi zahtjevi od dotadašnjeg F-19 nadalje prenumerirani (pomak za 4). Obrazac uporabe UC-07 i matrica sljedivosti ažurirani. | Dogovoreno s voditeljem tima. |
 
 ## 2.6 Sljedivost zahtjeva
 
@@ -163,26 +159,22 @@ Arhitektura i ispitni slučajevi još nisu izrađeni (vidi [4. Arhitektura i obl
 | F-11 | UC-02 Upravljanje datotekama i direktorijima (brisanje) | na čekanju | na čekanju |
 | F-12 | UC-06 Generiranje zvukovnog zapisa | na čekanju | na čekanju |
 | F-13 | UC-06 Generiranje zvukovnog zapisa | na čekanju | na čekanju |
-| F-14 | UC-07 Primjena filtra (niskopropusni) | na čekanju | na čekanju |
-| F-15 | UC-07 Primjena filtra (visokopropusni) | na čekanju | na čekanju |
-| F-16 | UC-07 Primjena filtra (pojačanje) | na čekanju | na čekanju |
-| F-17 | UC-07 Primjena filtra (reverb) | na čekanju | na čekanju |
-| F-18 | UC-07 Primjena filtra (tremolo) | na čekanju | na čekanju |
-| F-19 | UC-07 Primjena filtra (odabir spremanja) | na čekanju | na čekanju |
-| F-20 | UC-13 Preslušavanje i waveform | na čekanju | na čekanju |
-| F-21 | UC-13 Preslušavanje i waveform | na čekanju | na čekanju |
-| F-22 | UC-14 Uređivanje profila javne stranice | na čekanju | na čekanju |
-| F-23 | UC-15 Objava posta | na čekanju | na čekanju |
-| F-24 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
-| F-25 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
-| F-26 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
-| F-27 | UC-17 Pregled tuđe javne stranice | na čekanju | na čekanju |
-| F-28 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-29 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-30 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-31 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-32 | UC-19 Preuzimanje ili uvoz tuđeg zapisa | na čekanju | na čekanju |
-| F-33 | UC-19 Preuzimanje ili uvoz tuđeg zapisa | na čekanju | na čekanju |
+| F-14 | UC-07 Primjena filtra | na čekanju | na čekanju |
+| F-15 | UC-07 Primjena filtra (odabir spremanja) | na čekanju | na čekanju |
+| F-16 | UC-13 Preslušavanje i waveform | na čekanju | na čekanju |
+| F-17 | UC-13 Preslušavanje i waveform | na čekanju | na čekanju |
+| F-18 | UC-14 Uređivanje profila javne stranice | na čekanju | na čekanju |
+| F-19 | UC-15 Objava posta | na čekanju | na čekanju |
+| F-20 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
+| F-21 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
+| F-22 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
+| F-23 | UC-17 Pregled tuđe javne stranice | na čekanju | na čekanju |
+| F-24 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
+| F-25 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
+| F-26 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
+| F-27 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
+| F-28 | UC-19 Preuzimanje ili uvoz tuđeg zapisa | na čekanju | na čekanju |
+| F-29 | UC-19 Preuzimanje ili uvoz tuđeg zapisa | na čekanju | na čekanju |
 | NF-01 | Ne odnosi se na pojedinačnu korisničku interakciju (UC-03/UC-04) | na čekanju | na čekanju |
 | NF-02 | UC-07 Primjena filtra | na čekanju | na čekanju |
 | NF-03 | Ne odnosi se na pojedinačnu korisničku interakciju; presijeca sve UC nad privatnim resursima | na čekanju | na čekanju |
@@ -221,6 +213,7 @@ Arhitektura i ispitni slučajevi još nisu izrađeni (vidi [4. Arhitektura i obl
 - Zajednička obrada više datoteka odjednom (batch operacije) nad cijelim direktorijem.
 - Javno dijeljenje pojedinog posta izvan platforme poveznicom vidljivom i neprijavljenim osobama.
 - Upozorenje u sučelju prije pretvorbe zapisa u MP3 format (razmatrano i uklonjeno iz domenskih zahtjeva, vidi 2.5).
+- Generiranje zvuka odabirom sintetiziranog instrumenta (umjesto ili uz oscilator), eventualno uz UI za sviranje nota — opis teme navodi oscilator ili instrument kao primjere; oscilator (F-12, F-13) već ispunjava minimalni zahtjev.
 
 ---
 
