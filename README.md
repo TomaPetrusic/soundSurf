@@ -7,7 +7,6 @@ Fakultet elektrotehnike i računarstva
 
 ---
 
-## Zašto je ovaj odjeljak važan
 
 ProAudio korisnicima omogućuje uvoz, generiranje, obradu i objavu zvukovnih zapisa na jednom mjestu, u web pregledniku, bez instaliranja posebnog softvera.
 
@@ -17,7 +16,6 @@ ProAudio korisnicima omogućuje uvoz, generiranje, obradu i objavu zvukovnih zap
 
 Osoba koja želi obraditi i objaviti zvukovni zapis danas obično mora koristiti više odvojenih alata: jedan za obradu, drugi za pohranu, treći za javnu objavu. ProAudio je namijenjen glazbenicima, producentima i svima koji eksperimentiraju sa zvukom, a te korake objedinjuje u jednoj aplikaciji: prijavljeni korisnik u privatnoj radnoj okolini uvozi, generira, organizira, preslušava i obrađuje zvukovne zapise filtrima, a gotove zapise objavljuje na svojoj javnoj stranici u obliku postova. Drugi prijavljeni korisnici mogu pregledavati tuđe javne stranice, preuzimati zapise ili ih spremati u favorite.
 
-**Trenutno stanje:** Repozitorij je u ranoj fazi razvoja. Poslužiteljski dio (`backend/`) sadrži samo testnu `/health` krajnju točku bez pravog poslovnog koda, a klijentski dio (`frontend/`) samo statičnu placeholder stranicu; nijedna funkcionalnost opisana ispod još nije implementirana.
 
 **Planirane funkcionalnosti** (vidi [docs/2-Analiza-zahtjeva.md](docs/2-Analiza-zahtjeva.md) za potpun i provjerljiv popis):
 
@@ -26,53 +24,30 @@ Osoba koja želi obraditi i objaviti zvukovni zapis danas obično mora koristiti
 - Organizacija zapisa u direktorije, generiranje zvuka oscilatorom, obrada filtrima (niskopropusni, visokopropusni, pojačanje, reverb, tremolo) i preslušavanje s prikazom valnog oblika (waveform).
 - Javna stranica s postovima (zvukovni zapis + opis), oznaka vidljivosti posta (javno/privatno) i favoriti za tuđe stranice i postove.
 
-Za potpuni opseg, zahtjeve, oblikovanje i dokaze ispitivanja pogledajte [docs](docs/Home.md).
 
 ## Postavljanje (engl. deployment)
 
-**Javno dostupna aplikacija:** još nema javne adrese sa stvarnom funkcionalnošću. CD radni tijek (`.github/workflows/cd.yml`) pokreće Render deploy hook pri svakom spajanju na `main`, ali taj hook trenutno postavlja samo poslužiteljski stub (vidi "Trenutno stanje" iznad). Javna adresa bit će dodana ovdje kada tim potvrdi vlastiti deployment.
+Trenutno nije dostupno.
 
-**Isprobajte:** nakon postavljanja javne adrese, posjetite `<adresa>/health` — odgovor `{"status":"healthy"}` potvrđuje da je poslužitelj pokrenut. Korisnički tijek (prijava, radna okolina, javna stranica) još ne postoji na javno postavljenoj inačici.
+**Demonstracija:** 
 
-**Demonstracija:** Korisnički račun nije potreban za trenutno dostupan dio aplikacije (testna `/health` krajnja točka).
+**Ograničenja:** 
 
-**Ograničenja:** aplikacija je u fazi scaffolda bez implementirane poslovne logike; poznata ograničenja i planirani opseg vode se u [docs/2-Analiza-zahtjeva.md](docs/2-Analiza-zahtjeva.md) i [docs/7-Zakljucak-i-buduci-rad.md](docs/7-Zakljucak-i-buduci-rad.md).
-
-Vodič za postavljanje i pokretanje opisuje smještaj aplikacije (engl. hosting) koji tim stvarno koristi: [docs/6-Postavljanje-instalacija-i-konfiguracija.md](docs/6-Postavljanje-instalacija-i-konfiguracija.md).
 
 ## Brzi početak / instalacija
 
-**Preduvjeti:** Node.js (LTS inačica) i npm. Baza podataka i vanjske usluge (OAuth pružatelj, Freesound API) još nisu potrebne za pokretanje trenutnog stuba.
-
-```
-git clone https://github.com/TomaPetrusic/soundSurf.git
-cd soundSurf/backend
-npm install
-npm start
-```
-
-**Adresa:** `http://localhost:10000` (port se može promijeniti varijablom okruženja `PORT`).
-
-**Konfiguracija:** trenutni backend stub ne zahtijeva varijable okruženja osim neobaveznog `PORT`. Kada se implementiraju prijava, baza podataka i vanjske integracije, njihove varijable okruženja i `.env.example` bit će dokumentirani ovdje i u vodiču za postavljanje.
-
-**Provjera:** `curl http://localhost:10000/health` treba vratiti `{"status":"healthy"}`.
-
-Klijentski dio (`frontend/`) trenutno nema razvojni poslužitelj; `npm run build` unutar `frontend/` samo generira statičnu placeholder stranicu (`npm install` nije potreban jer nema ovisnosti).
-
-Za detaljno postavljanje pogledajte [projektnu dokumentaciju](docs/6-Postavljanje-instalacija-i-konfiguracija.md).
 
 ## Tehnologije
 
 | Tehnologija ili alat | Uloga u ovom projektu | Razlog uporabe ili važno ograničenje |
 | --- | --- | --- |
-| Node.js | Izvršno okruženje poslužiteljskog dijela (`backend/`) | Trenutno se koristi samo ugrađeni `http` modul; odabir poslužiteljskog okvira (npr. Express) još nije donesen. |
-| GitHub Actions | CI/CD | `ci.yml` je trenutno samo placeholder korak; `cd.yml` pri spajanju na `main` pokreće Render deploy hook. |
-| Render | Planirano smještanje (hosting) poslužiteljskog dijela | Deploy hook konfiguriran u `cd.yml`; stvarna javna adresa još nije potvrđena (vidi "Postavljanje" iznad). |
-| OAuth 2.0 / OpenID Connect pružatelj identiteta | Planirana prijava korisnika (F-01 u zahtjevima) | Konkretan pružatelj još nije odabran (vidi pretpostavku AS-02 u [docs/2](docs/2-Analiza-zahtjeva.md)). |
-| Freesound API | Planirani uvoz zvukovnih zapisa (F-05 u zahtjevima) | Obavezna domenski relevantna vanjska integracija prema pravilima kolegija (vidi ograničenje C-04 u [docs/2](docs/2-Analiza-zahtjeva.md)). |
-
-Potrebne verzije i konfiguraciju tehnologija dokumentirat ćemo u vodiču za instalaciju kako se budu odabirale.
-
+| Python + Django | Poslužiteljski dio (`backend/`) | Kolegij propisuje Javu ili Python uz objektno orijentirano oblikovanje; Django nudi ORM, migracije i ugrađene sigurnosne mehanizme. Odabir treba potvrditi s asistentom. |
+| React | Klijentski dio (`frontend/`) | Interaktivno web-sučelje za radnu okolinu i javne stranice. |
+| PostgreSQL | Baza podataka | Pohrana korisnika, metapodataka zvukovnih zapisa, postova i favorita. |
+| OAuth 2.0 / OpenID Connect pružatelj identiteta (django-allauth) | Prijava korisnika (F-01 u zahtjevima) | Konkretan pružatelj još nije odabran (vidi pretpostavku AS-02 u [docs/2](docs/2-Analiza-zahtjeva.md)). |
+| Freesound API | Uvoz zvukovnih zapisa (F-05 u zahtjevima) | Obavezna domenski relevantna vanjska integracija prema pravilima kolegija (vidi ograničenje C-04 u [docs/2](docs/2-Analiza-zahtjeva.md)). |
+| GitHub Actions | CI | Pokretanje provjera na svakom pull requestu; deploy se odvija automatski putem Railwaya. |
+| Railway | Smještanje (hosting) aplikacije | Automatski deploy pri spajanju na `main`; trajna pohrana datoteka i baze bez gašenja servisa zbog neaktivnosti. Stvarna javna adresa još nije potvrđena. |
 ## Članovi tima
 
 | Ime i prezime | Uloga | Zaduženja |
@@ -102,7 +77,7 @@ Kod trećih strana, skupovi podataka, slike, ikone i drugi sadržaji zadržavaju
 
 Ovaj projekt slijedi FER-ova [pravila o primjerenoj uporabi umjetne inteligencije](https://www.fer.unizg.hr/_download/repository/Policy%20on%20the%20appropriate%20use%20of%20artificial%20intelligence%20at%20the%20faculty%20of%20electrical%20engineering%20and%20computing%5B1%5D.pdf).
 
-**Izjava:** Tim je koristio Claude Code (Anthropic) za izradu nacrta projektne dokumentacije — poglavlja [2. Analiza zahtjeva](docs/2-Analiza-zahtjeva.md), [3. Obrasci uporabe](docs/3-Obrasci-uporabe.md) i ovog README-a — na temelju opisa teme i pravila kolegija koje je zadao tim. Tim je generirani sadržaj pregledao, ispravio i prilagodio (vidi povijest promjena u repozitoriju) i odgovoran je za točnost svih tvrdnji o funkcionalnostima. Detaljan zapis uporabe umjetne inteligencije vodi se u [docs/Home.md](docs/Home.md#izjava-o-uporabi-umjetne-inteligencije); tim ga treba dovršiti prije predaje.
+**Izjava:** Tim je koristio Claude Code (Anthropic) za izradu nacrta projektne dokumentacije — poglavlja [2. Analiza zahtjeva](docs/2-Analiza-zahtjeva.md), [3. Obrasci uporabe](docs/3-Obrasci-uporabe.md) i ovog README-a — na temelju opisa teme i pravila kolegija koje je zadao tim. Tim je generirani sadržaj pregledao, ispravio i prilagodio (vidi povijest promjena u repozitoriju) i odgovoran je za točnost svih tvrdnji o funkcionalnostima.
 
 ## Kodeks ponašanja i podrška
 
