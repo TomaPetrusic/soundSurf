@@ -1,14 +1,10 @@
 # 2. Analiza zahtjeva
 
-Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.md)) i iz obaveznih pravila kolegija. Svaki zahtjev ima stabilan ID, prioritet i izvor:
-
-- **Izvor** je jedan od: **Opis teme** (izravno iz projektnog zadatka), **Pravila kolegija** (obavezni zahtjevi kolegija koji ne proizlaze izravno iz teme, npr. GitHub, dokumentacija, OO oblikovanje), **Opis teme / Pravila kolegija** (kad zahtjev proizlazi iz oboje — npr. obavezna domenski relevantna vanjska integracija) ili **Tim** (odluka ili pretpostavka tima koja razrađuje opis teme).
-- Vrijednosti označene s *(pretpostavka – potvrditi s timom)* nisu dogovorene s nastavnikom/asistentom i tim ih treba potvrditi ili prilagoditi.
-- Raspored zahtjeva po razvojnim ciklusima (1. i 2.) vodi se izvan ove dokumentacije, u alatu za praćenje zadataka tima.
+Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.md)) i iz obaveznih pravila kolegija. Svaki zahtjev ima ID, prioritet i izvor.
 
 ## 2.1 Funkcijski zahtjevi
 
-**Cilj:** Navesti što aplikacija mora omogućiti korisnicima, odakle pojedina mogućnost proizlazi i koji se opažljivi rezultat smatra prihvaćanjem.
+
 
 ### Autentifikacija i korisnički račun
 
@@ -71,31 +67,19 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 
 ## 2.2 Nefunkcijski i domenski zahtjevi
 
-**Cilj:** Odrediti važna svojstva kvalitete i uvjete rada aplikacije (nefunkcijski zahtjevi) te pravila specifična za domenu obrade zvuka (domenski zahtjevi), na način koji tim može razumno provjeriti.
 
 ### Nefunkcijski zahtjevi
 
 | ID | Opis | Prioritet | Izvor | Način provjere |
 | --- | --- | --- | --- | --- |
-| NF-01 | Sustav mora podržati učitavanje zvukovne datoteke veličine do 50 MB *(pretpostavka – potvrditi s timom)*. | Srednji | Tim | Pokušati učitati datoteku veličine unutar i iznad granice te provjeriti da se datoteka iznad granice odbija uz objašnjenje. |
-| NF-02 | Primjena jednog filtra na WAV zapis u trajanju do 3 minute traje manje od 5 sekundi, mjereno na referentnoj konfiguraciji poslužitelja ili na javno postavljenoj aplikaciji *(pretpostavka – potvrditi s timom)*. | Srednji | Tim | Mjerenje vremena izvođenja primjene filtra na referentnom zapisu i referentnoj konfiguraciji/javnom poslužitelju. |
+| NF-01 | Sustav mora podržati učitavanje zvukovne datoteke veličine do 50 MB. | Srednji | Tim | Pokušati učitati datoteku veličine unutar i iznad granice te provjeriti da se datoteka iznad granice odbija uz objašnjenje. |
+| NF-02 | Primjena jednog filtra na WAV zapis u trajanju do 3 minute traje manje od 5 sekundi. | Srednji | Tim | Mjerenje vremena izvođenja primjene filtra na javnom poslužitelju. |
 | NF-03 | Privatnoj radnoj okolini i privatnim postovima korisnika ne može pristupiti nijedan drugi korisnik, ni izravnim zahtjevom na adresu resursa. | Visok | Opis teme | Pokušati pristupiti tuđem privatnom resursu izravnim zahtjevom bez odgovarajućih ovlasti i provjeriti da sustav pristup odbija. |
-| NF-04 | Web-sučelje mora korektno raditi u zadnje dvije objavljene inačice preglednika Google Chrome i Mozilla Firefox *(pretpostavka – potvrditi s timom)*. | Srednji | Tim | Ručno provjeriti glavne korisničke tijekove u navedenim preglednicima i inačicama. |
-| NF-05 | Sva komunikacija između klijenta i poslužitelja mora biti šifrirana protokolom HTTPS. | Visok | Tim | Pregled mrežnog promatrača preglednika i konfiguracije poslužitelja na javnoj adresi. |
-| NF-06 | Sustav mora podržati barem 20 istodobno prijavljenih korisnika koji izvode osnovne radnje (upload, preslušavanje, primjena filtra) bez vidljivog pada performansi *(pretpostavka – potvrditi s timom)*. | Srednji | Tim | Simulirati zadani broj istodobnih korisnika koji izvode osnovne radnje i izmjeriti vrijeme odziva. |
-| NF-07 | Sve obavezne radnje u obrascima za uvoz, generiranje i obradu zvuka moguće je izvršiti isključivo tipkovnicom, uz vidljiv fokus na aktivnoj kontroli. | Srednji | Tim | Navigirati kroz obrazac bez pokazivačkog uređaja, dovršiti radnju i provjeriti da se rezultat može pročitati. |
-| NF-08 | Aplikacija mora biti dostupna na javno dostupnoj mrežnoj adresi tijekom cijelog razdoblja ocjenjivanja projekta. | Visok | Pravila kolegija | Pristup javnoj adresi i provjera osnovnih funkcionalnosti bez lokalnog postavljanja. |
-| NF-09 | Sustav ne pohranjuje lozinku korisnika niti je prima od vanjskog pružatelja identiteta; autentifikacijski podaci ostaju isključivo kod pružatelja identiteta. | Visok | Tim | Pregled podatkovnog modela korisnika i razmijenjenih OAuth/OIDC poruka. |
-| NF-10 | Integracija s Freesound API-jem mora poštivati njegove uvjete korištenja i ograničenje broja zahtjeva (rate limit) te razumljivo obraditi odbijen zahtjev. | Visok | Opis teme / Pravila kolegija | Pregled implementacije prema dokumentaciji Freesound API-ja; simulacija odbijenog zahtjeva (npr. prekoračen rate limit) i provjera poruke korisniku. |
+| NF-04 | Web-sučelje mora korektno raditi na Google Chrome-u i Mozilla Firefox-u. | Srednji | Tim | Ručno provjeriti glavne korisničke obrasce korištenja u navedenim preglednicima. |
+| NF-05 | Sva komunikacija između klijenta i poslužitelja mora biti protokolom HTTPS. | Visok | Tim | Pregled mrežnog prometa preglednika i konfiguracije poslužitelja na javnoj adresi. |
+| NF-06 | Aplikacija mora biti dostupna na javno dostupnoj mrežnoj adresi tijekom cijelog razdoblja ocjenjivanja projekta. | Visok | Pravila kolegija | Pristup javnoj adresi i provjera funkcionalnosti. |
+| NF-07 | Sustav ne pohranjuje lozinku korisnika niti je prima od vanjskog pružatelja identiteta; autentifikacijski podaci ostaju isključivo kod pružatelja identiteta. | Visok | Tim | Pregled podatkovnog modela korisnika i razmijenjenih OAuth/OIDC poruka. |
 
-### Domenski zahtjevi
-
-| ID | Opis | Prioritet | Izvor | Način provjere |
-| --- | --- | --- | --- | --- |
-| D-01 | Pri izvozu zvukovnog zapisa sustav čuva izvorni broj kanala i sample rate zapisa. | Srednji | Tim | Izvesti zapis i usporediti sample rate i broj kanala ulazne i izlazne datoteke. |
-| D-02 | Maksimalno trajanje jednog zvukovnog zapisa u radnoj okolini je 10 minuta *(pretpostavka – potvrditi s timom)*. | Nizak | Tim | Pokušati učitati ili generirati zapis dulji od ograničenja i provjeriti odbijanje uz objašnjenje. |
-| D-03 | Granična frekvencija niskopropusnog i visokopropusnog filtra mora biti unutar čujnog frekvencijskog raspona, od 20 Hz do 20 000 Hz. | Visok | Tim | Pokušati unijeti vrijednost izvan raspona i provjeriti da je sustav odbija ili ograničava na rub raspona. |
-| D-04 | Amplituda generiranog oscilatora ne može prelaziti najveću dopuštenu vrijednost signala (0 dBFS); sustav sprječava postavke koje bi uzrokovale klipiranje (izobličenje) generiranog zapisa. | Srednji | Tim | Pokušati postaviti amplitudu iznad dopuštene granice i provjeriti da sustav vrijednost ograničava ili zahtjev odbija. |
 
 ## 2.3 Dionici i akteri
 
@@ -103,12 +87,10 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 
 | ID uloge ili aktera | Odnos prema sustavu | Relevantni zahtjevi |
 | --- | --- | --- |
-| A-01 Posjetitelj | Akter; dolazi na aplikaciju bez prijave. Prema opisu teme nema pristup radnoj okolini ni javnim stranicama i može jedino pokrenuti prijavu putem vanjskog pružatelja identiteta. | F-01 |
-| A-02 Korisnik | Glavni akter sustava; specijalizacija (generalizacija) aktera Posjetitelj — nakon uspješne prijave Posjetitelj postaje Korisnik i stječe sve mogućnosti upravljanja vlastitom radnom okolinom i javnom stranicom (kao vlasnik/autor) te pregleda tuđih javnih stranica, preuzimanja tuđih zapisa i upravljanja favoritima (kao posjetitelj tuđe stranice). Riječ je o istoj osobi u različitim kontekstima nakon prijave, ne o zasebnim akterima; generalizacija opisuje ulogu, a napomena o stanju prijave u [3.1](3-Obrasci-uporabe.md#31-dijagram-obrazaca-uporabe) objašnjava prijelaz iz Posjetitelja u Korisnika. | F-02 – F-29 |
+| A-01 Posjetitelj | Neautenticirani korisnik, prema opisu teme nema pristup radnoj okolini ni javnim stranicama i može jedino pokrenuti prijavu putem vanjskog pružatelja identiteta. | F-01 |
+| A-02 Korisnik | Glavni akter sustava, nakon uspješne prijave posjetitelj postaje korisnik i stječe sve mogućnosti upravljanja vlastitom radnom okolinom i javnom stranicom (kao vlasnik/autor) te pregleda tuđih javnih stranica, preuzimanja tuđih zapisa i upravljanja favoritima. | F-02 – F-29 |
 | A-03 Vanjski pružatelj identiteta (OAuth 2.0 / OIDC) | Sekundarni akter (vanjski sustav). Provodi autentifikaciju korisnika pri prijavi i izdaje potvrdu identiteta koju aplikacija koristi za otvaranje sesije. | F-01; C-01; NF-09 |
-| A-04 Freesound API | Sekundarni akter (vanjski sustav). Na zahtjev korisnika isporučuje rezultate pretrage i zvukovne zapise za uvoz u radnu okolinu; ispunjava obavezu barem jedne domenski relevantne vanjske integracije (vidi C-05). | F-05; C-05; NF-10 |
-| ST-01 Nastavnik / asistent kolegija | Dionik bez izravne interakcije s aplikacijom u ulozi krajnjeg korisnika; ocjenjuje ispunjava li rješenje zahtjeve projektnog zadatka i pravila dokumentiranja. | — |
-| ST-02 Razvojni tim (G05.4) | Dionik bez izravne interakcije s aplikacijom u ulozi krajnjeg korisnika; odgovoran za izvedivost rješenja unutar trajanja semestra. | — |
+| A-04 Freesound API | Sekundarni akter (vanjski sustav). Na zahtjev korisnika isporučuje rezultate pretrage i zvukovne zapise za uvoz u radnu okolinu; ispunjava obavezu barem jedne domenski relevantne vanjske integracije (vidi C-05). | F-05; NF-10 |
 
 ## 2.4 Ograničenja i pretpostavke
 
@@ -116,79 +98,23 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 
 | ID | Tip | Opis ograničenja ili pretpostavke | Izvor | Inženjerska posljedica / Provjera |
 | --- | --- | --- | --- | --- |
-| C-01 | Ograničenje | Prijava mora koristiti vanjskog pružatelja identiteta putem OAuth 2.0 / OIDC; sustav ne implementira vlastiti mehanizam registracije i prijave lozinkom. | Opis teme | Arhitektura mora predvidjeti OAuth klijent i sigurno rukovanje tokenima; UC-01 modelira pružatelja identiteta kao sekundarnog aktera (vidi [3. Obrasci uporabe](3-Obrasci-uporabe.md)). |
+| C-01 | Ograničenje | Prijava mora koristiti vanjskog pružatelja identiteta putem OAuth 2.0 / OIDC; sustav ne implementira vlastiti mehanizam registracije i prijave lozinkom. | Opis teme | Arhitektura mora predvidjeti OAuth klijent i sigurno rukovanje tokenima. |
 | C-02 | Ograničenje | Uvoz i izvoz moraju podržavati najmanje tri formata zapisa: WAV, MP3 i FLAC (vidi F-04, F-06). | Opis teme | Testirati uvoz i izvoz svake kombinacije formata. |
-| C-03 | Ograničenje | Sustav mora implementirati najmanje pet filtara/efekata: low-pass, high-pass, gain, reverb i tremolo (vidi F-14). | Opis teme | Svaki filtar ima zasebne parametre i ispitni slučaj unutar UC-07. |
-| C-04 | Ograničenje | Objava, pregled tuđih stranica i favoriti dostupni su samo prijavljenim korisnicima; aplikacija nema javno dostupan pregled bez prijave. | Opis teme | Sve rute osim prijave zahtijevaju provjeru autentifikacije; vidi NF-03. |
-| C-05 | Ograničenje | Sustav mora imati barem jednu domenski relevantnu integraciju s vanjskom uslugom; ovu obavezu ispunjava integracija s Freesound API-jem (vidi F-05). | Pravila kolegija | Vanjski pružatelj identiteta (OAuth, C-01) ne računa se kao domenski relevantna integracija jer nije specifičan za obradu zvuka; Freesound jest. |
-| C-06 | Ograničenje | Izvorni kod i dokumentacija projekta razvijaju se kontinuirano u zajedničkom GitHub repozitoriju tijekom cijelog semestra. | Pravila kolegija | Redoviti commitovi i zahtjevi za uključivanje promjena (PR) kroz semestar; vidi [A. Pregled aktivnosti grupe](A-Pregled-aktivnosti-grupe.md). |
-| C-07 | Ograničenje | Projektna dokumentacija u `docs/` mora odražavati stvarno stanje aplikacije i ažurirati se pri svakoj značajnijoj promjeni zahtjeva ili arhitekture. | Pravila kolegija | Usporedba dokumentacije s pokrenutom aplikacijom na kontrolnim točkama iz [2.7 Pregled zahtjeva](#27-pregled-zahtjeva). |
-| AS-01 | Pretpostavka | Svaki korisnik ima pristup internetskoj vezi i modernom web-pregledniku koji podržava Web Audio API. | Tim | Ručno provjeriti rad aplikacije u preglednicima i inačicama iz NF-04 prije završne predaje. |
-| AS-02 | Pretpostavka | Konkretan vanjski pružatelj identiteta (npr. Google ili GitHub OAuth) bit će odabran pri odabiru tehnologija i neće se značajno mijenjati tijekom semestra. | Tim | Potvrditi odabir do kraja 1. ciklusa; svaku promjenu zabilježiti u [2.5 Značajne promjene zahtjeva](#25-značajne-promjene-zahtjeva). |
-| AS-03 | Pretpostavka | Freesound API ostaje besplatno dostupan uz postojeći API ključ tijekom trajanja projekta. | Tim | Provjeriti uvjete korištenja i dostupnost API ključa prije implementacije UC-04 (vidi C-05); ako usluga postane nedostupna, tim mora pronaći zamjenski izvor zvukovnih zapisa jer je domenski relevantna integracija obavezna. |
+| C-03 | Ograničenje | Objava, pregled tuđih stranica i favoriti dostupni su samo prijavljenim korisnicima; aplikacija nema javno dostupan pregled bez prijave. | Opis teme | Sve rute osim prijave zahtijevaju provjeru autentifikacije. |
+| C-04 | Ograničenje | Sustav mora imati barem jednu domenski relevantnu integraciju s vanjskom uslugom ovu obavezu ispunjava integracija s Freesound API-jem. | Pravila kolegija | Ovu obavezu ispunjava integracija s Freesound API-jem. |
+| C-05 | Ograničenje | Izvorni kod i dokumentacija projekta razvijaju se kontinuirano u zajedničkom GitHub repozitoriju tijekom cijelog semestra. | Pravila kolegija | Redoviti commitovi i zahtjevi za uključivanje promjena kroz tijek kolegija |
+| C-06 | Ograničenje | Projektna dokumentacija u `docs/` mora odražavati stvarno stanje aplikacije i ažurirati se pri svakoj značajnijoj promjeni zahtjeva ili arhitekture. | Pravila kolegija | Usporedba dokumentacije s pokrenutom aplikacijom. |
+| AS-01 | Pretpostavka | Svaki korisnik ima pristup internetskoj vezi i modernom web-pregledniku koji podržava Web Audio API. | Tim | Ručno provjeriti rad aplikacije u preglednicima. |
+| AS-02 | Pretpostavka | Konkretan vanjski pružatelj identiteta (npr. Google ili GitHub OAuth) bit će odabran pri odabiru tehnologija i neće se značajno mijenjati tijekom semestra. | Tim | Svaku promjenu zabilježiti u [2.5 Značajne promjene zahtjeva](#25-značajne-promjene-zahtjeva). |
+| AS-03 | Pretpostavka | Freesound API ostaje besplatno dostupan uz postojeći API ključ tijekom trajanja projekta. | Tim | Provjeriti uvjete korištenja. |
 
 ## 2.5 Značajne promjene zahtjeva
 
-**Cilj:** Sačuvati razlog promjena koje mijenjaju dogovoreni opseg, prioritet ili kriterije prihvaćanja, uz istodobno održavanje prethodnih zahtjeva ažurnima.
-
-| Datum | ID zahtjeva | Promjena i razlog | Dogovoreno s / dokaz |
-| --- | --- | --- | --- |
-| 21.10.2026. | F-05, F-16–F-18, F-23–F-33 (brojevi u toj inačici) | Freesound integracija prepoznata kao obavezna domenski relevantna vanjska integracija koju kolegij traži (ne samo poželjna značajka), pa su njezin prioritet i prioriteti ostalih zahtjeva koje opis teme ili pravila kolegija izričito traže podignuti na Visok; dodan C-05. | Interni pregled tima nakon izrade prve inačice zahtjeva. |
-| 21.10.2026. | Stari F-07, F-08, F-29 (brojevi u toj inačici) | Razdvojeni složeni zahtjevi koji su opisivali više od jedne provjerljive radnje (stvaranje direktorija/pregled stabla; preimenovanje odvojeno od imenovanja pri stvaranju; uklanjanje iz favorita/pregled popisa favorita) u zasebne zahtjeve radi provjerljivosti. | Interni pregled tima. |
-| 21.10.2026. | Stari D-02 | Zahtjev o upozorenju prije pretvorbe u MP3 uklonjen jer uvodi značajku (upozorenje u sučelju) koja nije dio opisa teme. | Interni pregled tima. |
-| 21.10.2026. | F-14–F-18 (prethodna numeracija) → F-14 | Pet zasebnih zahtjeva za pojedinačne filtre spojeno u jedan funkcijski zahtjev (vrsta filtra kao parametar/popis), radi jednostavnijeg popisa zahtjeva; svi zahtjevi od dotadašnjeg F-19 nadalje prenumerirani (pomak za 4). Obrazac uporabe UC-07 i matrica sljedivosti ažurirani. | Dogovoreno s voditeljem tima. |
+Trenutno ne postoje.
 
 ## 2.6 Sljedivost zahtjeva
 
-**Cilj:** Osigurati dvosmjernu sljedivost — povezati zahtjeve s opisanim ponašanjem, dijelovima sustava koji ih ostvaruju te ispitivanjem ili drugom provjerom.
-
-Arhitektura i ispitni slučajevi još nisu izrađeni (vidi [4. Arhitektura i oblikovanje](4-Arhitektura-i-oblikovanje.md) i [5. Ispitivanje](5-Ispitivanje.md)), pa su ti stupci označeni kao *na čekanju* i popunit će se kada ti dijelovi dokumentacije nastanu. Ograničenja (C-xx) i pretpostavke (AS-xx) iz 2.4 ne vode se u ovoj tablici.
-
-| ID zahtjeva | Obrazac uporabe / modul | Arhitekturna realizacija | Ispitivanje ili provjera |
-| --- | --- | --- | --- |
-| F-01 | UC-01 Prijava u sustav | na čekanju | na čekanju |
-| F-02 | UC-01 Prijava u sustav | na čekanju | na čekanju |
-| F-03 | UC-01 Prijava u sustav | na čekanju | na čekanju |
-| F-04 | UC-03 Uvoz zvukovnog zapisa (upload) | na čekanju | na čekanju |
-| F-05 | UC-04 Uvoz zapisa s Freesounda | na čekanju | na čekanju |
-| F-06 | UC-05 Izvoz zvukovnog zapisa (download) | na čekanju | na čekanju |
-| F-07 | UC-02 Upravljanje datotekama i direktorijima (stvaranje) | na čekanju | na čekanju |
-| F-08 | UC-02 Upravljanje datotekama i direktorijima (pregled stabla) | na čekanju | na čekanju |
-| F-09 | UC-02 Upravljanje datotekama i direktorijima (preimenovanje) | na čekanju | na čekanju |
-| F-10 | UC-02 Upravljanje datotekama i direktorijima (premještanje) | na čekanju | na čekanju |
-| F-11 | UC-02 Upravljanje datotekama i direktorijima (brisanje) | na čekanju | na čekanju |
-| F-12 | UC-06 Generiranje zvukovnog zapisa | na čekanju | na čekanju |
-| F-13 | UC-06 Generiranje zvukovnog zapisa | na čekanju | na čekanju |
-| F-14 | UC-07 Primjena filtra | na čekanju | na čekanju |
-| F-15 | UC-07 Primjena filtra (odabir spremanja) | na čekanju | na čekanju |
-| F-16 | UC-13 Preslušavanje i waveform | na čekanju | na čekanju |
-| F-17 | UC-13 Preslušavanje i waveform | na čekanju | na čekanju |
-| F-18 | UC-14 Uređivanje profila javne stranice | na čekanju | na čekanju |
-| F-19 | UC-15 Objava posta | na čekanju | na čekanju |
-| F-20 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
-| F-21 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
-| F-22 | UC-16 Upravljanje postovima | na čekanju | na čekanju |
-| F-23 | UC-17 Pregled tuđe javne stranice | na čekanju | na čekanju |
-| F-24 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-25 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-26 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-27 | UC-18 Upravljanje favoritima | na čekanju | na čekanju |
-| F-28 | UC-19 Preuzimanje ili uvoz tuđeg zapisa | na čekanju | na čekanju |
-| F-29 | UC-19 Preuzimanje ili uvoz tuđeg zapisa | na čekanju | na čekanju |
-| NF-01 | Ne odnosi se na pojedinačnu korisničku interakciju (UC-03/UC-04) | na čekanju | na čekanju |
-| NF-02 | UC-07 Primjena filtra | na čekanju | na čekanju |
-| NF-03 | Ne odnosi se na pojedinačnu korisničku interakciju; presijeca sve UC nad privatnim resursima | na čekanju | na čekanju |
-| NF-04 | Ne odnosi se na pojedinačnu korisničku interakciju; presijeca sve UC | na čekanju | na čekanju |
-| NF-05 | Ne odnosi se na pojedinačnu korisničku interakciju; presijeca sve UC | na čekanju | na čekanju |
-| NF-06 | Ne odnosi se na pojedinačnu korisničku interakciju; presijeca više UC (npr. UC-01, UC-03, UC-07, UC-13) | na čekanju | na čekanju |
-| NF-07 | UC-03 Uvoz; UC-06 Generiranje; UC-07 Primjena filtra | na čekanju | na čekanju |
-| NF-08 | Ne opisuje korisničku interakciju; postavljanje sustava | na čekanju | na čekanju |
-| NF-09 | UC-01 Prijava u sustav | na čekanju | na čekanju |
-| NF-10 | UC-04 Uvoz zapisa s Freesounda | na čekanju | na čekanju |
-| D-01 | UC-05 Izvoz zvukovnog zapisa (download) | na čekanju | na čekanju |
-| D-02 | UC-03 Uvoz; UC-06 Generiranje | na čekanju | na čekanju |
-| D-03 | UC-07 Primjena filtra (niskopropusni/visokopropusni) | na čekanju | na čekanju |
-| D-04 | UC-06 Generiranje zvukovnog zapisa | na čekanju | na čekanju |
+Arhitektura još nije dizajnirana pa tako logički slijed programiranja još ne može biti odlučen.
 
 ## 2.7 Pregled zahtjeva
 
@@ -203,8 +129,7 @@ Arhitektura i ispitni slučajevi još nisu izrađeni (vidi [4. Arhitektura i obl
 ---
 
 ## Izvan opsega / moguća proširenja
-
-**Cilj:** Odvojiti ideje koje imaju smisla za ProAudio, ali nisu dio opisa teme, pravila kolegija ni dogovorenog opsega (vidi i [1.3 Granice projekta](1-Projekt.md#13-granice-projekta) za već isključenu funkcionalnost poput snimanja mikrofonom, multitracka, komentara i mobilne aplikacije). Ovo nisu zahtjevi i tim ih ne implementira osim ako se opseg projekta izričito promijeni.
+ko se opseg projekta izričito promijeni.
 
 - Administratorska ili moderatorska uloga koja uklanja neprimjeren sadržaj s javnih stranica drugih korisnika.
 - Pretraga javnih stranica, postova ili zvukovnih zapisa po ključnoj riječi, žanru ili oznaci.
@@ -214,7 +139,3 @@ Arhitektura i ispitni slučajevi još nisu izrađeni (vidi [4. Arhitektura i obl
 - Javno dijeljenje pojedinog posta izvan platforme poveznicom vidljivom i neprijavljenim osobama.
 - Upozorenje u sučelju prije pretvorbe zapisa u MP3 format (razmatrano i uklonjeno iz domenskih zahtjeva, vidi 2.5).
 - Generiranje zvuka odabirom sintetiziranog instrumenta (umjesto ili uz oscilator), eventualno uz UI za sviranje nota — opis teme navodi oscilator ili instrument kao primjere; oscilator (F-12, F-13) već ispunjava minimalni zahtjev.
-
----
-
->**Završna provjera:** Zahtjevi su aktualni, provjerljivi i povezani. Svaki važan zahtjev moguće je pratiti od njegova opisa i ponašanja preko mjesta realizacije u sustavu do odgovarajućeg ispitivanja ili druge provjere. Poveznice koriste stvarne identifikatore i nazive iz projektne dokumentacije.
