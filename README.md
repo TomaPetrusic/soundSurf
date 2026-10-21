@@ -1,26 +1,55 @@
 # ProAudio
- 
+
 **Programsko inženjerstvo, ak. god. 2026./2027.**
- 
+
 Sveučilište u Zagrebu
 Fakultet elektrotehnike i računarstva
- 
+
 ---
- 
-## Osnovni podaci
- 
-| | |
-|---|---|
-| **Naziv projekta** | ProAudio |
-| **Tim** | G05.4 |
-| **Ime tima** | SoundSurfer |
-| **Nastavnik** | Vlado Sruk |
 
 
-ProAudio je namijenjen glazbenicima, producentima i svima koji eksperimentiraju sa zvukom, a žele raditi sa zvukovnim zapisima bez instaliranja posebnog softvera. U privatnoj radnoj okolini korisnici mogu uvoziti, generirati, preslušavati i obrađivati zvukovne zapise pomoću filtara te ih organizirati u strukturu direktorija. Gotove zapise mogu objaviti na svojoj javnoj stranici u obliku postova, a stranice i postove drugih korisnika pregledavati, preuzimati i spremati u favorite.
- 
+ProAudio korisnicima omogućuje uvoz, generiranje, obradu i objavu zvukovnih zapisa na jednom mjestu, u web pregledniku, bez instaliranja posebnog softvera.
+
+**Projekt na kolegiju:** Ovu aplikaciju razvija studentski tim SoundSurfer (G05.4) u sklopu kolegija Programsko inženjerstvo na Fakultetu elektrotehnike i računarstva Sveučilišta u Zagrebu (FER), pod vodstvom nastavnika Vlade Sruka.
+
+## Opis aplikacije
+
+Osoba koja želi obraditi i objaviti zvukovni zapis danas obično mora koristiti više odvojenih alata: jedan za obradu, drugi za pohranu, treći za javnu objavu. ProAudio je namijenjen glazbenicima, producentima i svima koji eksperimentiraju sa zvukom, a te korake objedinjuje u jednoj aplikaciji: prijavljeni korisnik u privatnoj radnoj okolini uvozi, generira, organizira, preslušava i obrađuje zvukovne zapise filtrima, a gotove zapise objavljuje na svojoj javnoj stranici u obliku postova. Drugi prijavljeni korisnici mogu pregledavati tuđe javne stranice, preuzimati zapise ili ih spremati u favorite.
+
+
+**Planirane funkcionalnosti** (vidi [docs/2-Analiza-zahtjeva.md](docs/2-Analiza-zahtjeva.md) za potpun i provjerljiv popis):
+
+- Prijava putem vanjskog pružatelja identiteta (OAuth 2.0 / OpenID Connect).
+- Uvoz i izvoz zvukovnih zapisa u formatima WAV, MP3 i FLAC te uvoz zapisa s Freesounda.
+- Organizacija zapisa u direktorije, generiranje zvuka oscilatorom, obrada filtrima (niskopropusni, visokopropusni, pojačanje, reverb, tremolo) i preslušavanje s prikazom valnog oblika (waveform).
+- Javna stranica s postovima (zvukovni zapis + opis), oznaka vidljivosti posta (javno/privatno) i favoriti za tuđe stranice i postove.
+
+
+## Postavljanje (engl. deployment)
+
+Trenutno nije dostupno.
+
+**Demonstracija:** 
+
+**Ograničenja:** 
+
+
+## Brzi početak / instalacija
+
+
+## Tehnologije
+
+| Tehnologija ili alat | Uloga u ovom projektu | Razlog uporabe ili važno ograničenje |
+| --- | --- | --- |
+| Python + Django | Poslužiteljski dio (`backend/`) | Kolegij propisuje Javu ili Python uz objektno orijentirano oblikovanje; Django nudi ORM, migracije i ugrađene sigurnosne mehanizme. Odabir treba potvrditi s asistentom. |
+| React | Klijentski dio (`frontend/`) | Interaktivno web-sučelje za radnu okolinu i javne stranice. |
+| PostgreSQL | Baza podataka | Pohrana korisnika, metapodataka zvukovnih zapisa, postova i favorita. |
+| OAuth 2.0 / OpenID Connect pružatelj identiteta (django-allauth) | Prijava korisnika (F-01 u zahtjevima) | Konkretan pružatelj još nije odabran (vidi pretpostavku AS-02 u [docs/2](docs/2-Analiza-zahtjeva.md)). |
+| Freesound API | Uvoz zvukovnih zapisa (F-05 u zahtjevima) | Obavezna domenski relevantna vanjska integracija prema pravilima kolegija (vidi ograničenje C-04 u [docs/2](docs/2-Analiza-zahtjeva.md)). |
+| GitHub Actions | CI | Pokretanje provjera na svakom pull requestu; deploy se odvija automatski putem Railwaya. |
+| Railway | Smještanje (hosting) aplikacije | Automatski deploy pri spajanju na `main`; trajna pohrana datoteka i baze bez gašenja servisa zbog neaktivnosti. Stvarna javna adresa još nije potvrđena. |
 ## Članovi tima
- 
+
 | Ime i prezime | Uloga | Zaduženja |
 |---|---|---|
 | Filip Celić | Voditelj tima | Upload, download, formati, folderi |
@@ -29,3 +58,29 @@ ProAudio je namijenjen glazbenicima, producentima i svima koji eksperimentiraju 
 | Leonard Fabris | Član tima | Filtri, generiranje zvuka |
 | Ante Vrkić | Član tima | Dokumentacija, UML, testovi, pomoć pri kodiranju |
 | Toma Petrušić | Član tima | Login, deploy |
+
+Uloge se tijekom projekta mogu mijenjati. Repozitorij i GitHub Issues služe kao dodatni dokazi timskog rada.
+
+## Doprinos projektu
+
+Zadaci i nedostaci prate se putem [GitHub Issues](https://github.com/TomaPetrusic/soundSurf/issues) ovog repozitorija. Promjene koda i dokumentacije pregledavaju se kroz zahtjeve za uključivanje promjena (pull request) prije spajanja na granu `main`. Tim trenutno ne održava zaseban `CONTRIBUTING.md`.
+
+**Status licence:** licenca za kod i sadržaj aplikacije ProAudio još nije odabrana. Datoteka [LICENSE](LICENSE) u ovom repozitoriju odnosi se na dokumentacijski predložak kolegija, ne na aplikaciju (vidi niže). Tim treba odabrati licencu aplikacije (ili izričito navesti da nije dodijeljena licenca koja dopušta javnu ponovnu uporabu) prije javnog objavljivanja, ako je primjenjivo.
+
+Dokumentacijski predložak kolegija sadrži otvorene obrazovne sadržaje (engl. Open Educational Resources, OER) i licenciran je licencom Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International. Ta licenca ne određuje automatski licencu studentske aplikacije; tim treba jasno navesti licencu svojeg projekta u prethodnom retku i datoteci LICENSE, ako je primjenjivo.
+
+Kod trećih strana, skupovi podataka, slike, ikone i drugi sadržaji zadržavaju vlastite licence i uvjete uporabe.
+
+## Uporaba umjetne inteligencije
+
+**AI Usage: Disclosed**
+
+Ovaj projekt slijedi FER-ova [pravila o primjerenoj uporabi umjetne inteligencije](https://www.fer.unizg.hr/_download/repository/Policy%20on%20the%20appropriate%20use%20of%20artificial%20intelligence%20at%20the%20faculty%20of%20electrical%20engineering%20and%20computing%5B1%5D.pdf).
+
+**Izjava:** Tim je koristio Claude Code (Anthropic) za izradu nacrta projektne dokumentacije — poglavlja [2. Analiza zahtjeva](docs/2-Analiza-zahtjeva.md), [3. Obrasci uporabe](docs/3-Obrasci-uporabe.md) i ovog README-a — na temelju opisa teme i pravila kolegija koje je zadao tim. Tim je generirani sadržaj pregledao, ispravio i prilagodio (vidi povijest promjena u repozitoriju) i odgovoran je za točnost svih tvrdnji o funkcionalnostima.
+
+## Kodeks ponašanja i podrška
+
+Od članova tima očekuje se pridržavanje Kodeksa ponašanja studenata Fakulteta elektrotehnike i računarstva Sveučilišta u Zagrebu, pravila timskog rada na kolegiju i Etičkog kodeksa IEEE-a. Vidi [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+Struktura dokumentacije prilagođena je predlošku kolegija Programsko inženjerstvo FER-a autora Vlade Sruka, licenciranom pod CC BY-NC-SA 4.0. Aplikaciju i njezin sadržaj izradio je gore navedeni studentski tim.
