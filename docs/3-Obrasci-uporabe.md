@@ -1,9 +1,5 @@
 # 3. Obrasci uporabe
 
-## 3.1 Dijagram obrazaca uporabe
-
-Dijagram obrazaca uporabe bit će dodan nakon potvrde tekstualnih specifikacija.
-
 ### Akteri
 
 | ID | Naziv | Vrsta | Generalizacija |
