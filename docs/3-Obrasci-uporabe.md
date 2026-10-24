@@ -99,8 +99,8 @@ Tablica povezuje obrasce uporabe s funkcijskim zahtjevima F-01 do F-29 iz dokume
 | Primarni akter | Korisnik (A-02) |
 | Povezani zahtjevi | F-12, F-13 |
 | Preduvjeti | Korisnik je prijavljen i ima otvorenu radnu okolinu. |
-| Glavni uspješni tok | 1. Korisnik pokreće generiranje zvukovnog zapisa.<br>2. Korisnik odabire oblik oscilatora (sinus, kvadrat, pila ili trokut) te zadaje frekvenciju, trajanje i amplitudu.<br>3. Korisnik odabire odredišni direktorij i potvrđuje generiranje.<br>4. Aplikacija provjerava parametre i generira zvukovni zapis.<br>5. Aplikacija pohranjuje novu datoteku u odabrani direktorij. |
-| Alternativni tokovi i iznimke | 4a — Parametar nije valjan (primjerice, negativno trajanje): aplikacija odbija unos uz objašnjenje i ne generira zapis. |
+| Glavni uspješni tok | 1. Korisnik u radnoj okolini odabire generiranje novog zvukovnog zapisa.<br>2. Korisnik odabire oblik vala oscilatora (sinus, kvadrat, pila ili trokut) te zadaje frekvenciju, trajanje i amplitudu.<br>3. Korisnik odabire odredišni direktorij, upisuje naziv datoteke i potvrđuje generiranje.<br>4. Aplikacija provjerava parametre i generira zvukovni zapis.<br>5. Aplikacija pohranjuje novu datoteku u odabrani direktorij. |
+| Alternativni tokovi i iznimke | 4a — Parametar nije valjan (primjerice, negativno trajanje): aplikacija odbija unos uz objašnjenje i ne generira zapis.<br>5a — Datoteka s istim nazivom već postoji u direktoriju: aplikacija traži drugi naziv.<br>5b — Pohrana nije uspjela: aplikacija prijavljuje neuspjeh i ne prikazuje lažnu potvrdu. |
 | Posljedice | Nova generirana datoteka dostupna je u odabranom direktoriju radne okoline. |
 
 ### UC-07: Primjena filtra na zapis
