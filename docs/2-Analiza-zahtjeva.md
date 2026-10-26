@@ -76,9 +76,8 @@ Zahtjevi su izvedeni iz opisa teme ProAudio (vidi [1. Opseg projekta](1-Projekt.
 | NF-02 | Primjena jednog filtra na WAV zapis u trajanju do 3 minute traje manje od 5 sekundi. | Srednji | Tim | Mjerenje vremena izvođenja primjene filtra na javnom poslužitelju. |
 | NF-03 | Privatnoj radnoj okolini i privatnim postovima korisnika ne može pristupiti nijedan drugi korisnik, ni izravnim zahtjevom na adresu resursa. | Visok | Opis teme | Pokušati pristupiti tuđem privatnom resursu izravnim zahtjevom bez odgovarajućih ovlasti i provjeriti da sustav pristup odbija. |
 | NF-04 | Web-sučelje mora korektno raditi na Google Chrome-u i Mozilla Firefox-u. | Srednji | Tim | Ručno provjeriti glavne korisničke obrasce korištenja u navedenim preglednicima. |
-| NF-05 | Sva komunikacija između klijenta i poslužitelja mora biti protokolom HTTPS. | Visok | Tim | Pregled mrežnog prometa preglednika i konfiguracije poslužitelja na javnoj adresi. |
-| NF-06 | Aplikacija mora biti dostupna na javno dostupnoj mrežnoj adresi tijekom cijelog razdoblja ocjenjivanja projekta. | Visok | Pravila kolegija | Pristup javnoj adresi i provjera funkcionalnosti. |
-| NF-07 | Sustav ne pohranjuje lozinku korisnika niti je prima od vanjskog pružatelja identiteta; autentifikacijski podaci ostaju isključivo kod pružatelja identiteta. | Visok | Tim | Pregled podatkovnog modela korisnika i razmijenjenih OAuth/OIDC poruka. |
+| NF-05 | Aplikacija mora biti dostupna na javno dostupnoj mrežnoj adresi tijekom cijelog razdoblja ocjenjivanja projekta. | Visok | Pravila kolegija | Pristup javnoj adresi i provjera funkcionalnosti. |
+| NF-06 | Sustav ne pohranjuje lozinku korisnika niti je prima od vanjskog pružatelja identiteta; autentifikacijski podaci ostaju isključivo kod pružatelja identiteta. | Visok | Tim | Pregled podatkovnog modela korisnika i razmijenjenih OAuth/OIDC poruka. |
 
 
 ## 2.3 Dionici i akteri
