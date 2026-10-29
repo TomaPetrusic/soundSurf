@@ -7,9 +7,34 @@ on:
     branches: [ main, dev ]
 
 jobs:
-  test:
+  backend:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SECRET_KEY: ci-placeholder-secret-key
+      DJANGO_DEBUG: "True"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      SUPABASE_URL: https://ci-placeholder.supabase.co
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Django system check
+        run: python backend/manage.py check
+
+  frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run Test Suite
-        run: echo "Executing lint, build, and test steps..."
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend

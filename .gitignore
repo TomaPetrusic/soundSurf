@@ -83,3 +83,17 @@ out
 
 # pnpm
 .pnpm-store
+
+# Vite build output
+frontend/dist
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+backend/.venv/
+backend/.deps/
+backend/staticfiles_collected/
+backend/frontend_dist/
+db.sqlite3
