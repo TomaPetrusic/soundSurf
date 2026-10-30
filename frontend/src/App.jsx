@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./services/supabaseClient";
-import LoginButton from "./components/LoginButton";
+import Login from "./pages/Login";
 import Profile from "./components/Profile";
 
 export default function App() {
@@ -16,11 +16,12 @@ export default function App() {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
+  if (session === null) return <Login />;
+
   return (
     <div>
       <h1>ProAudio</h1>
       {session === undefined && <p>Učitavanje...</p>}
-      {session === null && <LoginButton />}
       {session && <Profile session={session} />}
     </div>
   );
