@@ -1,0 +1,86 @@
+.wave-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wave-grid {
+  fill: none;
+  stroke: #121314;
+  stroke-opacity: 0.08;
+  stroke-width: 1;
+}
+
+.wave-grid-inside {
+  stroke: #ffffff;
+  stroke-opacity: 0.18;
+}
+
+.wave-fill {
+  fill: #00568f;
+}
+
+.wave-curve {
+  fill: none;
+  stroke: #00568f;
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.wave-label {
+  position: absolute;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: #4a4c52;
+}
+
+.wave-label-inside {
+  color: #ffffff;
+}
+
+.wave-label-hz {
+  bottom: 10px;
+  transform: translateX(6px);
+}
+
+.wave-label-db {
+  right: 14px;
+  transform: translateY(-120%);
+}
+
+.surfer {
+  position: absolute;
+  width: 116px;
+  height: 116px;
+  transform-origin: 50% 84%;
+}
+
+.wave-peak {
+  position: absolute;
+  transform: translate(-100%, -100%);
+  margin: -10px 0 0 -16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #4a4c52;
+  white-space: nowrap;
+}
+
+.wave-peak-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #121314;
+  font-weight: 500;
+}
+
+.wave-peak-square {
+  width: 8px;
+  height: 8px;
+  background: #f58426;
+}

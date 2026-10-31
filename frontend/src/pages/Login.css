@@ -1,0 +1,97 @@
+/* preko cijelog prozora, neovisno o body stilovima u index.css */
+.login {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #ffffff;
+  font-family: "Archivo", system-ui, sans-serif;
+}
+
+.login-header {
+  position: relative;
+  z-index: 1;
+  padding: 26px 4vw;
+  color: #121314;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.login-main {
+  position: relative;
+  z-index: 1;
+  padding: 15vh 4vw 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+  max-width: 560px;
+}
+
+.login-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: clamp(64px, 8.6vw, 128px);
+  line-height: 0.86;
+  letter-spacing: -0.035em;
+}
+
+/* slogan kao citat: tanki serifni kurziv uz težak naslov */
+.login-slogan {
+  margin: 0;
+  max-width: 26ch;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.login-note {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* gumb za Google prijavu */
+.login-google {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  height: 56px;
+  padding: 0 24px 0 12px;
+  background: #ffffff;
+  color: #121314;
+  border: 0;
+  border-radius: 2px;
+  font-family: "Archivo", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.login-google:hover {
+  background: #f58426;
+}
+
+.login-google:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.login-google-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+}
