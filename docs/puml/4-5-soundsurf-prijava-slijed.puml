@@ -1,0 +1,58 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam maxMessageSize 170
+hide footbox
+
+title soundSurf - UML dijagram slijeda: prijava (UC-01)
+
+autonumber
+actor "Posjetitelj" as Posjetitelj
+participant "Web klijent" as UI
+participant "API / autentifikacija" as API
+participant "Vanjski pružatelj\nidentiteta (OIDC)" as IdP
+database "Korisnički repozitorij" as Users
+participant "Usluga radne okoline" as Workspace
+participant "Upravljanje sesijom" as Session
+
+Posjetitelj -> UI : odabire prijavu
+UI -> API : zahtjev za prijavu
+API --> UI : preusmjeravanje na OIDC
+UI -> IdP : otvara prijavu kod pružatelja
+
+alt korisnik odustane ili pružatelj vrati pogrešku
+  IdP --> UI : odbijanje / pogreška
+  UI -> API : povratak s pogreškom
+  API --> UI : prijava nije uspjela (bez sesije)
+else uspješna autentifikacija
+  IdP --> UI : povratak s autorizacijskim kodom
+  UI -> API : povratna adresa s kodom
+  API -> IdP : razmjena koda / provjera OIDC identiteta
+  IdP --> API : potvrđeni identitet (issuer, subject)
+  API -> Users : pronađi račun prema (issuer, subject)
+  Users --> API : korisnik ili nema zapisa
+  alt prva uspješna prijava
+    API -> Users : stvori korisnički račun
+    API -> Workspace : stvori radnu okolinu i 3 početna zapisa
+    Workspace --> API : uspješno inicijalizirano
+  else postojeći korisnik
+    note over API : Zadržava postojeću radnu okolinu.
+  end
+  API -> Session : otvori korisničku sesiju
+  alt otvaranje sesije nije uspjelo
+    Session --> API : pogreška
+    API --> UI : prijava nije dovršena
+  else sesija otvorena
+    Session --> API : potvrda sesije
+    API --> UI : uspješna prijava / radna okolina
+    UI --> Posjetitelj : prikaži privatnu radnu okolinu
+  end
+end
+
+note over API,Workspace
+  F-01, F-02, NF-06: ne pohranjuju se lozinke.
+  Pri inicijalizaciji je potrebna dosljednost:
+  ne potvrditi uspjeh ako račun, radna okolina
+  ili tri početna zapisa nisu ispravno stvoreni.
+end note
+@enduml

@@ -1,0 +1,88 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam maxMessageSize 160
+hide footbox
+
+title soundSurf - UML dijagram slijeda: primjena filtra (UC-07)
+
+autonumber
+actor "Korisnik" as User
+participant "Web klijent" as UI
+participant "API" as API
+participant "Usluga obrade zvuka" as Service
+database "Repozitorij zapisa" as Repo
+participant "Pohrana sadržaja" as Store
+participant "Procesor zvuka" as Engine
+participant "Privremeni pregled" as Preview
+
+User -> UI : odabire zapis, filtar i parametre
+UI -> API : pripremi pregled (zapisId, parametri)
+API -> Service : pripremiPregled(korisnikId, zapisId, parametri)
+Service -> Repo : dohvati zapis i provjeri vlasništvo
+Repo --> Service : metapodaci / odbijen pristup
+
+alt zapis ne postoji ili nije korisnikov
+  Service --> API : odbijeno
+  API --> UI : obavijest o neuspjehu
+else zapis je dostupan
+  Service -> Service : provjeri vrstu i parametre filtra
+  alt parametri nisu valjani
+    Service --> API : pogreška validacije
+    API --> UI : zatraži ispravak
+  else valjani parametri
+    Service -> Store : pročitaj izvorni sadržaj
+    Store --> Service : zvukovni podaci
+    Service -> Engine : primijeni jedan od 5 filtara
+    alt obrada nije uspjela
+      Engine --> Service : pogreška
+      Service --> API : bez promjena izvornog zapisa
+      API --> UI : obavijest o neuspjehu
+    else obrada uspješna
+      Engine --> Service : obrađeni sadržaj
+      Service -> Preview : privremeno pohrani rezultat za korisnika
+      Preview --> Service : pregledId
+      Service --> API : pregledId i podaci za prikaz
+      API --> UI : prikaži rezultat i valni oblik
+      UI --> User : pregled prije spremanja
+
+      alt korisnik odustaje
+        User -> UI : odustani
+        UI --> User : izvorni zapis ostaje nepromijenjen
+      else korisnik potvrđuje spremanje
+        User -> UI : nova datoteka ili prepisivanje
+        UI -> API : spremi(pregledId, način)
+        API -> Service : spremiRezultat(korisnikId, pregledId, način)
+        Service -> Preview : dohvati rezultat uz provjeru vlasnika
+        Preview --> Service : obrađeni sadržaj
+        alt spremi kao novu datoteku
+          Service -> Store : spremi novi sadržaj
+          Store --> Service : novi ključ
+          Service -> Repo : dodaj novu datoteku u direktorij
+        else prepiši izvornu datoteku
+          Service -> Store : spremi obrađeni sadržaj
+          Store --> Service : novi ključ
+          Service -> Repo : ažuriraj referencu izvorne datoteke
+        end
+        alt pohrana metapodataka i sadržaja uspjela
+          Repo --> Service : potvrda
+          Service --> API : uspjeh
+          API --> UI : ažurirani zapis / popis datoteka
+        else spremanje nije uspjelo
+          Service -> Service : ukloni nepotpuni rezultat / vrati stanje
+          Service --> API : pogreška pohrane
+          API --> UI : ne potvrđuj uspjeh
+        end
+      end
+    end
+  end
+end
+
+note over Service,Preview
+  Privremeni pregled je mogući način provedbe UC-07.
+  Potrebno je odrediti rok čuvanja i zaštitu pristupa.
+  Konačan mehanizam pohrane dogovara tim.
+  NF-02: performanse jednog filtra provjeriti ispitivanjem.
+  F-15: korisnik bira novu datoteku ili prepisivanje.
+end note
+@enduml

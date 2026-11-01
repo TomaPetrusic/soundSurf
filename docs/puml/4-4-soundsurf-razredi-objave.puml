@@ -1,0 +1,91 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+title soundSurf - UML razredi: profil, postovi i favoriti
+
+package "Domenski objekti" {
+  class "Korisnik" as User {
+    +id: UUID
+    +identitetPruzatelja: String
+  }
+  class "JavniProfil" as Profile {
+    +korisnickoIme: String
+    +slikaKljuc: String
+    +kratkiOpis: String
+    +azurirajPodatke(): void
+  }
+  class "Post" as Post {
+    +id: UUID
+    +opis: String
+    +vidljivost: VidljivostPosta
+    +promijeniOpis(tekst: String): void
+    +postaviVidljivost(v: VidljivostPosta): void
+  }
+  enum "VidljivostPosta" as Vis {
+    JAVAN
+    PRIVATAN
+  }
+  class "ZvukovnaDatoteka" as Audio {
+    +id: UUID
+    +vlasnikId: UUID
+    +kljucSadrzaja: String
+  }
+  class "FavoritProfila" as FavProfile {
+    +korisnikId: UUID
+    +profilId: UUID
+  }
+  class "FavoritPosta" as FavPost {
+    +korisnikId: UUID
+    +postId: UUID
+  }
+}
+
+package "Aplikacijske usluge" {
+  class "UslugaObjava" as PostService <<service>> {
+    +objavi(autorId: UUID, zapisId: UUID, opis: String, vidljivost: VidljivostPosta): Post
+    +urediOpis(autorId: UUID, postId: UUID, opis: String): void
+    +promijeniVidljivost(autorId: UUID, postId: UUID, vidljivost: VidljivostPosta): void
+    +obrisi(autorId: UUID, postId: UUID): void
+    +javniPostovi(profilId: UUID): List<Post>
+  }
+  class "UslugaFavorita" as FavService <<service>> {
+    +dodajProfil(korisnikId: UUID, profilId: UUID): void
+    +dodajPost(korisnikId: UUID, postId: UUID): void
+    +ukloni(korisnikId: UUID, ciljId: UUID): void
+    +popis(korisnikId: UUID): List
+  }
+  class "UslugaKopiranjaZapisa" as CopyService <<service>> {
+    +kopirajJavniPost(korisnikId: UUID, postId: UUID, direktorijId: UUID): ZvukovnaDatoteka
+  }
+}
+
+User "1" *-- "1" Profile
+User "1" -- "0..*" Post : autor
+Post "0..*" --> "1" Audio : objavljuje
+Post --> Vis
+User "1" -- "0..*" FavProfile
+Profile "1" -- "0..*" FavProfile : cilj favorita
+User "1" -- "0..*" FavPost
+Post "1" -- "0..*" FavPost : cilj favorita
+PostService ..> Post : provjera autorstva
+PostService ..> Audio : provjera vlasništva
+FavService ..> Profile : javna stranica
+FavService ..> Post : samo javni post
+CopyService ..> Post : samo javni post
+CopyService ..> Audio : neovisna kopija
+
+note bottom of Post
+  F-19: objava zahtijeva zapis i tekstualni opis.
+  F-21: tuđim korisnicima vidljivi su samo javni postovi.
+  F-22: brisanje posta uklanja povezane favorite posta.
+  Otvoreno: životni ciklus posta pri brisanju izvornog zvuka.
+end note
+note bottom of CopyService
+  F-29: kopija postaje dio korisnikove radne okoline
+  i ne ovisi o daljnjem postojanju izvornog posta.
+end note
+@enduml
