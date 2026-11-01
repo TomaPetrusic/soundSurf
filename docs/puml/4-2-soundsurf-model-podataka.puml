@@ -1,0 +1,92 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam linetype ortho
+hide circle
+
+title soundSurf - početni model trajnih podataka
+
+entity "Korisnik" as Korisnik {
+  * id : UUID <<PK>>
+  --
+  * oauth_issuer : tekst
+  * oauth_subject : tekst
+  * created_at : datum_vrijeme
+}
+entity "Radna okolina" as Okolina {
+  * id : UUID <<PK>>
+  --
+  * korisnik_id : UUID <<FK, UNIQUE>>
+}
+entity "Direktorij" as Direktorij {
+  * id : UUID <<PK>>
+  --
+  * okolina_id : UUID <<FK>>
+  parent_id : UUID <<FK, NULL>>
+  * naziv : tekst
+}
+entity "Zvukovna datoteka" as Zvuk {
+  * id : UUID <<PK>>
+  --
+  * direktorij_id : UUID <<FK>>
+  * naziv : tekst
+  * format : WAV / MP3 / FLAC
+  * storage_key : tekst
+  * size_bytes : broj
+  duration_ms : broj
+  origin_type : upload / freesound / generated / copy
+}
+entity "Javni profil" as Profil {
+  * korisnik_id : UUID <<PK, FK>>
+  --
+  * korisnicko_ime : tekst
+  avatar_storage_key : tekst
+  kratki_opis : tekst
+}
+entity "Post" as Post {
+  * id : UUID <<PK>>
+  --
+  * autor_id : UUID <<FK>>
+  * zvuk_id : UUID <<FK>>
+  * tekstualni_opis : tekst
+  * javan : boolean
+  * created_at : datum_vrijeme
+}
+entity "Favorit profila" as FavProfil {
+  * korisnik_id : UUID <<PK, FK>>
+  * profil_korisnik_id : UUID <<PK, FK>>
+}
+entity "Favorit posta" as FavPost {
+  * korisnik_id : UUID <<PK, FK>>
+  * post_id : UUID <<PK, FK>>
+}
+
+Korisnik "1" -- "1" Okolina : ima
+Okolina "1" -- "1..*" Direktorij : sadrži
+Direktorij "0..1" -- "0..*" Direktorij : nadređeni / poddirektoriji
+Direktorij "1" -- "0..*" Zvuk : sadrži
+Korisnik "1" -- "1" Profil : uređuje
+Korisnik "1" -- "0..*" Post : objavljuje
+Zvuk "1" -- "0..*" Post : koristi
+Korisnik "1" -- "0..*" FavProfil : označava
+Profil "1" -- "0..*" FavProfil : cilj
+Korisnik "1" -- "0..*" FavPost : označava
+Post "1" -- "0..*" FavPost : cilj
+
+note bottom of Zvuk
+  F-04/F-06: WAV, MP3, FLAC.
+  F-07/F-09: ime mora biti jedinstveno na istoj razini.
+  F-11: brisanje direktorija uklanja sadržaj.
+  Bajtovi zvuka čuvaju se odvojeno od metapodataka.
+  Kopija tuđeg zapisa (F-29) dobiva vlastiti ID
+  i mora ostati neovisna o izvornom postu.
+  F-02: novom korisniku pripadaju 3 početna zapisa.
+end note
+note bottom of Post
+  F-21: privatni post vidi samo njegov autor.
+  F-22: brisanjem posta uklanjaju se favoriti posta.
+  Otvorena odluka: brisanje izvornog zapisa
+  vezanog uz post (snapshot ili zabrana brisanja).
+end note
+@enduml

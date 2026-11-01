@@ -1,0 +1,59 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultFontName "DejaVu Sans"
+skinparam wrapWidth 220
+skinparam maxMessageSize 140
+
+title soundSurf - početni pregled arhitekture
+
+actor "Prijavljeni korisnik" as User
+cloud "Pružatelj identiteta\n(OAuth 2.0 / OIDC)" as OIDC
+cloud "Freesound API" as Freesound
+
+rectangle "soundSurf (predložena arhitektura)" {
+  package "Web klijent" {
+    [Korisničko sučelje] as UI
+    [Reprodukcija i waveform] as Player
+  }
+  package "Poslužiteljska aplikacija" {
+    [HTTP API i kontrola pristupa] as API
+    [Korisnički računi i sesije] as Auth
+    [Radna okolina i datoteke] as Workspace
+    component "Obrada i generiranje zvuka\n(predloženo mjesto izvođenja)" as Audio
+    [Profil, postovi i favoriti] as Social
+    [Integracija Freesound] as FreesoundAdapter
+  }
+  database "Baza metapodataka" as DB
+  folder "Pohrana zvukovnih\ndatoteka i slika" as Files
+}
+
+User --> UI : koristi aplikaciju
+UI --> Player : preslušavanje / prikaz
+UI --> API : HTTPS zahtjevi
+API --> Auth
+API --> Workspace
+API --> Audio
+API --> Social
+API --> FreesoundAdapter
+Auth --> OIDC : prijava / potvrda identiteta
+FreesoundAdapter --> Freesound : pretraživanje / uvoz
+Auth --> DB
+Workspace --> DB
+Social --> DB
+Audio --> DB
+Workspace --> Files
+Audio --> Files
+Social --> Files : slike profila
+
+note bottom of API
+  Predložena logička podjela odgovornosti.
+  Ne pretpostavlja zasebne mikrousluge.
+  Točan tech stack i mjesto obrade zvuka
+  treba potvrditi s timom.
+  F-01..F-29, C-01..C-04, NF-03, NF-06.
+  U docs/1 Freesound je opcionalan, u docs/2 obvezan;
+  tim treba uskladiti taj status.
+end note
+@enduml
