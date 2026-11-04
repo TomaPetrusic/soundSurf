@@ -1,0 +1,65 @@
+/* preko cijelog prozora, neovisno o body stilovima u index.css */
+.ws {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #121314;
+  font-family: "Archivo", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.ws * {
+  box-sizing: border-box;
+}
+
+/* obični gumb, zajednički za cijelu radnu okolinu */
+.ws-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(18, 19, 20, 0.2);
+  border-radius: 2px;
+  background: #ffffff;
+  color: #121314;
+  font: 500 13px "Archivo", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* gumb bez ruba i pozadine, preuzima boju retka u kojem je */
+.ws-btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: inherit;
+}
+
+/* sitna oznaka u stilu dizajna: mono, velika slova, razmaknuta */
+.ws-lbl {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5e6066;
+}
+
+.ws-btn:focus-visible {
+  outline: 2px solid #f58426;
+  outline-offset: -2px;
+}
+
+.ws-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* poruka iznad tablice datoteka */
+.ws-notice {
+  padding: 16px 32px 0;
+}
