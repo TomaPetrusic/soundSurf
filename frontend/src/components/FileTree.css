@@ -1,0 +1,109 @@
+.tree {
+  padding: 8px 32px 32px;
+  position: relative;
+}
+
+.tree-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 48px;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.tree-head {
+  height: 40px;
+  border-bottom: 1px solid rgba(18, 19, 20, 0.08);
+}
+
+.tree-row {
+  position: relative;
+  min-width: 0;
+  height: 44px;
+  border-bottom: 1px solid rgba(18, 19, 20, 0.08);
+  color: #121314;
+  cursor: pointer;
+}
+
+.tree-row:hover {
+  background: rgba(18, 19, 20, 0.05);
+}
+
+.tree-row:focus-visible {
+  outline: 2px solid #f58426;
+  outline-offset: -2px;
+}
+
+.tree-row-selected,
+.tree-row-selected:hover {
+  background: #00568f;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.tree-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.tree-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* oznaka formata, npr. WAV */
+.tree-fmt {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 0 4px;
+  border: 1px solid currentColor;
+  border-radius: 1px;
+  line-height: 15px;
+}
+
+.tree-more {
+  width: 36px;
+  padding: 0;
+  justify-content: center;
+}
+
+.tree-menu {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  z-index: 3;
+  width: 180px;
+  padding: 6px 0;
+  background: #ffffff;
+  color: #121314;
+  font-weight: 400;
+  border: 1px solid #121314;
+  border-radius: 2px;
+}
+
+.tree-menu-item {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tree-menu-item:hover,
+.tree-menu-item:focus-visible {
+  background: rgba(18, 19, 20, 0.05);
+}
+
+.tree-menu-line {
+  height: 1px;
+  margin: 6px 0;
+  background: rgba(18, 19, 20, 0.08);
+}

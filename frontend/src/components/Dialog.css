@@ -1,0 +1,261 @@
+.dlg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(18, 19, 20, 0.4);
+}
+
+.dlg {
+  width: 440px;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: auto;
+  background: #ffffff;
+  color: #121314;
+  border: 1px solid #121314;
+  border-radius: 2px;
+}
+
+.dlg-form {
+  margin: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dlg-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 800;
+  font-stretch: 125%;
+}
+
+.dlg-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: #4a4c52;
+}
+
+.dlg-text strong {
+  font-weight: 600;
+  color: #121314;
+}
+
+.dlg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dlg-input {
+  display: block;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #121314;
+  border-radius: 2px;
+  background: #ffffff;
+  color: #121314;
+  font: 400 14px "Archivo", sans-serif;
+}
+
+.dlg-input:focus-visible {
+  outline: 2px solid #f58426;
+  outline-offset: -2px;
+}
+
+/* polje s greškom: deblji rub */
+.dlg-input-err {
+  border-width: 2px;
+  padding: 0 11px;
+}
+
+.dlg-error {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.dlg-error::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: #f58426;
+}
+
+.dlg-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.dlg-btn {
+  min-width: 88px;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+.dlg-btn-p {
+  background: #00568f;
+  border-color: #00568f;
+  color: #ffffff;
+}
+
+/* opasna radnja (brisanje): tamna, bez nove boje */
+.dlg-btn-d {
+  background: #121314;
+  border-color: #121314;
+  color: #ffffff;
+}
+
+/* popis u dijalogu (premjesti, obriši) */
+.dlg-list {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 264px;
+  overflow: auto;
+  border: 1px solid rgba(18, 19, 20, 0.2);
+  border-radius: 2px;
+}
+
+.dlg-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+}
+
+.dlg-list-item > span:first-of-type {
+  flex: 1;
+}
+
+/* stablo odredišta u dijalogu "Premjesti" */
+.dlg-ti {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  padding-right: 12px;
+  font: 400 14px "Archivo", sans-serif;
+  color: #121314;
+  cursor: pointer;
+}
+
+.dlg-ti:focus-visible {
+  outline: 2px solid #f58426;
+  outline-offset: -2px;
+}
+
+.dlg-ti[aria-disabled="true"] {
+  color: #5e6066;
+  cursor: not-allowed;
+}
+
+.dlg-ti-sel {
+  background: #00568f;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.dlg-ti-strelica {
+  display: flex;
+}
+
+.dlg-ti-razmak {
+  flex: none;
+  width: 16px;
+}
+
+.dlg-ti-prazno {
+  flex: 1;
+}
+
+/* izbor formata u dijalogu "Preuzmi" */
+.dlg-formati {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dlg-formati legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.dlg-formati-red {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dlg-format {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  height: 64px;
+  padding: 0 12px;
+  border: 1px solid rgba(18, 19, 20, 0.2);
+  border-radius: 2px;
+  background: #ffffff;
+  color: #121314;
+  cursor: pointer;
+}
+
+.dlg-format input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+
+.dlg-format:focus-within {
+  outline: 2px solid #f58426;
+  outline-offset: -2px;
+}
+
+.dlg-format-sel {
+  background: #00568f;
+  border-color: #00568f;
+  color: #ffffff;
+}
+
+.dlg-format-naziv {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.dlg-format-opis {
+  font-size: 12px;
+  line-height: 16px;
+  color: #4a4c52;
+}
+
+.dlg-format-sel .dlg-format-opis {
+  color: inherit;
+}

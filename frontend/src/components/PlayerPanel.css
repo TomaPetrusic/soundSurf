@@ -1,0 +1,120 @@
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 32px;
+  background: #00568f;
+  color: #ffffff;
+}
+
+.player-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.player-play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 2px;
+  background: #ffffff;
+  color: #00568f;
+  cursor: pointer;
+}
+
+.player-play:focus-visible {
+  outline: 2px solid #f58426;
+  outline-offset: 3px;
+}
+
+.player-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.player-space {
+  flex: 1;
+}
+
+.player-time {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.player-time-now {
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.player-time-total {
+  font-size: 18px;
+}
+
+/* valni oblik */
+.wave {
+  position: relative;
+  height: 180px;
+  cursor: col-resize;
+}
+
+.wave-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.wave-bars {
+  position: absolute;
+  inset: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wave-bar {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.wave-bar-played {
+  background: #ffffff;
+}
+
+/* narančasti marker položaja reprodukcije */
+.wave-head {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 2px;
+  background: #f58426;
+}
+
+.wave-head-top,
+.wave-head-bottom {
+  position: absolute;
+  left: -5px;
+  width: 12px;
+  height: 12px;
+  background: #f58426;
+}
+
+.wave-head-top {
+  top: -2px;
+}
+
+.wave-head-bottom {
+  bottom: -2px;
+}

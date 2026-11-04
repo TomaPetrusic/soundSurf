@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./services/supabaseClient";
 import Login from "./pages/Login";
-import Profile from "./components/Profile";
+import Workspace from "./pages/Workspace";
 
 export default function App() {
   const [session, setSession] = useState(undefined);
@@ -18,11 +18,7 @@ export default function App() {
 
   if (session === null) return <Login />;
 
-  return (
-    <div>
-      <h1>ProAudio</h1>
-      {session === undefined && <p>Učitavanje...</p>}
-      {session && <Profile session={session} />}
-    </div>
-  );
+  if (session === undefined) return <p>Učitavanje...</p>;
+
+  return <Workspace session={session} />;
 }
