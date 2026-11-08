@@ -1,0 +1,23 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  min-height: 56px;
+  padding: 0 32px;
+}
+
+.header-logo {
+  font-size: 20px;
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.01em;
+}
+
+.header-space {
+  flex: 1;
+}
+
+.header-user {
+  font-weight: 500;
+}
