@@ -1,0 +1,113 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+left to right direction
+
+title soundSurf - UML razredi: radna okolina, generiranje i obrada zvuka
+
+package "Domenski model" {
+  class "RadnaOkolina" as Okolina {
+    +id: UUID
+    +korisnikId: UUID
+    +pripadaKorisniku(id: UUID): boolean
+  }
+  class "Direktorij" as Direktorij {
+    +id: UUID
+    +naziv: String
+    +preimenuj(noviNaziv: String): void
+    +premjestiDatoteku(zapisId: UUID, ciljId: UUID): void
+    +obrisiRekurzivno(): void
+  }
+  class "ZvukovnaDatoteka" as Zvuk {
+    +id: UUID
+    +naziv: String
+    +format: AudioFormat
+    +kljucSadrzaja: String
+    +velicinaBajtova: long
+    +zamijeniSadrzaj(kljuc: String): void
+  }
+  class "ParametriFiltra" as Parametri {
+    +vrsta: VrstaFiltra
+    +vrijednosti: Map
+    +provjeri(): void
+  }
+  class "ParametriOscilatora" as OscParam {
+    +oblik: OblikVala
+    +frekvencijaHz: double
+    +trajanjeSekundi: double
+    +amplituda: double
+    +provjeri(): void
+  }
+  enum "OblikVala" as Wave {
+    SINUS
+    KVADRAT
+    PILA
+    TROKUT
+  }
+  enum "VrstaFiltra" as Vrsta {
+    NISKOPROPUSNI
+    VISOKOPROPUSNI
+    POJACANJE
+    REVERB
+    TREMOLO
+  }
+  enum "NacinSpremanja" as Nacin {
+    NOVA_DATOTEKA
+    PREPISI_IZVOR
+  }
+  enum "AudioFormat" as Format {
+    WAV
+    MP3
+    FLAC
+  }
+}
+
+package "Aplikacijska logika i sučelja" {
+  class "UslugaObradeZvuka" as Obrada <<service>> {
+    +pripremiPregled(korisnikId: UUID, datotekaId: UUID, parametri: ParametriFiltra): Pregled
+    +spremiRezultat(korisnikId: UUID, pregledId: UUID, nacin: NacinSpremanja): ZvukovnaDatoteka
+  }
+  class "UslugaGeneriranjaZvuka" as Gen <<service>> {
+    +generiraj(korisnikId: UUID, ciljDirektorijId: UUID, naziv: String, parametri: ParametriOscilatora): ZvukovnaDatoteka
+  }
+  interface "RepozitorijZapisa" as Repo {
+    +dohvati(id: UUID): ZvukovnaDatoteka
+    +spremi(zapis: ZvukovnaDatoteka): void
+  }
+  interface "SpremisteSadrzaja" as Store {
+    +procitaj(kljuc: String): bytes
+    +spremi(sadrzaj: bytes): String
+  }
+  interface "ProcesorZvuka" as Procesor {
+    +primijeniFiltar(sadrzaj: bytes, parametri: ParametriFiltra): bytes
+  }
+}
+
+Okolina "1" *-- "1..*" Direktorij : sadrži
+Direktorij "0..1" -- "0..*" Direktorij : nadređeni / poddirektoriji
+Direktorij "1" *-- "0..*" Zvuk : sadrži
+Zvuk --> Format
+Parametri --> Vrsta
+OscParam --> Wave
+Gen ..> OscParam
+Gen ..> Repo : sprema metapodatke
+Gen ..> Store : sprema sadržaj
+Gen ..> Okolina : provjerava vlasništvo
+Obrada ..> Okolina : provjerava vlasništvo
+Obrada ..> Parametri : validira
+Obrada ..> Nacin
+Obrada ..> Repo : dohvaća / sprema metapodatke
+Obrada ..> Store : čita / pohranjuje sadržaj
+Obrada ..> Procesor : računa filtar
+
+note bottom of Obrada
+  Projektni prijedlog za UC-02, UC-06 i UC-07.
+  F-07..F-15: nazivi i prava pristupa provjeravaju se
+  prije spremanja i prepisivanja datoteka.
+  Pregled je privremeni rezultat prije konačne pohrane.
+  Konkretna implementacija i lokacija procesiranja
+  još nisu potvrđene.
+end note
+@enduml

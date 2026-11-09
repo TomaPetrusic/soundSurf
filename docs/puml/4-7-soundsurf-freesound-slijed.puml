@@ -1,0 +1,60 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+hide footbox
+
+title soundSurf - UML dijagram slijeda: uvoz s Freesounda (UC-04)
+
+autonumber
+actor "Korisnik" as User
+participant "Web klijent" as UI
+participant "API" as API
+participant "Usluga radne okoline" as WS
+participant "Freesound adapter" as Adapter
+participant "Freesound API" as Freesound
+participant "Pohrana sadržaja" as Store
+database "Repozitorij datoteka" as Repo
+
+User -> UI : odabire pretragu Freesounda
+UI -> API : pretraži(pojam)
+API -> Adapter : pretraži(pojam)
+Adapter -> Freesound : zahtjev za pretragu
+alt Freesound nije dostupan ili vrati pogrešku
+  Freesound --> Adapter : pogreška
+  Adapter --> API : pretraga nije uspjela
+  API --> UI : obavijest, bez uvoza
+else pretraga uspješna
+  Freesound --> Adapter : rezultati pretrage
+  Adapter --> API : rezultati
+  API --> UI : prikaži rezultate
+  User -> UI : odabire zapis i odredišni direktorij
+  UI -> API : uvezi(zapisId, direktorijId)
+  API -> WS : provjeri vlasništvo direktorija
+  alt nema pristupa direktoriju
+    WS --> API : odbijeno
+    API --> UI : obavijest o zabrani pristupa
+  else direktorij pripada korisniku
+    API -> Adapter : preuzmi(zapisId)
+    Adapter -> Freesound : zatraži zvukovni zapis
+    alt uvoz nije uspio
+      Freesound --> Adapter : pogreška / nedostupan zapis
+      Adapter --> API : neuspjeh
+      API --> UI : obavijest o neuspjelom uvozu
+    else sadržaj je dostupan
+      Freesound --> Adapter : zvukovni sadržaj
+      Adapter --> API : datoteka i metapodaci
+      API -> Store : pohrani zvuk
+      Store --> API : ključ pohrane
+      API -> Repo : evidentiraj datoteku u direktoriju
+      Repo --> API : potvrda
+      API --> UI : prikaži uvezeni zapis
+    end
+  end
+end
+
+note over API,Repo
+  F-05: uvezeni zapis spreman je za reprodukciju i obradu.
+  Predloženi redoslijed pohrane treba uskladiti s
+  odabranom tehnologijom i obradom djelomičnih grešaka.
+end note
+@enduml
