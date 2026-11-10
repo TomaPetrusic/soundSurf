@@ -14,7 +14,7 @@ export default function PlayerPanel({ datoteka }) {
   // isti zapis uvijek dobije isti probni valni oblik
   const visine = useMemo(() => {
     let sjeme = 7;
-    for (const c of datoteka.id) sjeme += c.charCodeAt(0);
+    for (const c of String(datoteka.id)) sjeme += c.charCodeAt(0);
     return visineStupica(BROJ_STUPICA, sjeme);
   }, [datoteka.id]);
 

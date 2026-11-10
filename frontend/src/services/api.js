@@ -45,3 +45,7 @@ export function getMe(accessToken) {
 export function updateBio(accessToken, bio) {
   return request("/api/me/", { method: "PATCH", accessToken, body: { bio } });
 }
+
+export function getTree(accessToken) {
+  return request("/api/workspace/tree/", { accessToken });
+}
