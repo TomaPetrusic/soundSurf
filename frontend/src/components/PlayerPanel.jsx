@@ -13,6 +13,7 @@ const PROBNI_POLOZAJ = 0.381;
 export default function PlayerPanel({ datoteka }) {
   const [svira, setSvira] = useState(false);
   const [adresa, setAdresa] = useState(null); // adresa zvuka za element <audio>
+  const [trenutno, setTrenutno] = useState(0); // proteklo vrijeme u sekundama
   const audio = useRef(null);
   // rezultat dekodiranja lokalne datoteke: { visine, trajanje } ili greška
   const [zvuk, setZvuk] = useState(null);
@@ -23,6 +24,7 @@ export default function PlayerPanel({ datoteka }) {
   // preglednik napravi privremenu adresu iz datoteke; ništa se ne šalje na mrežu
   useEffect(() => {
     setSvira(false);
+    setTrenutno(0);
     if (!lokalna) {
       setAdresa(null);
       return;
@@ -79,6 +81,7 @@ export default function PlayerPanel({ datoteka }) {
           onPlay={() => setSvira(true)}
           onPause={() => setSvira(false)}
           onEnded={() => setSvira(false)}
+          onTimeUpdate={(e) => setTrenutno(e.currentTarget.currentTime)}
         />
       )}
       <div className="player-top">
@@ -104,7 +107,7 @@ export default function PlayerPanel({ datoteka }) {
         <div className="player-space" />
         <div className="player-time">
           <span className="player-time-now">
-            {trajanje ? oblikujVrijeme(polozaj * trajanje) : "–:––"}
+            {trajanje ? oblikujVrijeme(lokalna ? trenutno : polozaj * trajanje) : "–:––"}
           </span>
           <span className="player-time-total">
             / {trajanje ? oblikujVrijeme(trajanje) : "–:––"}
