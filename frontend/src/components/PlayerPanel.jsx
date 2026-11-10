@@ -34,6 +34,26 @@ export default function PlayerPanel({ datoteka }) {
     return () => URL.revokeObjectURL(nova);
   }, [lokalna]);
 
+  // dok zvuk svira, položaj čitamo za svaki iscrtani okvir da se marker pomiče glatko;
+  // sam događaj timeupdate stiže tek nekoliko puta u sekundi
+  useEffect(() => {
+    if (!svira) return;
+    let okvir;
+    const korak = () => {
+      if (audio.current) setTrenutno(audio.current.currentTime);
+      okvir = requestAnimationFrame(korak);
+    };
+    okvir = requestAnimationFrame(korak);
+    return () => cancelAnimationFrame(okvir);
+  }, [svira]);
+
+  // na kraju pjesme se vraćamo na početak
+  function krajReprodukcije() {
+    setSvira(false);
+    if (audio.current) audio.current.currentTime = 0;
+    setTrenutno(0);
+  }
+
   function prebaci() {
     const a = audio.current;
     if (!a) return;
@@ -70,7 +90,12 @@ export default function PlayerPanel({ datoteka }) {
 
   const visine = lokalna ? zvuk?.visine : probne;
   const trajanje = lokalna ? zvuk?.trajanje : (datoteka.trajanje ?? PROBNO_TRAJANJE);
-  const polozaj = lokalna ? 0 : PROBNI_POLOZAJ;
+  // udio pjesme koji je odsviran (0 do 1)
+  const polozaj = lokalna
+    ? trajanje
+      ? Math.min(1, trenutno / trajanje)
+      : 0
+    : PROBNI_POLOZAJ;
 
   return (
     <section className="player" aria-label="Reprodukcija">
@@ -80,7 +105,7 @@ export default function PlayerPanel({ datoteka }) {
           src={adresa}
           onPlay={() => setSvira(true)}
           onPause={() => setSvira(false)}
-          onEnded={() => setSvira(false)}
+          onEnded={krajReprodukcije}
           onTimeUpdate={(e) => setTrenutno(e.currentTarget.currentTime)}
         />
       )}
@@ -107,7 +132,7 @@ export default function PlayerPanel({ datoteka }) {
         <div className="player-space" />
         <div className="player-time">
           <span className="player-time-now">
-            {trajanje ? oblikujVrijeme(lokalna ? trenutno : polozaj * trajanje) : "–:––"}
+            {trajanje ? oblikujVrijeme(polozaj * trajanje) : "–:––"}
           </span>
           <span className="player-time-total">
             / {trajanje ? oblikujVrijeme(trajanje) : "–:––"}
