@@ -18,7 +18,7 @@ function Ikona({ children }) {
 }
 
 // za sada samo "Nova mapa" otvara dijalog, ostali gumbi još ništa ne rade
-export default function Toolbar({ onNovaMapa }) {
+export default function Toolbar({ onNovaMapa, onUcitaj }) {
   return (
     <div className="toolbar">
       <button type="button" className="ws-btn" onClick={onNovaMapa}>
@@ -28,7 +28,7 @@ export default function Toolbar({ onNovaMapa }) {
         </Ikona>
         Nova mapa
       </button>
-      <button type="button" className="ws-btn">
+      <button type="button" className="ws-btn" onClick={onUcitaj}>
         <Ikona>
           <path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M4 15v5h16v-5" />
         </Ikona>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DropZone from "../components/DropZone";
 import FileTree from "../components/FileTree";
 import Header from "../components/Header";
@@ -16,6 +16,8 @@ import { nadji, roditelj } from "../services/stablo";
 import "./Workspace.css";
 
 const KORIJEN_NAZIV = "Sve datoteke";
+const FORMATI = ["WAV", "MP3", "FLAC"];
+const NAJVECA_VELICINA = 50 * 1024 * 1024; // 50 MB
 
 // stablo se dohvaća iz API-ja; ako se preda `podaci` (lokalni pregled), koriste se probni
 export default function Workspace({ session, podaci = null, pocetnaObavijest = null }) {
@@ -26,6 +28,9 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   const [izbornik, setIzbornik] = useState(null);
   const [dijalog, setDijalog] = useState(null);
   const [obavijest, setObavijest] = useState(OBAVIJESTI[pocetnaObavijest] ?? null);
+  // datoteka s računala koja se samo sluša, ne sprema se na poslužitelj
+  const [lokalna, setLokalna] = useState(null);
+  const ulaz = useRef(null);
 
   useEffect(() => {
     if (podaci) return;
@@ -42,9 +47,37 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     };
   }, [session, podaci]);
 
-  const datoteka = odabrano && stavke ? nadji(stavke, odabrano) : null;
+  const izStabla = odabrano && stavke ? nadji(stavke, odabrano) : null;
+  const datoteka = lokalna ?? izStabla;
   // poruka o veličini ide u plavu zonu, ali samo dok je ona prikazana
   const porukaUZoni = obavijest?.vrsta === "velicina" && !datoteka;
+
+  // provjerava format i veličinu odabrane datoteke, pa je otvara u playeru
+  function odabranaDatoteka(e) {
+    const dat = e.target.files[0];
+    e.target.value = ""; // da se ista datoteka može ponovno odabrati
+    if (!dat) return;
+
+    const dijelovi = dat.name.split(".");
+    const format = dijelovi.length > 1 ? dijelovi.pop().toUpperCase() : "";
+    if (!FORMATI.includes(format)) {
+      setObavijest({ vrsta: "format", datoteka: dat.name, tekst: OBAVIJESTI.format.tekst });
+      return;
+    }
+    if (dat.size > NAJVECA_VELICINA) {
+      const mb = Math.round(dat.size / (1024 * 1024));
+      setObavijest({
+        vrsta: "velicina",
+        datoteka: dat.name + " · " + mb + " MB",
+        tekst: OBAVIJESTI.velicina.tekst,
+      });
+      return;
+    }
+
+    setObavijest(null);
+    setOdabrano(null);
+    setLokalna({ id: "lokalno", naziv: dijelovi.join("."), format, datoteka: dat });
+  }
 
   function prebaciMapu(id) {
     const novo = new Set(otvoreno);
@@ -121,9 +154,20 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           <DropZone
             obavijest={porukaUZoni ? obavijest : null}
             onZatvoriObavijest={() => setObavijest(null)}
+            onUcitaj={() => ulaz.current.click()}
           />
         ))}
-      <Toolbar onNovaMapa={() => setDijalog({ vrsta: "novaMapa" })} />
+      <input
+        ref={ulaz}
+        type="file"
+        accept=".wav,.mp3,.flac"
+        hidden
+        onChange={odabranaDatoteka}
+      />
+      <Toolbar
+        onNovaMapa={() => setDijalog({ vrsta: "novaMapa" })}
+        onUcitaj={() => ulaz.current.click()}
+      />
       {obavijest && !porukaUZoni && (
         <div className="ws-notice">
           <Obavijest
@@ -145,7 +189,10 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           otvoreno={otvoreno}
           odabrano={odabrano}
           izbornik={izbornik}
-          onOdaberi={setOdabrano}
+          onOdaberi={(id) => {
+            setLokalna(null);
+            setOdabrano(id);
+          }}
           onPrebaciMapu={prebaciMapu}
           onIzbornik={setIzbornik}
           onRadnja={(vrsta, stavka) => setDijalog({ vrsta, id: stavka.id })}

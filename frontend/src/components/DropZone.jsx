@@ -2,7 +2,7 @@ import Obavijest from "./Obavijest";
 import "./DropZone.css";
 
 // pojas za prvu prijavu, kad ništa nije odabrano; za sada samo izgled
-export default function DropZone({ obavijest, onZatvoriObavijest }) {
+export default function DropZone({ obavijest, onZatvoriObavijest, onUcitaj }) {
   return (
     <section className="drop" aria-label="Učitaj datoteku">
       <span className="drop-frame" />
@@ -30,7 +30,7 @@ export default function DropZone({ obavijest, onZatvoriObavijest }) {
         <span className="drop-title">Povuci datoteku ovdje</span>
         <span className="drop-formats">WAV · MP3 · FLAC · do 50 MB</span>
       </div>
-      <button type="button" className="ws-btn drop-btn">
+      <button type="button" className="ws-btn drop-btn" onClick={onUcitaj}>
         Učitaj datoteku
       </button>
       {obavijest && (
