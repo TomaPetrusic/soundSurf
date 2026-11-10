@@ -131,3 +131,9 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+
+/* gumb je isključen dok zapis nema zvuk (npr. probni podaci) */
+.player-play:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

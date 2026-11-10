@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { visineStupica as probneVisine } from "../services/probniPodaci";
 import { dekodiraj, oblikujVrijeme, visineStupica } from "../services/valniOblik";
 import "./PlayerPanel.css";
@@ -8,15 +8,36 @@ const OZNAKE = 7; // okomite crte u pozadini
 const PROBNO_TRAJANJE = 134; // za zapise bez stvarnog zvuka (probni podaci)
 const PROBNI_POLOZAJ = 0.381;
 
-// za sada: valni oblik i trajanje su stvarni za datoteku s računala;
-// zvuk i pomicanje markera dolaze u sljedećim koracima
+// za datoteku s računala: stvarni valni oblik, trajanje i zvuk;
+// vrijeme i marker koji prate reprodukciju dolaze u sljedećim koracima
 export default function PlayerPanel({ datoteka }) {
   const [svira, setSvira] = useState(false);
+  const [adresa, setAdresa] = useState(null); // adresa zvuka za element <audio>
+  const audio = useRef(null);
   // rezultat dekodiranja lokalne datoteke: { visine, trajanje } ili greška
   const [zvuk, setZvuk] = useState(null);
   const [greska, setGreska] = useState(false);
 
   const lokalna = datoteka.datoteka; // File, samo za datoteke s računala
+
+  // preglednik napravi privremenu adresu iz datoteke; ništa se ne šalje na mrežu
+  useEffect(() => {
+    setSvira(false);
+    if (!lokalna) {
+      setAdresa(null);
+      return;
+    }
+    const nova = URL.createObjectURL(lokalna);
+    setAdresa(nova);
+    return () => URL.revokeObjectURL(nova);
+  }, [lokalna]);
+
+  function prebaci() {
+    const a = audio.current;
+    if (!a) return;
+    if (a.paused) a.play().catch(() => setSvira(false));
+    else a.pause();
+  }
 
   useEffect(() => {
     setZvuk(null);
@@ -51,12 +72,22 @@ export default function PlayerPanel({ datoteka }) {
 
   return (
     <section className="player" aria-label="Reprodukcija">
+      {adresa && (
+        <audio
+          ref={audio}
+          src={adresa}
+          onPlay={() => setSvira(true)}
+          onPause={() => setSvira(false)}
+          onEnded={() => setSvira(false)}
+        />
+      )}
       <div className="player-top">
         <button
           type="button"
           className="player-play"
           aria-label={svira ? "Pauza" : "Pokreni"}
-          onClick={() => setSvira(!svira)}
+          disabled={!adresa}
+          onClick={prebaci}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             {svira ? (
