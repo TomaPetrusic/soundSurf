@@ -49,3 +49,11 @@ export function updateBio(accessToken, bio) {
 export function getTree(accessToken) {
   return request("/api/workspace/tree/", { accessToken });
 }
+
+export function createFolder(accessToken, naziv, roditelj) {
+  return request("/api/workspace/folders/", {
+    method: "POST",
+    accessToken,
+    body: { naziv, roditelj },
+  });
+}

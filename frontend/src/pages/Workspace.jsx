@@ -10,7 +10,7 @@ import ObrisiDijalog from "../components/dialogs/ObrisiDijalog";
 import PreimenujDijalog from "../components/dialogs/PreimenujDijalog";
 import PremjestiDijalog from "../components/dialogs/PremjestiDijalog";
 import PreuzmiDijalog from "../components/dialogs/PreuzmiDijalog";
-import { ApiError, getTree } from "../services/api";
+import { ApiError, createFolder, getTree } from "../services/api";
 import { OBAVIJESTI } from "../services/probniPodaci";
 import { nadji, roditelj } from "../services/stablo";
 import "./Workspace.css";
@@ -55,6 +55,14 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
 
   const zatvori = () => setDijalog(null);
 
+  // stvara mapu na poslužitelju, ponovno učita stablo i otvori mapu u kojoj je nastala
+  async function stvoriMapu(naziv, roditeljId) {
+    if (podaci) return; // lokalni pregled: nema poslužitelja
+    await createFolder(session.access_token, naziv, roditeljId);
+    setStavke(await getTree(session.access_token));
+    if (roditeljId !== null) setOtvoreno(new Set(otvoreno).add(roditeljId));
+  }
+
   // popis imena na istoj razini, za provjeru "naziv već postoji"
   function nazivi(otac) {
     return (otac ? otac.djeca : stavke).map((s) => s.naziv);
@@ -68,6 +76,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
         <NovaMapaDijalog
           nadmapa={otac ? otac.naziv : KORIJEN_NAZIV}
           postojeci={nazivi(otac)}
+          onStvori={(naziv) => stvoriMapu(naziv, otac ? otac.id : null)}
           onZatvori={zatvori}
         />
       );
