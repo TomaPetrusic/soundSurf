@@ -1,22 +1,53 @@
-import { useMemo, useState } from "react";
-import { visineStupica } from "../services/probniPodaci";
+import { useEffect, useMemo, useState } from "react";
+import { visineStupica as probneVisine } from "../services/probniPodaci";
+import { dekodiraj, oblikujVrijeme, visineStupica } from "../services/valniOblik";
 import "./PlayerPanel.css";
 
 const BROJ_STUPICA = 220;
-const OZNAKE = [0, 20, 40, 60, 80, 100, 120]; // sekunde, za okomite crte
-const UKUPNO_S = 134; // probno trajanje (2:14)
-const POLOZAJ = 0.381; // probni položaj reprodukcije (0:51)
+const OZNAKE = 7; // okomite crte u pozadini
+const PROBNO_TRAJANJE = 134; // za zapise bez stvarnog zvuka (probni podaci)
+const PROBNI_POLOZAJ = 0.381;
 
-// za sada samo izgled: ne svira pravi zvuk
+// za sada: valni oblik i trajanje su stvarni za datoteku s računala;
+// zvuk i pomicanje markera dolaze u sljedećim koracima
 export default function PlayerPanel({ datoteka }) {
   const [svira, setSvira] = useState(false);
+  // rezultat dekodiranja lokalne datoteke: { visine, trajanje } ili greška
+  const [zvuk, setZvuk] = useState(null);
+  const [greska, setGreska] = useState(false);
 
-  // isti zapis uvijek dobije isti probni valni oblik
-  const visine = useMemo(() => {
+  const lokalna = datoteka.datoteka; // File, samo za datoteke s računala
+
+  useEffect(() => {
+    setZvuk(null);
+    setGreska(false);
+    if (!lokalna) return;
+
+    let aktivno = true;
+    dekodiraj(lokalna)
+      .then((buffer) => {
+        if (!aktivno) return;
+        setZvuk({
+          visine: visineStupica(buffer, BROJ_STUPICA),
+          trajanje: buffer.duration,
+        });
+      })
+      .catch(() => aktivno && setGreska(true));
+    return () => {
+      aktivno = false;
+    };
+  }, [lokalna]);
+
+  // probni valni oblik za zapise bez stvarnog zvuka
+  const probne = useMemo(() => {
     let sjeme = 7;
     for (const c of String(datoteka.id)) sjeme += c.charCodeAt(0);
-    return visineStupica(BROJ_STUPICA, sjeme);
+    return probneVisine(BROJ_STUPICA, sjeme);
   }, [datoteka.id]);
+
+  const visine = lokalna ? zvuk?.visine : probne;
+  const trajanje = lokalna ? zvuk?.trajanje : (datoteka.trajanje ?? PROBNO_TRAJANJE);
+  const polozaj = lokalna ? 0 : PROBNI_POLOZAJ;
 
   return (
     <section className="player" aria-label="Reprodukcija">
@@ -41,29 +72,41 @@ export default function PlayerPanel({ datoteka }) {
         <h1 className="player-title">{datoteka.naziv}</h1>
         <div className="player-space" />
         <div className="player-time">
-          <span className="player-time-now">0:51</span>
-          <span className="player-time-total">/ 2:14</span>
+          <span className="player-time-now">
+            {trajanje ? oblikujVrijeme(polozaj * trajanje) : "–:––"}
+          </span>
+          <span className="player-time-total">
+            / {trajanje ? oblikujVrijeme(trajanje) : "–:––"}
+          </span>
         </div>
       </div>
 
       <div className="wave" aria-label="Valni oblik — povuci za premotavanje">
-        {OZNAKE.map((s) => (
+        {Array.from({ length: OZNAKE }, (_, i) => (
           <span
-            key={s}
+            key={i}
             className="wave-tick"
-            style={{ left: (s / UKUPNO_S) * 100 + "%" }}
+            style={{ left: (i / (OZNAKE - 1)) * 100 + "%" }}
           />
         ))}
-        <div className="wave-bars">
-          {visine.map((h, i) => (
-            <span
-              key={i}
-              className={"wave-bar" + (i / BROJ_STUPICA < POLOZAJ ? " wave-bar-played" : "")}
-              style={{ height: h + "%" }}
-            />
-          ))}
-        </div>
-        <div className="wave-head" style={{ left: POLOZAJ * 100 + "%" }}>
+
+        {visine ? (
+          <div className="wave-bars">
+            {visine.map((h, i) => (
+              <span
+                key={i}
+                className={"wave-bar" + (i / BROJ_STUPICA < polozaj ? " wave-bar-played" : "")}
+                style={{ height: h + "%" }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="wave-message">
+            {greska ? "Zapis se ne može dekodirati" : "Dekodiranje zvuka..."}
+          </div>
+        )}
+
+        <div className="wave-head" style={{ left: polozaj * 100 + "%" }}>
           <span className="wave-head-top" />
           <span className="wave-head-bottom" />
         </div>
