@@ -63,6 +63,7 @@
 
 /* valni oblik */
 .wave {
+  touch-action: none;
   position: relative;
   height: 180px;
   cursor: col-resize;

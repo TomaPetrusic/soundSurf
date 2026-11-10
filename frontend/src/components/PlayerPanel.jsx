@@ -54,6 +54,17 @@ export default function PlayerPanel({ datoteka }) {
     setTrenutno(0);
   }
 
+  // premotavanje: klik ili povlačenje po valnom obliku pomiče zvuk na to mjesto
+  function premotaj(e) {
+    const a = audio.current;
+    if (!a || !trajanje) return;
+    const okvir = e.currentTarget.getBoundingClientRect();
+    const udio = Math.min(1, Math.max(0, (e.clientX - okvir.left) / okvir.width));
+    // malo prije kraja, da povlačenje do ruba ne pokrene kraj pjesme
+    a.currentTime = Math.min(udio * trajanje, trajanje - 0.05);
+    setTrenutno(a.currentTime);
+  }
+
   function prebaci() {
     const a = audio.current;
     if (!a) return;
@@ -140,7 +151,15 @@ export default function PlayerPanel({ datoteka }) {
         </div>
       </div>
 
-      <div className="wave" aria-label="Valni oblik — povuci za premotavanje">
+      <div
+        className="wave"
+        aria-label="Valni oblik — povuci za premotavanje"
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          premotaj(e);
+        }}
+        onPointerMove={(e) => e.currentTarget.hasPointerCapture(e.pointerId) && premotaj(e)}
+      >
         {Array.from({ length: OZNAKE }, (_, i) => (
           <span
             key={i}
