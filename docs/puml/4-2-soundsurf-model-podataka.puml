@@ -5,88 +5,110 @@ skinparam defaultFontName "DejaVu Sans"
 skinparam linetype ortho
 hide circle
 
-title soundSurf - početni model trajnih podataka
+title soundSurf - model podataka: implementirano i planirano
 
-entity "Korisnik" as Korisnik {
-  * id : UUID <<PK>>
-  --
-  * oauth_issuer : tekst
-  * oauth_subject : tekst
-  * created_at : datum_vrijeme
-}
-entity "Radna okolina" as Okolina {
-  * id : UUID <<PK>>
-  --
-  * korisnik_id : UUID <<FK, UNIQUE>>
-}
-entity "Direktorij" as Direktorij {
-  * id : UUID <<PK>>
-  --
-  * okolina_id : UUID <<FK>>
-  parent_id : UUID <<FK, NULL>>
-  * naziv : tekst
-}
-entity "Zvukovna datoteka" as Zvuk {
-  * id : UUID <<PK>>
-  --
-  * direktorij_id : UUID <<FK>>
-  * naziv : tekst
-  * format : WAV / MP3 / FLAC
-  * storage_key : tekst
-  * size_bytes : broj
-  duration_ms : broj
-  origin_type : upload / freesound / generated / copy
-}
-entity "Javni profil" as Profil {
-  * korisnik_id : UUID <<PK, FK>>
-  --
-  * korisnicko_ime : tekst
-  avatar_storage_key : tekst
-  kratki_opis : tekst
-}
-entity "Post" as Post {
-  * id : UUID <<PK>>
-  --
-  * autor_id : UUID <<FK>>
-  * zvuk_id : UUID <<FK>>
-  * tekstualni_opis : tekst
-  * javan : boolean
-  * created_at : datum_vrijeme
-}
-entity "Favorit profila" as FavProfil {
-  * korisnik_id : UUID <<PK, FK>>
-  * profil_korisnik_id : UUID <<PK, FK>>
-}
-entity "Favorit posta" as FavPost {
-  * korisnik_id : UUID <<PK, FK>>
-  * post_id : UUID <<PK, FK>>
+legend top left
+  **Implementirano**: stvarne Django tablice i polja
+  **Konceptualno / planirano**: projektni model, nije potvrđena shema baze
+  Puna veza = postojeći strani ključ; isprekidana = planirani odnos
+endlegend
+
+package "IMPLEMENTIRANO - Django ORM" #E8F4EC {
+  entity "Korisnik\naccounts_userprofile\n<<implementirano>>" as Korisnik #E8F4EC {
+    * id : bigint <<PK>>
+    --
+    * supabase_user_id : UUID <<UNIQUE>>
+    * email : tekst
+    display_name : tekst
+    bio : tekst
+    * created_at : datum_vrijeme
+    * updated_at : datum_vrijeme
+  }
+
+  entity "Stavka radne okoline\nworkspace_node\n<<implementirano>>" as Stavka #E8F4EC {
+    * id : bigint <<PK>>
+    --
+    * owner_id : bigint <<FK>>
+    parent_id : bigint <<FK, NULL>>
+    * name : tekst
+    * kind : folder / file
+    format : WAV / MP3 / FLAC / prazno
+    storage_key : tekst <<UNIQUE, NULL>>
+    size_bytes : bigint <<NULL>>
+    duration_sec : broj <<NULL>>
+    sample_rate : broj <<NULL>>
+    channels : broj <<NULL>>
+    * created_at : datum_vrijeme
+    * updated_at : datum_vrijeme
+  }
 }
 
-Korisnik "1" -- "1" Okolina : ima
-Okolina "1" -- "1..*" Direktorij : sadrži
-Direktorij "0..1" -- "0..*" Direktorij : nadređeni / poddirektoriji
-Direktorij "1" -- "0..*" Zvuk : sadrži
-Korisnik "1" -- "1" Profil : uređuje
-Korisnik "1" -- "0..*" Post : objavljuje
-Zvuk "1" -- "0..*" Post : koristi
-Korisnik "1" -- "0..*" FavProfil : označava
-Profil "1" -- "0..*" FavProfil : cilj
-Korisnik "1" -- "0..*" FavPost : označava
-Post "1" -- "0..*" FavPost : cilj
+package "KONCEPTUALNO / PLANIRANO - nije implementirana shema" #FFF4E5 {
+  entity "Radna okolina\n<<konceptualno, F-02>>" as Okolina #FFF4E5 {
+    nije zasebna tablica
+    početna tri zapisa : planirano
+  }
 
-note bottom of Zvuk
-  F-04/F-06: WAV, MP3, FLAC.
-  F-07/F-09: ime mora biti jedinstveno na istoj razini.
-  F-11: brisanje direktorija uklanja sadržaj.
-  Bajtovi zvuka čuvaju se odvojeno od metapodataka.
-  Kopija tuđeg zapisa (F-29) dobiva vlastiti ID
-  i mora ostati neovisna o izvornom postu.
-  F-02: novom korisniku pripadaju 3 početna zapisa.
+  entity "Javni profil\n<<konceptualno, F-18>>" as Profil #FFF4E5 {
+    korisnicko_ime : tekst
+    profilna_slika : referenca
+    kratki_opis : tekst
+  }
+
+  entity "Post\n<<planirano, F-19..F-22>>" as Post #FFF4E5 {
+    id : identifikator (tip nije potvrđen)
+    autor_id : buduća veza
+    zvuk_id : buduća veza
+    tekstualni_opis : tekst
+    javan : boolean
+    created_at : datum_vrijeme
+  }
+
+  entity "Favorit profila\n<<planirano, F-24/F-26/F-27>>" as FavProfil #FFF4E5 {
+    korisnik_id : buduća veza
+    profil_korisnik_id : buduća veza
+  }
+
+  entity "Favorit posta\n<<planirano, F-25/F-26/F-27>>" as FavPost #FFF4E5 {
+    korisnik_id : buduća veza
+    post_id : buduća veza
+  }
+}
+
+Korisnik "1" -- "0..*" Stavka : owner (FK)
+Stavka "0..1" -- "0..*" Stavka : parent / children (FK)
+Korisnik "1" .. "0..1" Okolina : logička radna okolina
+Okolina "1" .. "0..*" Stavka : konceptualno obuhvaća
+Korisnik "1" .. "0..1" Profil : javna stranica
+Korisnik "1" .. "0..*" Post : autor
+Stavka "1" .. "0..*" Post : zvuk, samo kind=file
+Korisnik "1" .. "0..*" FavProfil : označava
+Profil "1" .. "0..*" FavProfil : cilj
+Korisnik "1" .. "0..*" FavPost : označava
+Post "1" .. "0..*" FavPost : cilj
+
+note bottom of Stavka
+  **Potvrđeno u Node modelu i migraciji:**
+  kind razlikuje mapu i datoteku; parent je opcionalni FK na Node.
+  UNIQUE(owner, parent, name), uz nulls_distinct=False, uključuje korijen.
+  CHECK: za datoteku storage_key nije NULL; storage_key je UNIQUE.
+  Kaskadno brisanje FK redaka ne dokazuje brisanje bajtova iz Storagea.
+  Model ne jamči samostalno da parent označava mapu istog vlasnika.
+  Bajtovi su odvojeni od metapodataka; postoje SupabaseStorage i LocalStorage.
+  RLS je definiran migracijama; stanje izvršavanja nije ovdje provjereno.
 end note
+
+note bottom of Okolina
+  F-02 traži tri početna zapisa pri prvoj prijavi.
+  workspace_workspace je konceptualan za sad.
+end note
+
 note bottom of Post
-  F-21: privatni post vidi samo njegov autor.
-  F-22: brisanjem posta uklanjaju se favoriti posta.
-  Otvorena odluka: brisanje izvornog zapisa
-  vezanog uz post (snapshot ili zabrana brisanja).
+  Planirano: javni/privatni postovi, favoriti i F-29.
+  Kopija tuđeg zapisa treba biti neovisna o izvornom postu.
+  moramo odluciti o brisanju izvornog zvuka povezanog s postom.
+  javni profil nije potvrđen kao zasebna tablica. dio podataka
+  već postoji u UserProfile (display_name, bio).
+  origin_type nije polje implementiranog workspace_node modela.
 end note
 @enduml
