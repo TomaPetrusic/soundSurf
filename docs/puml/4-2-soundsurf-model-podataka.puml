@@ -5,106 +5,110 @@ skinparam defaultFontName "DejaVu Sans"
 skinparam linetype ortho
 hide circle
 
-title soundSurf - model trajnih podataka
+title soundSurf - model podataka: implementirano i planirano
 
-entity "Korisnik\n(accounts_userprofile)" as Korisnik {
-  * id : broj <<PK>>
-  --
-  * supabase_user_id : UUID <<UNIQUE>>
-  * email : tekst
-  display_name : tekst
-  bio : tekst
-  * created_at : datum_vrijeme
-  * updated_at : datum_vrijeme
-}
-entity "Radna okolina\n(workspace_workspace)" as Okolina {
-  * id : broj <<PK>>
-  --
-  * korisnik_id : broj <<FK, UNIQUE>>
-  * created_at : datum_vrijeme
-}
-entity "Stavka radne okoline\n(workspace_node)" as Stavka {
-  * id : broj <<PK>>
-  --
-  * vlasnik_id : broj <<FK>>
-  roditelj_id : broj <<FK, NULL>>
-  * naziv : tekst
-  * tip : mapa / datoteka
-  .. samo za datoteke ..
-  format : WAV / MP3 / FLAC
-  storage_key : tekst <<UNIQUE>>
-  size_bytes : broj
-  trajanje_s : broj
-  sample_rate : broj
-  kanali : broj
-  origin_type : upload / freesound / generated / copy
-  --
-  * created_at : datum_vrijeme
-  * updated_at : datum_vrijeme
-}
-entity "Javni profil" as Profil {
-  * korisnik_id : broj <<PK, FK>>
-  --
-  * korisnicko_ime : tekst
-  avatar_storage_key : tekst
-  kratki_opis : tekst
-}
-entity "Post" as Post {
-  * id : UUID <<PK>>
-  --
-  * autor_id : broj <<FK>>
-  * zvuk_id : broj <<FK>>
-  * tekstualni_opis : tekst
-  * javan : boolean
-  * created_at : datum_vrijeme
-}
-entity "Favorit profila" as FavProfil {
-  * korisnik_id : broj <<PK, FK>>
-  * profil_korisnik_id : broj <<PK, FK>>
-}
-entity "Favorit posta" as FavPost {
-  * korisnik_id : broj <<PK, FK>>
-  * post_id : UUID <<PK, FK>>
+legend top left
+  **Implementirano**: stvarne Django tablice i polja
+  **Konceptualno / planirano**: projektni model, nije potvrđena shema baze
+  Puna veza = postojeći strani ključ; isprekidana = planirani odnos
+endlegend
+
+package "IMPLEMENTIRANO - Django ORM" #E8F4EC {
+  entity "Korisnik\naccounts_userprofile\n<<implementirano>>" as Korisnik #E8F4EC {
+    * id : bigint <<PK>>
+    --
+    * supabase_user_id : UUID <<UNIQUE>>
+    * email : tekst
+    display_name : tekst
+    bio : tekst
+    * created_at : datum_vrijeme
+    * updated_at : datum_vrijeme
+  }
+
+  entity "Stavka radne okoline\nworkspace_node\n<<implementirano>>" as Stavka #E8F4EC {
+    * id : bigint <<PK>>
+    --
+    * owner_id : bigint <<FK>>
+    parent_id : bigint <<FK, NULL>>
+    * name : tekst
+    * kind : folder / file
+    format : WAV / MP3 / FLAC / prazno
+    storage_key : tekst <<UNIQUE, NULL>>
+    size_bytes : bigint <<NULL>>
+    duration_sec : broj <<NULL>>
+    sample_rate : broj <<NULL>>
+    channels : broj <<NULL>>
+    * created_at : datum_vrijeme
+    * updated_at : datum_vrijeme
+  }
 }
 
-Korisnik "1" -- "0..1" Okolina : ima
-Korisnik "1" -- "0..*" Stavka : posjeduje
-Stavka "0..1" -- "0..*" Stavka : nadređena mapa / sadržaj
-Korisnik "1" -- "1" Profil : uređuje
-Korisnik "1" -- "0..*" Post : objavljuje
-Stavka "1" -- "0..*" Post : zvuk (tip = datoteka)
-Korisnik "1" -- "0..*" FavProfil : označava
-Profil "1" -- "0..*" FavProfil : cilj
-Korisnik "1" -- "0..*" FavPost : označava
-Post "1" -- "0..*" FavPost : cilj
+package "KONCEPTUALNO / PLANIRANO - nije implementirana shema" #FFF4E5 {
+  entity "Radna okolina\n<<konceptualno, F-02>>" as Okolina #FFF4E5 {
+    nije zasebna tablica
+    početna tri zapisa : planirano
+  }
+
+  entity "Javni profil\n<<konceptualno, F-18>>" as Profil #FFF4E5 {
+    korisnicko_ime : tekst
+    profilna_slika : referenca
+    kratki_opis : tekst
+  }
+
+  entity "Post\n<<planirano, F-19..F-22>>" as Post #FFF4E5 {
+    id : identifikator (tip nije potvrđen)
+    autor_id : buduća veza
+    zvuk_id : buduća veza
+    tekstualni_opis : tekst
+    javan : boolean
+    created_at : datum_vrijeme
+  }
+
+  entity "Favorit profila\n<<planirano, F-24/F-26/F-27>>" as FavProfil #FFF4E5 {
+    korisnik_id : buduća veza
+    profil_korisnik_id : buduća veza
+  }
+
+  entity "Favorit posta\n<<planirano, F-25/F-26/F-27>>" as FavPost #FFF4E5 {
+    korisnik_id : buduća veza
+    post_id : buduća veza
+  }
+}
+
+Korisnik "1" -- "0..*" Stavka : owner (FK)
+Stavka "0..1" -- "0..*" Stavka : parent / children (FK)
+Korisnik "1" .. "0..1" Okolina : logička radna okolina
+Okolina "1" .. "0..*" Stavka : konceptualno obuhvaća
+Korisnik "1" .. "0..1" Profil : javna stranica
+Korisnik "1" .. "0..*" Post : autor
+Stavka "1" .. "0..*" Post : zvuk, samo kind=file
+Korisnik "1" .. "0..*" FavProfil : označava
+Profil "1" .. "0..*" FavProfil : cilj
+Korisnik "1" .. "0..*" FavPost : označava
+Post "1" .. "0..*" FavPost : cilj
 
 note bottom of Stavka
-  Mape i datoteke čuvaju se u jednoj tablici; razlikuje ih polje tip.
-  roditelj_id = NULL znači korijen radne okoline.
-  F-07/F-09: naziv je jedinstven unutar iste mape istog korisnika,
-  uključujući korijen (provodi baza, UNIQUE s NULLS NOT DISTINCT).
-  Datoteka mora imati storage_key (provodi baza, CHECK).
-  F-04/F-06: WAV, MP3, FLAC.
-  F-11: brisanjem mape brišu se sve stavke u njoj i njihov sadržaj.
-  Bajtovi zvuka čuvaju se u Supabase Storageu (bucket audio-files)
-  pod ključem <supabase_user_id>/<uuid>.<ext>; naziv i mapa
-  postoje samo u bazi, pa preimenovanje i premještanje ne diraju sadržaj.
-  Kopija tuđeg zapisa (F-29) dobiva vlastiti ID i storage_key
-  i ne ovisi o izvornom postu.
-  RLS je uključen na tablicama; pristup ide isključivo preko Django API-ja.
+  **Potvrđeno u Node modelu i migraciji:**
+  kind razlikuje mapu i datoteku; parent je opcionalni FK na Node.
+  UNIQUE(owner, parent, name), uz nulls_distinct=False, uključuje korijen.
+  CHECK: za datoteku storage_key nije NULL; storage_key je UNIQUE.
+  Kaskadno brisanje FK redaka ne dokazuje brisanje bajtova iz Storagea.
+  Model ne jamči samostalno da parent označava mapu istog vlasnika.
+  Bajtovi su odvojeni od metapodataka; postoje SupabaseStorage i LocalStorage.
+  RLS je definiran migracijama; stanje izvršavanja nije ovdje provjereno.
 end note
+
 note bottom of Okolina
-  Bilježi da je korisnik pri prvom otvaranju radne okoline
-  dobio tri početna zapisa (F-02), pa se ne dodjeljuju ponovno.
+  F-02 traži tri početna zapisa pri prvoj prijavi.
+  workspace_workspace je konceptualan za sad.
 end note
-note bottom of Korisnik
-  Stvara se pri prvoj prijavi preko Supabase Autha (Google).
-  Lozinka se ne pohranjuje (NF-06).
-end note
+
 note bottom of Post
-  F-21: privatni post vidi samo njegov autor.
-  F-22: brisanjem posta uklanjaju se favoriti posta.
-  Otvorena odluka: brisanje izvornog zapisa
-  vezanog uz post (snapshot ili zabrana brisanja).
+  Planirano: javni/privatni postovi, favoriti i F-29.
+  Kopija tuđeg zapisa treba biti neovisna o izvornom postu.
+  moramo odluciti o brisanju izvornog zvuka povezanog s postom.
+  javni profil nije potvrđen kao zasebna tablica. dio podataka
+  već postoji u UserProfile (display_name, bio).
+  origin_type nije polje implementiranog workspace_node modela.
 end note
 @enduml

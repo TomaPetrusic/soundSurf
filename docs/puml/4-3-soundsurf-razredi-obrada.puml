@@ -5,69 +5,88 @@ skinparam classAttributeIconSize 0
 skinparam linetype ortho
 left to right direction
 
-title soundSurf - UML razredi: radna okolina, generiranje i obrada zvuka
+title soundSurf - UML razredi: postojeći backend i projektni model radne okoline
 
-package "Domenski model" {
-  class "RadnaOkolina" as Okolina {
+legend top left
+  **Implementirano**: stvarni Django razredi i funkcije
+  **Konceptualno**: domenska apstrakcija, nije Python nasljeđivanje
+  **Logički sloj**: prikaz odgovornosti, nije zaseban postojeći razred
+  **Planirano**: buduće metode, tipovi i cjeloviti tijekovi
+endlegend
+
+package "IMPLEMENTIRANO - Django backend" #E8F4EC {
+  class "UserProfile\naccounts.models.UserProfile" as User <<implementirano>> #E8F4EC {
     +id: long
+    +supabase_user_id: UUID
+    +email: String
+    +display_name: String
+    +bio: String
+    +update_bio(text: String): void
+  }
+
+  class "Node\nworkspace.models.Node" as Node <<implementirano>> #E8F4EC {
+    +id: long
+    +owner_id: long
+    +parent_id: long [0..1]
+    +name: String
+    +kind: folder / file
+    +format: AudioFormat
+    +storage_key: String [0..1]
+    +size_bytes: long [0..1]
+    +duration_sec: double [0..1]
+    +sample_rate: int [0..1]
+    +channels: int [0..1]
+    +is_folder: boolean
+  }
+
+  class "TreeView" as Tree <<implementirano>> #E8F4EC {
+    +get(request): Response
+  }
+  class "FolderCreateView" as FolderView <<implementirano>> #E8F4EC {
+    +post(request): Response
+  }
+  class "workspace.services\n(funkcije modula)" as Functions <<implementirano>> #E8F4EC {
+    +get_owned(owner, node_id)
+    +get_owned_folder(owner, folder_id)
+    +name_taken(owner, parent_id, name, exclude_id)
+    +build_tree(owner)
+  }
+  class "SupabaseStorage" as Supa <<implementirano>> #E8F4EC {
+    +upload(key, data, content_type)
+    +download(key): bytes
+  }
+  class "LocalStorage" as Lokal <<implementirano>> #E8F4EC {
+    +upload(key, data, content_type)
+    +download(key): bytes
+  }
+}
+
+package "KONCEPTUALNI DOMENSKI MODEL" #EBF0FA {
+  class "RadnaOkolina" as Okolina <<konceptualno>> #EBF0FA {
     +korisnikId: long
   }
-  abstract class "StavkaRadneOkoline" as Stavka {
+  abstract class "StavkaRadneOkoline" as Stavka <<konceptualno>> #EBF0FA {
     +id: long
     +vlasnikId: long
     +roditeljId: long [0..1]
     +naziv: String
-    +preimenuj(noviNaziv: String): void
-    +premjesti(ciljnaMapaId: long [0..1]): void
   }
-  class "Direktorij" as Direktorij {
-    +obrisiRekurzivno(): void
-  }
-  class "ZvukovnaDatoteka" as Zvuk {
+  class "Direktorij" as Direktorij <<konceptualno>> #EBF0FA
+  class "ZvukovnaDatoteka" as Zvuk <<konceptualno>> #EBF0FA {
     +format: AudioFormat
     +kljucSadrzaja: String
     +velicinaBajtova: long
     +trajanjeSekundi: double
     +sampleRate: int
     +kanali: int
-    +porijeklo: Porijeklo
-    +zamijeniSadrzaj(kljuc: String): void
+    +porijeklo: Porijeklo <<planirano>>
   }
-  class "ParametriFiltra" as Parametri {
-    +vrsta: VrstaFiltra
-    +vrijednosti: Map
-    +provjeri(): void
-  }
-  class "ParametriOscilatora" as OscParam {
-    +oblik: OblikVala
-    +frekvencijaHz: double
-    +trajanjeSekundi: double
-    +amplituda: double
-    +provjeri(): void
-  }
-  enum "OblikVala" as Wave {
-    SINUS
-    KVADRAT
-    PILA
-    TROKUT
-  }
-  enum "VrstaFiltra" as Vrsta {
-    NISKOPROPUSNI
-    VISOKOPROPUSNI
-    POJACANJE
-    REVERB
-    TREMOLO
-  }
-  enum "NacinSpremanja" as Nacin {
-    NOVA_DATOTEKA
-    PREPISI_IZVOR
-  }
-  enum "AudioFormat" as Format {
+  enum "AudioFormat (Node.Format)" as Format <<konceptualni prikaz>> {
     WAV
     MP3
     FLAC
   }
-  enum "Porijeklo" as Porijeklo {
+  enum "Porijeklo" as Porijeklo <<planirano>> {
     UPLOAD
     FREESOUND
     GENERATED
@@ -75,80 +94,126 @@ package "Domenski model" {
   }
 }
 
-package "Aplikacijska logika i sučelja" {
-  class "UslugaRadneOkoline" as WS <<service>> {
+package "LOGIČKA ARHITEKTURA I PLANIRANA PROŠIRENJA" #FFF4E5 {
+  class "UslugaRadneOkoline" as WS <<logički sloj>> #FFF4E5 {
     +stablo(korisnikId: long): List<StavkaRadneOkoline>
     +stvoriMapu(korisnikId: long, naziv: String, roditeljId: long [0..1]): Direktorij
+    -- planirane operacije --
     +ucitaj(korisnikId: long, sadrzaj: bytes, naziv: String, roditeljId: long [0..1]): ZvukovnaDatoteka
-    +preuzmi(korisnikId: long, datotekaId: long, format: AudioFormat [0..1]): bytes
-    +preimenujIliPremjesti(korisnikId: long, stavkaId: long, naziv: String [0..1], roditeljId: long [0..1]): StavkaRadneOkoline
+    +preuzmi(korisnikId: long, datotekaId: long, format: AudioFormat): bytes
+    +preimenujIliPremjesti(korisnikId: long, stavkaId: long): StavkaRadneOkoline
     +obrisi(korisnikId: long, stavkaId: long): void
     +prepisiSadrzaj(korisnikId: long, datotekaId: long, sadrzaj: bytes): ZvukovnaDatoteka
   }
-  class "UslugaObradeZvuka" as Obrada <<service>> {
-    +pripremiPregled(korisnikId: long, datotekaId: long, parametri: ParametriFiltra): Pregled
-    +spremiRezultat(korisnikId: long, pregledId: UUID, nacin: NacinSpremanja): ZvukovnaDatoteka
-  }
-  class "UslugaGeneriranjaZvuka" as Gen <<service>> {
-    +generiraj(korisnikId: long, ciljDirektorijId: long, naziv: String, parametri: ParametriOscilatora): ZvukovnaDatoteka
-  }
-  interface "RepozitorijZapisa" as Repo {
+
+  interface "RepozitorijZapisa" as Repo <<logički ORM pristup>> #FFF4E5 {
     +dohvati(id: long): StavkaRadneOkoline
     +spremi(stavka: StavkaRadneOkoline): void
   }
-  interface "SpremisteSadrzaja" as Store {
-    +spremi(kljuc: String, sadrzaj: bytes, mimeTip: String): void
-    +procitaj(kljuc: String): bytes
+  interface "SpremisteSadrzaja" as Store <<logičko sučelje>> #FFF4E5 {
+    +upload(kljuc: String, sadrzaj: bytes, mimeTip: String): void
+    +download(kljuc: String): bytes
+    -- planirano --
     +obrisi(kljucevi: List<String>): void
     +potpisaniUrl(kljuc: String, trajanjeSekundi: int): String
   }
-  class "SupabaseSpremiste" as Supa
-  class "LokalnoSpremiste" as Lokal
-  interface "ProcesorZvuka" as Procesor {
+  class "UslugaObradeZvuka" as Obrada <<planirano>> #FFF4E5 {
+    +pripremiPregled(korisnikId: long, datotekaId: long, parametri: ParametriFiltra): Pregled
+    +spremiRezultat(korisnikId: long, pregledId: UUID, nacin: NacinSpremanja): ZvukovnaDatoteka
+  }
+  class "UslugaGeneriranjaZvuka" as Gen <<planirano>> #FFF4E5 {
+    +generiraj(korisnikId: long, ciljDirektorijId: long, naziv: String, parametri: ParametriOscilatora): ZvukovnaDatoteka
+  }
+  interface "ProcesorZvuka" as Procesor <<planirana apstrakcija>> #FFF4E5 {
     +primijeniFiltar(sadrzaj: bytes, parametri: ParametriFiltra): bytes
+  }
+  class "ParametriFiltra" as Parametri <<konceptualno>> #FFF4E5 {
+    +vrsta: VrstaFiltra
+    +vrijednosti: Map
+    +provjeri(): void
+  }
+  class "ParametriOscilatora" as OscParam <<konceptualno>> #FFF4E5 {
+    +oblik: OblikVala
+    +frekvencijaHz: double
+    +trajanjeSekundi: double
+    +amplituda: double
+    +provjeri(): void
+  }
+  enum "VrstaFiltra" as Vrsta <<konceptualno>> {
+    NISKOPROPUSNI
+    VISOKOPROPUSNI
+    POJACANJE
+    REVERB
+    TREMOLO
+  }
+  enum "OblikVala" as Wave <<konceptualno>> {
+    SINUS
+    KVADRAT
+    PILA
+    TROKUT
+  }
+  enum "NacinSpremanja" as Nacin <<planirano>> {
+    NOVA_DATOTEKA
+    PREPISI_IZVOR
   }
 }
 
+Node "0..*" --> "1" User : owner (FK)
+Node "0..*" --> "0..1" Node : parent (FK)
+Tree ..> Functions : build_tree
+FolderView ..> Functions : validacija
+Functions ..> Node : Django ORM
+Node ..> Stavka : konceptualna preslika (kind)
 Stavka <|-- Direktorij
 Stavka <|-- Zvuk
-Direktorij "0..1" o-- "0..*" Stavka : sadrži
+Direktorij "0..1" o-- "0..*" Stavka : logičko stablo
 Zvuk --> Format
 Zvuk --> Porijeklo
+WS ..> Functions : postojeće odgovornosti
+WS ..> Repo : logička pohrana metapodataka
+Repo ..> Node : Django ORM
+WS ..> Store : logička pohrana bajtova
+Supa ..> Store : odgovara ugovoru (bez interfacea u Pythonu)
+Lokal ..> Store : odgovara ugovoru (bez interfacea u Pythonu)
+WS ..> Okolina : planirana inicijalizacija (F-02)
+Gen ..> WS : planirano spremanje
+Gen ..> OscParam
+Obrada ..> WS : planirano spremanje
+Obrada ..> Parametri
+Obrada ..> Nacin
+Obrada ..> Procesor
 Parametri --> Vrsta
 OscParam --> Wave
-Store <|.. Supa
-Store <|.. Lokal
-WS ..> Repo : metapodaci
-WS ..> Store : sadržaj
-WS ..> Okolina : početni zapisi (F-02)
-Gen ..> OscParam
-Gen ..> WS : sprema novu datoteku
-Obrada ..> Parametri : validira
-Obrada ..> Nacin
-Obrada ..> WS : sprema / prepisuje datoteku
-Obrada ..> Store : čita izvorni sadržaj
-Obrada ..> Procesor : računa filtar
 
-note bottom of Stavka
-  Direktorij i ZvukovnaDatoteka implementirani su kao jedna
-  tablica workspace_node s poljem tip (mapa / datoteka).
-  Vlasništvo se provjerava na svakoj stavci (vlasnikId);
-  tuđa stavka ponaša se kao da ne postoji.
-  premjesti() vrijedi za datoteke (F-10) i za mape;
-  mapa se ne može premjestiti u samu sebe ni u svoju podmapu.
+note bottom of Node
+  Implementiran je jedan Django model Node (workspace_node).
+  Nema Django nasljeđivanja Direktorij / ZvukovnaDatoteka;
+  njih predstavlja polje kind. format je CharField s Node.Format choices.
+  AudioFormat u dijagramu konceptualno prikazuje dopuštene vrijednosti.
+  Polje origin_type nije implementirano.
+  Vlasništvo i roditelj provjeravaju se u postojećim servisima pri
+  podržanim operacijama; nisu sve buduće operacije implementirane.
 end note
+
 note bottom of WS
-  Implementacija: Django aplikacija "workspace"
-  (rute /api/workspace/...). RepozitorijZapisa ostvaruje Django ORM.
-  F-04..F-11, F-15, F-02.
-  prepisiSadrzaj (F-15): novi sadržaj sprema se pod novi ključ,
-  zatim se ažurira zapis, a stari sadržaj briše se tek nakon uspjeha.
+  Nije Python razred. Stablo i stvaranje mape izvedeni su preko
+  TreeView / FolderCreateView, workspace.services i Django ORM-a.
+  Ostale navedene metode predstavljaju planirane funkcionalnosti.
+  F-02 (tri početna zapisa) još nema potvrđenu implementaciju.
 end note
+
+note bottom of Store
+  SupabaseStorage i LocalStorage imaju upload() i download().
+  Nije implementirano zajedničko Python sučelje SpremisteSadrzaja.
+  obrisi() i potpisaniUrl() su planirane metode.
+  Brisanje redaka putem FK CASCADE ne briše automatski audio bajtove.
+end note
+
 note bottom of Obrada
-  Projektni prijedlog za UC-02, UC-06 i UC-07.
-  Otvoreno pitanje za tim: obrada na poslužitelju (ovaj prijedlog)
-  ili u pregledniku (postojeći frontend/src/services/audio.js).
-  U oba slučaja konačno spremanje ide preko UslugaRadneOkoline.
-  Pregled je privremeni rezultat prije konačne pohrane.
+  Cjeloviti UC-07 tijek i spremanje rezultata ce ici ovdje.
+  U frontendu vec postoji pocetni rad sa Web Audio API.
+  konačna raspodjela obrade između preglednika i backenda
+  nije potvrđena.
+  Prikaz ne zahtijeva izmjenu aplikacijskog koda.
 end note
 @enduml
