@@ -12,6 +12,12 @@ class Node(models.Model):
         MP3 = "MP3"
         FLAC = "FLAC"
 
+    class Origin(models.TextChoices):
+        UPLOAD = "upload"
+        FREESOUND = "freesound"
+        GENERATED = "generated"
+        COPY = "copy"
+
     owner = models.ForeignKey(
         "accounts.UserProfile", on_delete=models.CASCADE, related_name="workspace_nodes"
     )
@@ -27,6 +33,7 @@ class Node(models.Model):
     duration_sec = models.FloatField(null=True, blank=True)
     sample_rate = models.IntegerField(null=True, blank=True)
     channels = models.IntegerField(null=True, blank=True)
+    origin = models.CharField(max_length=10, choices=Origin.choices, blank=True, default="")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

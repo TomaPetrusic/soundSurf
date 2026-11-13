@@ -23,11 +23,12 @@ class NodeSerializer(serializers.ModelSerializer):
     kanali = serializers.IntegerField(source="channels")
     stvoreno = serializers.DateTimeField(source="created_at")
     izmijenjeno = serializers.DateTimeField(source="updated_at")
+    porijeklo = serializers.CharField(source="origin")
 
     class Meta:
         model = Node
         fields = ["id", "naziv", "tip", "format", "roditelj", "velicina", "trajanje",
-                  "sample_rate", "kanali", "stvoreno", "izmijenjeno"]
+                  "sample_rate", "kanali", "porijeklo", "stvoreno", "izmijenjeno"]
 
     def get_tip(self, node):
         return "mapa" if node.is_folder else "datoteka"
@@ -39,3 +40,8 @@ class FolderCreateSerializer(serializers.Serializer):
 
     def validate_naziv(self, value):
         return validate_name(value)
+
+
+class UploadSerializer(serializers.Serializer):
+    datoteka = serializers.FileField()
+    roditelj = serializers.IntegerField(required=False, allow_null=True, default=None)
