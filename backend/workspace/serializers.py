@@ -3,6 +3,10 @@ from rest_framework import serializers
 from workspace.models import Node
 
 
+NAME_ERRORS = {"max_length": "Naziv može imati najviše 255 znakova."}
+PARENT_ERRORS = {"invalid": "Neispravna mapa."}
+
+
 def validate_name(value):
     value = (value or "").strip()
     if not value:
@@ -35,8 +39,9 @@ class NodeSerializer(serializers.ModelSerializer):
 
 
 class FolderCreateSerializer(serializers.Serializer):
-    naziv = serializers.CharField(max_length=255, allow_blank=True)
-    roditelj = serializers.IntegerField(required=False, allow_null=True, default=None)
+    naziv = serializers.CharField(max_length=255, allow_blank=True, error_messages=NAME_ERRORS)
+    roditelj = serializers.IntegerField(required=False, allow_null=True, default=None,
+                                        error_messages=PARENT_ERRORS)
 
     def validate_naziv(self, value):
         return validate_name(value)
@@ -44,4 +49,14 @@ class FolderCreateSerializer(serializers.Serializer):
 
 class UploadSerializer(serializers.Serializer):
     datoteka = serializers.FileField()
-    roditelj = serializers.IntegerField(required=False, allow_null=True, default=None)
+    roditelj = serializers.IntegerField(required=False, allow_null=True, default=None,
+                                        error_messages=PARENT_ERRORS)
+
+
+class NodeUpdateSerializer(serializers.Serializer):
+    naziv = serializers.CharField(max_length=255, required=False, allow_blank=True,
+                                  error_messages=NAME_ERRORS)
+    roditelj = serializers.IntegerField(required=False, allow_null=True, error_messages=PARENT_ERRORS)
+
+    def validate_naziv(self, value):
+        return validate_name(value)

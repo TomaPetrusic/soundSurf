@@ -66,3 +66,22 @@ def name_from_filename(filename):
     base = (filename or "").replace("\\", "/").rsplit("/", 1)[-1].strip()
     stem = base.rsplit(".", 1)[0] if "." in base else base
     return stem.strip() or "Zapis"
+
+
+def is_inside(folder, target_id):
+    current = target_id
+    while current is not None:
+        if current == folder.id:
+            return True
+        current = Node.objects.filter(id=current).values_list("parent_id", flat=True).first()
+    return False
+
+
+def storage_keys_in_subtree(node):
+    keys = [node.storage_key] if node.storage_key else []
+    level = [node.id]
+    while level:
+        children = list(Node.objects.filter(parent_id__in=level).values_list("id", "storage_key"))
+        keys += [k for _, k in children if k]
+        level = [i for i, _ in children]
+    return keys
