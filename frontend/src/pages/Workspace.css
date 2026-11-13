@@ -63,3 +63,9 @@
 .ws-notice {
   padding: 16px 32px 0;
 }
+
+/* poruka umjesto tablice: učitavanje ili greška */
+.ws-poruka {
+  margin: 0;
+  padding: 24px 32px;
+}
