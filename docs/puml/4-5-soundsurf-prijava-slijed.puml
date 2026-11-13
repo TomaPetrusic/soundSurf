@@ -1,58 +1,96 @@
 @startuml
 skinparam shadowing false
 skinparam defaultFontName "DejaVu Sans"
-skinparam maxMessageSize 170
+skinparam maxMessageSize 150
 hide footbox
 
 title soundSurf - UML dijagram slijeda: prijava (UC-01)
 
 autonumber
-actor "Posjetitelj" as Posjetitelj
-participant "Web klijent" as UI
-participant "API / autentifikacija" as API
-participant "Vanjski pružatelj\nidentiteta (OIDC)" as IdP
-database "Korisnički repozitorij" as Users
-participant "Usluga radne okoline" as Workspace
-participant "Upravljanje sesijom" as Session
 
-Posjetitelj -> UI : odabire prijavu
-UI -> API : zahtjev za prijavu
-API --> UI : preusmjeravanje na OIDC
-UI -> IdP : otvara prijavu kod pružatelja
+actor "Posjetitelj" as User
+participant "React\nLoginButton / App" as UI
+participant "Supabase SDK\nsupabase-js" as SDK
+participant "Supabase Auth" as Auth
+participant "Google OAuth" as Google
+participant "React API klijent\napi.js" as Client
+participant "Django REST API\nMeView" as API
+participant "JWT autentikacija\nSupabaseJWTAuthentication" as JWT
+participant "Provjera tokena\nSupabaseTokenVerifier" as Verifier
+database "PostgreSQL\naccounts.UserProfile" as Profiles
 
-alt korisnik odustane ili pružatelj vrati pogrešku
-  IdP --> UI : odbijanje / pogreška
-  UI -> API : povratak s pogreškom
-  API --> UI : prijava nije uspjela (bez sesije)
-else uspješna autentifikacija
-  IdP --> UI : povratak s autorizacijskim kodom
-  UI -> API : povratna adresa s kodom
-  API -> IdP : razmjena koda / provjera OIDC identiteta
-  IdP --> API : potvrđeni identitet (issuer, subject)
-  API -> Users : pronađi račun prema (issuer, subject)
-  Users --> API : korisnik ili nema zapisa
-  alt prva uspješna prijava
-    API -> Users : stvori korisnički račun
-    API -> Workspace : stvori radnu okolinu i 3 početna zapisa
-    Workspace --> API : uspješno inicijalizirano
-  else postojeći korisnik
-    note over API : Zadržava postojeću radnu okolinu.
-  end
-  API -> Session : otvori korisničku sesiju
-  alt otvaranje sesije nije uspjelo
-    Session --> API : pogreška
-    API --> UI : prijava nije dovršena
-  else sesija otvorena
-    Session --> API : potvrda sesije
-    API --> UI : uspješna prijava / radna okolina
-    UI --> Posjetitelj : prikaži privatnu radnu okolinu
+== Implementirano: Google prijava putem Supabasea ==
+
+User -> UI : odabire "Prijavi se Googleom"
+UI -> SDK : signInWithOAuth(provider="google")
+SDK -> Auth : pokreni OAuth prijavu
+Auth -> Google : preusmjeri na Google prijavu
+
+alt korisnik odustane ili OAuth ne uspije
+  Google --> Auth : odbijanje / pogreška
+  Auth --> UI : povratak bez uspješne prijave
+  UI -> SDK : getSession() / onAuthStateChange
+  SDK --> UI : nema nove valjane sesije
+  UI --> User : prikaz stranice za prijavu
+else OAuth prijava uspije
+  Google --> Auth : potvrda identiteta
+  Auth -> Auth : dovrši OAuth i pripremi sesiju
+  Auth --> UI : povratak u aplikaciju
+  UI -> SDK : getSession() / onAuthStateChange
+  SDK --> UI : Supabase sesija + access_token
+  UI --> User : prikaži Workspace (trenutačno probni podaci)
+
+  opt Ako se pozove autorizirani API /api/me/
+    note over Client,API
+      API klijent i komponenta Profile postoje,
+      ali Profile nije uključen u trenutačni aktivni UI.
+      Stoga ovaj korak ne slijedi automatski iz prijave.
+    end note
+
+    UI -> Client : getMe(access_token)
+    Client -> API : GET /api/me/\nAuthorization: Bearer access_token
+    API -> JWT : authenticate(request)
+    JWT -> Verifier : verify(access_token)
+
+    note over Verifier,Auth
+      Provjera potpisa i JWT tvrdnji.
+      JWKS je primarni put provjere.
+      HS256 je podržan kao konfigurirani fallback.
+    end note
+
+    alt token nije valjan ili je istekao
+      Verifier --> JWT : pogreška provjere
+      JWT --> API : AuthenticationFailed
+      API --> Client : HTTP 401
+      Client --> UI : pogreška API zahtjeva
+    else token je valjan
+      Verifier --> JWT : potvrđene tvrdnje (sub, email...)
+      JWT -> Profiles : get_or_create(supabase_user_id)
+      alt profil još ne postoji
+        Profiles --> JWT : novostvoreni UserProfile
+      else profil već postoji
+        Profiles --> JWT : postojeći UserProfile
+      end
+      JWT --> API : autentificirani korisnik
+      API -> Profiles : dohvati podatke profila
+      Profiles --> API : display_name, email, bio
+      API --> Client : HTTP 200 + profil
+      Client --> UI : podaci profila
+    end
   end
 end
 
-note over API,Workspace
-  F-01, F-02, NF-06: ne pohranjuju se lozinke.
-  Pri inicijalizaciji je potrebna dosljednost:
-  ne potvrditi uspjeh ako račun, radna okolina
-  ili tri početna zapisa nisu ispravno stvoreni.
+note over User,Profiles
+  F-01: Google OAuth / Supabase Auth je implementiran.
+  Django ne pokreće OAuth niti otvara vlastitu sesiju.
+  Korisnički profil nastaje pri prvom valjanom API zahtjevu.
+
+  F-02 (planirano / nepotpuno):
+  automatsko stvaranje radne okoline s tri trajno
+  spremljena početna zvukovna zapisa nije potvrđeno.
+  Tri zapisa u probniPodaci.js nisu trajna inicijalizacija.
+
+  NF-06: aplikacija ne prikuplja korisničku lozinku.
 end note
+
 @enduml

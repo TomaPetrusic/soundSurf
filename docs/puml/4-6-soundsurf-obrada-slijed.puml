@@ -1,88 +1,120 @@
 @startuml
 skinparam shadowing false
 skinparam defaultFontName "DejaVu Sans"
-skinparam maxMessageSize 160
+skinparam maxMessageSize 150
 hide footbox
 
-title soundSurf - UML dijagram slijeda: primjena filtra (UC-07)
+title soundSurf - UML dijagram slijeda: obrada zvuka (UC-07)
 
 autonumber
+
 actor "Korisnik" as User
-participant "Web klijent" as UI
-participant "API" as API
-participant "Usluga obrade zvuka" as Service
-database "Repozitorij zapisa" as Repo
-participant "Pohrana sadržaja" as Store
-participant "Procesor zvuka" as Engine
-participant "Privremeni pregled" as Preview
+participant "React UI\nWorkspace / Toolbar" as UI
+participant "Audio modul\naudio.js" as Audio
+participant "Web Audio API\nOfflineAudioContext" as WebAudio
+participant "PlayerPanel\nprikaz zvuka" as Player
+participant "Django REST API\nplanirani endpointi" as API #FFF4E5
+participant "Django ORM\nNode" as ORM
+participant "Storage adapter\nSupabase / Local" as Storage
 
-User -> UI : odabire zapis, filtar i parametre
-UI -> API : pripremi pregled (zapisId, parametri)
-API -> Service : pripremiPregled(korisnikId, zapisId, parametri)
-Service -> Repo : dohvati zapis i provjeri vlasništvo
-Repo --> Service : metapodaci / odbijen pristup
+== Postojeći implementacijski temelj ==
 
-alt zapis ne postoji ili nije korisnikov
-  Service --> API : odbijeno
-  API --> UI : obavijest o neuspjehu
-else zapis je dostupan
-  Service -> Service : provjeri vrstu i parametre filtra
-  alt parametri nisu valjani
-    Service --> API : pogreška validacije
-    API --> UI : zatraži ispravak
-  else valjani parametri
-    Service -> Store : pročitaj izvorni sadržaj
-    Store --> Service : zvukovni podaci
-    Service -> Engine : primijeni jedan od 5 filtara
-    alt obrada nije uspjela
-      Engine --> Service : pogreška
-      Service --> API : bez promjena izvornog zapisa
-      API --> UI : obavijest o neuspjehu
-    else obrada uspješna
-      Engine --> Service : obrađeni sadržaj
-      Service -> Preview : privremeno pohrani rezultat za korisnika
-      Preview --> Service : pregledId
-      Service --> API : pregledId i podaci za prikaz
-      API --> UI : prikaži rezultat i valni oblik
-      UI --> User : pregled prije spremanja
+note over UI,Player
+  Trenutačni React UI prikazuje radnu okolinu
+  s demonstracijskim podacima.
 
-      alt korisnik odustaje
-        User -> UI : odustani
-        UI --> User : izvorni zapis ostaje nepromijenjen
-      else korisnik potvrđuje spremanje
-        User -> UI : nova datoteka ili prepisivanje
-        UI -> API : spremi(pregledId, način)
-        API -> Service : spremiRezultat(korisnikId, pregledId, način)
-        Service -> Preview : dohvati rezultat uz provjeru vlasnika
-        Preview --> Service : obrađeni sadržaj
-        alt spremi kao novu datoteku
-          Service -> Store : spremi novi sadržaj
-          Store --> Service : novi ključ
-          Service -> Repo : dodaj novu datoteku u direktorij
-        else prepiši izvornu datoteku
-          Service -> Store : spremi obrađeni sadržaj
-          Store --> Service : novi ključ
-          Service -> Repo : ažuriraj referencu izvorne datoteke
-        end
-        alt pohrana metapodataka i sadržaja uspjela
-          Repo --> Service : potvrda
-          Service --> API : uspjeh
-          API --> UI : ažurirani zapis / popis datoteka
-        else spremanje nije uspjelo
-          Service -> Service : ukloni nepotpuni rezultat / vrati stanje
-          Service --> API : pogreška pohrane
-          API --> UI : ne potvrđuj uspjeh
-        end
-      end
+  Toolbar nije povezan s potpunim tijekom
+  primjene filtara i spremanja rezultata.
+
+  PlayerPanel trenutačno ne reproducira stvarni zvuk.
+end note
+
+note over Audio,WebAudio
+  U frontend/src/services/audio.js postoje
+  funkcije generiraj() i lowpass().
+
+  Obrada se temelji na OfflineAudioContext.
+  Funkcije postoje u kodu, ali nisu povezane
+  s cjelovitim korisničkim tijekom UC-07.
+
+  Generiranje oscilatora zasebna je funkcionalnost,
+  a ne obvezni korak primjene filtra na datoteku.
+end note
+
+== Planirani cjeloviti tijek UC-07 ==
+
+group PLANIRANO - integracija korisničkog sučelja
+  User -> UI : odabire postojeći zvukovni zapis
+  UI -> UI : provjeri odabrani zapis
+
+  User -> UI : odabire filtar i podešava parametre
+
+  alt Low-pass filtar
+    UI -> Audio : pozovi postojeći lowpass()\n(planirano povezivanje)
+    Audio -> WebAudio : obradi zvučne podatke
+    WebAudio --> Audio : obrađeni zvučni podaci
+    Audio --> UI : rezultat obrade
+  else High-pass, gain, reverb ili tremolo
+    UI -> Audio : primijeni odabrani filtar\n(planirana implementacija)
+    note over Audio,WebAudio
+      Zahtjev F-14 predviđa najmanje pet filtara.
+      Preostali filtri nisu potvrđeni kao implementirani.
+      Konačna organizacija obrade još je projektna odluka.
+    end note
+    Audio --> UI : rezultat obrade (planirano)
+  end
+
+  UI -> Player : prikaži valni oblik i pripremi pregled
+  Player --> User : pregled obrađenog zvuka
+
+  alt Korisnik odustane
+    User -> UI : odbacuje rezultat
+    UI -> UI : ne sprema promjene
+  else Korisnik želi spremiti rezultat
+    User -> UI : odabire način spremanja
+
+    alt Spremi kao novu datoteku
+      UI -> API : zahtjev za spremanje nove datoteke
+      API -> Storage : upload obrađenog sadržaja
+      Storage --> API : ključ pohranjenog sadržaja
+      API -> ORM : stvori novi Node (kind=file)
+      ORM --> API : novi zapis
+      API --> UI : potvrda spremanja
+    else Prepiši postojeću datoteku
+      UI -> API : zahtjev za prepisivanje izvora
+      API -> API : provjeri vlasništvo i valjanost zahtjeva
+      API -> Storage : planirano ažuriranje sadržaja
+      Storage --> API : rezultat pohrane
+      API -> ORM : ažuriraj metapodatke Node
+      ORM --> API : ažurirani zapis
+      API --> UI : potvrda spremanja
     end
+
+    UI --> User : prikaži spremljeni rezultat
   end
 end
 
-note over Service,Preview
-  Privremeni pregled je mogući način provedbe UC-07.
-  Potrebno je odrediti rok čuvanja i zaštitu pristupa.
-  Konačan mehanizam pohrane dogovara tim.
-  NF-02: performanse jednog filtra provjeriti ispitivanjem.
-  F-15: korisnik bira novu datoteku ili prepisivanje.
+note over API,Storage
+  Backend već sadrži model Node
+  i adaptere s upload() i download() metodama.
+
+  Međutim, u pregledanom API-ju nije potvrđen
+  cjeloviti endpoint za primjenu filtra,
+  spremanje rezultata ili prepisivanje datoteke.
+
+  Redoslijed pohrane, obrada pogrešaka,
+  rollback i konzistentnost metapodataka
+  trebaju se definirati pri implementaciji.
 end note
+
+note over User,Storage
+  F-14: najmanje pet filtara s parametrima.
+  F-15: spremanje kao nova datoteka ili prepisivanje izvora.
+
+  Prikazani planirani tok nije potvrda
+  da je UC-07 trenutačno potpuno implementiran.
+
+  Dijagram ne zahtijeva promjene aplikacijskog koda.
+end note
+
 @enduml

@@ -3,57 +3,110 @@ left to right direction
 skinparam shadowing false
 skinparam componentStyle rectangle
 skinparam defaultFontName "DejaVu Sans"
-skinparam wrapWidth 220
-skinparam maxMessageSize 140
+skinparam wrapWidth 200
+skinparam maxMessageSize 130
+skinparam linetype polyline
 
-title soundSurf - početni pregled arhitekture
+title soundSurf - arhitektura komponenti (stanje implementacije)
 
-actor "Prijavljeni korisnik" as User
-cloud "Pružatelj identiteta\n(OAuth 2.0 / OIDC)" as OIDC
+legend top left
+  Zeleno = implementirane komponente u kodu
+  Plavo = postojeći moduli s nedovršenom integracijom
+  Narančasto = planirane funkcionalnosti
+  Isprekidana veza = planirana integracija ili ovisnost
+endlegend
+
+actor "Korisnik" as User
+cloud "Google OAuth" as Google
+cloud "Supabase Auth" as Auth
 cloud "Freesound API" as Freesound
+database "PostgreSQL\n(Supabase)" as DB
+folder "Supabase Storage\nili lokalna pohrana" as Files
 
-rectangle "soundSurf (predložena arhitektura)" {
-  package "Web klijent" {
-    [Korisničko sučelje] as UI
-    [Reprodukcija i waveform] as Player
+rectangle "soundSurf" {
+
+  package "Web klijent - React / Vite" #E8F4EC {
+    [Google prijava\nSupabase SDK] as Login #E8F4EC
+    [API klijent profila\ngetMe / updateBio] as ClientAPI #E8F4EC
+
+    [Radna okolina UI\nprobni podaci i dijalozi] as WorkspaceUI #EBF0FA
+    [Player i waveform\ntrenutno demonstracijski] as Player #EBF0FA
+    [Web Audio modul\ngeneriraj / lowpass] as AudioClient #EBF0FA
   }
-  package "Poslužiteljska aplikacija" {
-    [HTTP API i kontrola pristupa] as API
-    [Korisnički računi i sesije] as Auth
-    [Radna okolina i datoteke] as Workspace
-    component "Obrada i generiranje zvuka\n(predloženo mjesto izvođenja)" as Audio
-    [Profil, postovi i favoriti] as Social
-    [Integracija Freesound] as FreesoundAdapter
+
+  package "Backend - Django / DRF" #E8F4EC {
+    [Supabase JWT autentikacija\ni provjera prava pristupa] as JWT #E8F4EC
+    [Profil korisnika\nGET/PATCH /api/me/] as ProfileAPI #E8F4EC
+    [API radne okoline\nGET stablo / POST mapa] as WorkspaceAPI #E8F4EC
+    [Django ORM\nUserProfile / Node] as ORM #E8F4EC
+    [Storage adapteri\nSupabaseStorage / LocalStorage] as Storage #EBF0FA
   }
-  database "Baza metapodataka" as DB
-  folder "Pohrana zvukovnih\ndatoteka i slika" as Files
+
+  package "Planirana proširenja" #FFF4E5 {
+    [Povezivanje UI-ja\ns API-jem radne okoline] as WorkspaceIntegration #FFF4E5
+    [Učitavanje, izvoz\ni uvoz s Freesounda] as ImportExport #FFF4E5
+    [Cjelovita obrada zvuka\n5 filtara i spremanje] as Processing #FFF4E5
+    [Objave, javni profili\ni favoriti] as Social #FFF4E5
+  }
 }
 
-User --> UI : koristi aplikaciju
-UI --> Player : preslušavanje / prikaz
-UI --> API : HTTPS zahtjevi
-API --> Auth
-API --> Workspace
-API --> Audio
-API --> Social
-API --> FreesoundAdapter
-Auth --> OIDC : prijava / potvrda identiteta
-FreesoundAdapter --> Freesound : pretraživanje / uvoz
-Auth --> DB
-Workspace --> DB
-Social --> DB
-Audio --> DB
-Workspace --> Files
-Audio --> Files
-Social --> Files : slike profila
+User --> Login : prijava
+User --> WorkspaceUI : rad u aplikaciji
 
-note bottom of API
-  Predložena logička podjela odgovornosti.
-  Ne pretpostavlja zasebne mikrousluge.
-  Točan tech stack i mjesto obrade zvuka
-  treba potvrditi s timom.
-  F-01..F-29, C-01..C-04, NF-03, NF-06.
-  U docs/1 Freesound je opcionalan, u docs/2 obvezan;
-  tim treba uskladiti taj status.
+Login --> Auth : OAuth preko supabase-js
+Auth --> Google : provjera identiteta
+
+ClientAPI --> JWT : Bearer JWT
+JWT ..> Auth : javni JWKS ključevi
+JWT --> ProfileAPI : autorizirani zahtjev
+ProfileAPI --> ORM : korisnički profil
+WorkspaceAPI --> ORM : metapodaci stavaka
+ORM --> DB : Django ORM / SQL
+
+WorkspaceUI --> Player : prikaz probnih podataka
+WorkspaceUI ..> WorkspaceIntegration : planirano
+WorkspaceIntegration ..> WorkspaceAPI : povezivanje UI i API
+
+WorkspaceUI ..> AudioClient : planirana UI integracija
+AudioClient ..> Processing : buduća dorada tijeka
+
+Storage ..> Files : upload / download\n(adapteri postoje)
+ImportExport ..> Storage : planirano
+ImportExport ..> Freesound : planirano
+Processing ..> Storage : spremanje rezultata\nplanirano
+Social ..> ORM : modeli i API\nplanirani
+
+note bottom of WorkspaceUI
+  Trenutačno koristi podatke iz probniPodaci.js.
+  Stvarni backend API za stablo i stvaranje mapa postoji,
+  ali nije povezan s ovim React sučeljem.
+  Player prikazuje probni waveform i ne reproducira audio.
 end note
+
+note bottom of AudioClient
+  audio.js implementira OfflineAudioContext:
+  generator oscilatora i low-pass filtar.
+  Funkcije još nisu povezane s cjelovitim UI tijekom.
+  Preostali filtri, izvoz i spremanje su planirani.
+end note
+
+note bottom of Storage
+  Adapteri imaju upload() i download().
+  U pregledanom API-ju radne okoline nema
+  izloženog tijeka učitavanja zvukovnih datoteka.
+  Nije potvrđeno korištenje adaptera u produkciji.
+end note
+
+note bottom of Auth
+  Supabase upravlja OAuth prijavom i sesijom.
+  Django verificira primljeni JWT i stvara ili
+  dohvaća UserProfile pri autoriziranom zahtjevu.
+end note
+
+note bottom of Freesound
+  Integracija je planirana.
+  Status obveznosti potrebno je uskladiti između
+  projektne dokumentacije i zahtjeva.
+end note
+
 @enduml
