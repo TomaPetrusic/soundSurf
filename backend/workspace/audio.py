@@ -43,3 +43,14 @@ def inspect(data):
 
 def mime_type(fmt):
     return FORMATS[fmt][0]
+
+
+def convert(data, target):
+    target = target.upper()
+    if target not in FORMATS:
+        raise AudioError("Nepodržani format. Dopušteni su WAV, MP3 i FLAC.")
+    samples, rate = sf.read(io.BytesIO(data), always_2d=True)
+    _, sf_format, subtype = FORMATS[target]
+    out = io.BytesIO()
+    sf.write(out, samples, rate, format=sf_format, subtype=subtype)
+    return out.getvalue()
