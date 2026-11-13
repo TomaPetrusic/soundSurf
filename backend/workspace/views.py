@@ -1,5 +1,8 @@
 from django.db import IntegrityError, transaction
+from django.http import HttpResponse
+from django.utils.http import content_disposition_header
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -81,3 +84,37 @@ def save_new_file(owner, parent_id, name, data, info, origin):
     except Exception:
         storage.remove([key])
         raise
+
+
+def _owned_file(owner, node_id):
+    node = services.get_owned(owner, node_id)
+    if node.is_folder:
+        raise ValidationError({"detail": "To je mapa, a ne datoteka."})
+    return node
+
+
+class FileDownloadView(APIView):
+    def get(self, request, node_id):
+        node = _owned_file(request.user, node_id)
+        data = get_storage().download(node.storage_key)
+        fmt = (request.query_params.get("ciljni_format") or node.format).upper()
+
+        if fmt != node.format:
+            try:
+                data = audio.convert(data, fmt)
+            except audio.AudioError as exc:
+                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        response = HttpResponse(data, content_type=audio.mime_type(fmt))
+        response["Content-Disposition"] = content_disposition_header(
+            True, f"{node.name}.{fmt.lower()}")
+        return response
+
+
+class FileUrlView(APIView):
+    EXPIRES_IN = 3600
+
+    def get(self, request, node_id):
+        node = _owned_file(request.user, node_id)
+        url = get_storage().signed_url(node.storage_key, self.EXPIRES_IN)
+        return Response({"url": url, "vrijedi_sekundi": self.EXPIRES_IN})

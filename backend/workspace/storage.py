@@ -27,6 +27,10 @@ class SupabaseStorage:
         for i in range(0, len(keys), 100):
             self.bucket.remove(keys[i:i + 100])
 
+    def signed_url(self, key, expires_in):
+        res = self.bucket.create_signed_url(key, expires_in)
+        return res.get("signedURL") or res.get("signedUrl")
+
 
 class LocalStorage:
     def __init__(self, root=None):
@@ -50,6 +54,9 @@ class LocalStorage:
     def remove(self, keys):
         for k in keys:
             self._path(k).unlink(missing_ok=True)
+
+    def signed_url(self, key, expires_in):
+        return self._path(key).as_uri()
 
 
 _storage = None
