@@ -1,3 +1,5 @@
+import logging
+
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.utils.http import content_disposition_header
@@ -8,8 +10,12 @@ from rest_framework.views import APIView
 
 from workspace import audio, conf, services
 from workspace.models import Node
-from workspace.serializers import FolderCreateSerializer, NodeSerializer, UploadSerializer
+from workspace.serializers import (
+    FolderCreateSerializer, NodeSerializer, NodeUpdateSerializer, UploadSerializer,
+)
 from workspace.storage import get_storage, new_storage_key
+
+log = logging.getLogger(__name__)
 
 
 NAME_TAKEN_MSG = "Stavka s nazivom '{}' već postoji u ovoj mapi."
@@ -17,6 +23,14 @@ NAME_TAKEN_MSG = "Stavka s nazivom '{}' već postoji u ovoj mapi."
 
 def _conflict(name):
     return Response({"detail": NAME_TAKEN_MSG.format(name)}, status=status.HTTP_409_CONFLICT)
+
+
+def _validate(serializer):
+    if not serializer.is_valid():
+        errors = serializer.errors
+        first = next(iter(errors.values()))
+        raise ValidationError({"detail": first[0] if isinstance(first, list) else first})
+    return serializer.validated_data
 
 
 class TreeView(APIView):
@@ -27,7 +41,7 @@ class TreeView(APIView):
 class FolderCreateView(APIView):
     def post(self, request):
         s = FolderCreateSerializer(data=request.data)
-        s.is_valid(raise_exception=True)
+        _validate(s)
         name, parent_id = s.validated_data["naziv"], s.validated_data["roditelj"]
 
         services.get_owned_folder(request.user, parent_id)
@@ -52,7 +66,7 @@ class FormatsView(APIView):
 class FileUploadView(APIView):
     def post(self, request):
         s = UploadSerializer(data=request.data)
-        s.is_valid(raise_exception=True)
+        _validate(s)
         upload, parent_id = s.validated_data["datoteka"], s.validated_data["roditelj"]
         services.get_owned_folder(request.user, parent_id)
 
@@ -150,3 +164,38 @@ class FileContentView(APIView):
             raise
         storage.remove([old_key])
         return Response(NodeSerializer(node).data)
+
+
+class NodeDetailView(APIView):
+    def patch(self, request, node_id):
+        node = services.get_owned(request.user, node_id)
+        s = NodeUpdateSerializer(data=request.data)
+        _validate(s)
+        new_name = s.validated_data.get("naziv", node.name)
+        new_parent = s.validated_data.get("roditelj", node.parent_id)
+
+        if new_parent != node.parent_id:
+            services.get_owned_folder(request.user, new_parent)
+            if node.is_folder and new_parent is not None and services.is_inside(node, new_parent):
+                return Response({"detail": "Mapa se ne može premjestiti u samu sebe ni u svoju podmapu."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        if services.name_taken(request.user, new_parent, new_name, exclude_id=node.id):
+            return _conflict(new_name)
+
+        node.name, node.parent_id = new_name, new_parent
+        try:
+            node.save(update_fields=["name", "parent", "updated_at"])
+        except IntegrityError:
+            return _conflict(new_name)
+        return Response(NodeSerializer(node).data)
+
+    def delete(self, request, node_id):
+        node = services.get_owned(request.user, node_id)
+        keys = services.storage_keys_in_subtree(node)
+        node.delete()
+        try:
+            get_storage().remove(keys)
+        except Exception:
+            log.exception("Brisanje sadržaja iz Storagea nije uspjelo: %s", keys)
+        return Response(status=status.HTTP_204_NO_CONTENT)
