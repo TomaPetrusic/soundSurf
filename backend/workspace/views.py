@@ -118,3 +118,35 @@ class FileUrlView(APIView):
         node = _owned_file(request.user, node_id)
         url = get_storage().signed_url(node.storage_key, self.EXPIRES_IN)
         return Response({"url": url, "vrijedi_sekundi": self.EXPIRES_IN})
+
+
+class FileContentView(APIView):
+    def put(self, request, node_id):
+        node = _owned_file(request.user, node_id)
+        upload = request.data.get("datoteka")
+        if upload is None:
+            return Response({"detail": "Nedostaje datoteka."}, status=status.HTTP_400_BAD_REQUEST)
+        if upload.size > conf.MAX_UPLOAD_MB * 1024 * 1024:
+            return Response({"detail": f"Datoteka je veća od {conf.MAX_UPLOAD_MB} MB."},
+                            status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        data = upload.read()
+        try:
+            info = audio.inspect(data)
+        except audio.AudioError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+        storage = get_storage()
+        old_key = node.storage_key
+        new_key = new_storage_key(request.user, info["format"])
+        storage.upload(new_key, data, audio.mime_type(info["format"]))
+        try:
+            node.storage_key = new_key
+            node.size_bytes = len(data)
+            for field, value in info.items():
+                setattr(node, field, value)
+            node.save()
+        except Exception:
+            storage.remove([new_key])
+            raise
+        storage.remove([old_key])
+        return Response(NodeSerializer(node).data)
