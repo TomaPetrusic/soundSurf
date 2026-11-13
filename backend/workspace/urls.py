@@ -9,4 +9,5 @@ urlpatterns = [
     path("workspace/files/", views.FileUploadView.as_view(), name="workspace-file-upload"),
     path("workspace/files/<int:node_id>/download/", views.FileDownloadView.as_view(), name="workspace-file-download"),
     path("workspace/files/<int:node_id>/url/", views.FileUrlView.as_view(), name="workspace-file-url"),
+    path("workspace/files/<int:node_id>/content/", views.FileContentView.as_view(), name="workspace-file-content"),
 ]
