@@ -52,3 +52,17 @@ def build_tree(owner):
 
     sort(roots)
     return roots
+
+
+def free_name(owner, parent_id, name):
+    candidate, i = name, 1
+    while name_taken(owner, parent_id, candidate):
+        candidate = f"{name} ({i})"
+        i += 1
+    return candidate
+
+
+def name_from_filename(filename):
+    base = (filename or "").replace("\\", "/").rsplit("/", 1)[-1].strip()
+    stem = base.rsplit(".", 1)[0] if "." in base else base
+    return stem.strip() or "Zapis"

@@ -23,6 +23,10 @@ class SupabaseStorage:
     def download(self, key):
         return self.bucket.download(key)
 
+    def remove(self, keys):
+        for i in range(0, len(keys), 100):
+            self.bucket.remove(keys[i:i + 100])
+
 
 class LocalStorage:
     def __init__(self, root=None):
@@ -42,6 +46,10 @@ class LocalStorage:
 
     def download(self, key):
         return self._path(key).read_bytes()
+
+    def remove(self, keys):
+        for k in keys:
+            self._path(k).unlink(missing_ok=True)
 
 
 _storage = None

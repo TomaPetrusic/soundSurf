@@ -9,3 +9,5 @@ SUPABASE_SECRET_KEY = os.environ.get("SUPABASE_SECRET_KEY", "")
 STORAGE_BUCKET = os.environ.get("STORAGE_BUCKET", "audio-files")
 
 STORAGE_BACKEND = os.environ.get("WORKSPACE_STORAGE_BACKEND", "supabase")
+
+MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", "50"))
