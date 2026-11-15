@@ -16,6 +16,7 @@ import {
   deleteNode,
   downloadFile,
   getTree,
+  overwriteFile,
   porukaGreske,
   spremiNaRacunalo,
   updateNode,
@@ -215,6 +216,29 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     }
   }
 
+  // sprema filtriran zvuk (WAV) kao novu datoteku pokraj izvorne ili prepisuje izvornu;
+  // greške se bacaju natrag u dijalog, koji ih prikazuje
+  async function spremiFiltar(id, blob, nacin) {
+    const izvorna = nadji(stavke, id);
+    if (!izvorna) throw new Error("Datoteka više ne postoji.");
+    const token = session.access_token;
+    if (nacin === "prepisi") {
+      const file = new File([blob], `${izvorna.naziv}.wav`, { type: "audio/wav" });
+      await overwriteFile(token, id, file, file.name);
+      zapamtiZvuk(id, file); // player odmah svira novi zvuk, bez ponovnog preuzimanja
+      setIzPosluzitelja({ id, datoteka: file });
+      await osvjeziStablo(id);
+      return;
+    }
+    const otac = roditelj(stavke, id);
+    const file = new File([blob], `${izvorna.naziv} (niskopropusni).wav`, { type: "audio/wav" });
+    const nova = await uploadFile(token, file, otac ? otac.id : null);
+    zapamtiZvuk(nova.id, file);
+    await osvjeziStablo(nova.id);
+    setLokalna(null);
+    setOdabrano(nova.id);
+  }
+
   async function obrisi(stavka) {
     if (podaci) return;
     await deleteNode(session.access_token, stavka.id);
@@ -233,7 +257,17 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
       // samo pregled zvuka: ne ovisi o stavki u stablu, pa se zatvaranjem
       // dijaloga reprodukcija ne prekida
       return (
-        <FiltarDijalog datoteka={dijalog.datoteka} naziv={dijalog.naziv} onZatvori={zatvori} />
+        <FiltarDijalog
+          datoteka={dijalog.datoteka}
+          naziv={dijalog.naziv}
+          format={dijalog.format}
+          onSpremi={
+            dijalog.id != null && !podaci
+              ? (blob, nacin) => spremiFiltar(dijalog.id, blob, nacin)
+              : undefined
+          }
+          onZatvori={zatvori}
+        />
       );
     }
     if (dijalog.vrsta === "novaMapa") {
@@ -320,7 +354,13 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
         onUcitaj={() => ulaz.current.click()}
         odredisnaMapa={(odabranaMapa ? nadji(stavke, odabranaMapa)?.naziv : null) ?? KORIJEN_NAZIV}
         onPrimijeniFiltar={() =>
-          setDijalog({ vrsta: "filtar", datoteka: datoteka.datoteka, naziv: datoteka.naziv })
+          setDijalog({
+            vrsta: "filtar",
+            datoteka: datoteka.datoteka,
+            naziv: datoteka.naziv,
+            format: datoteka.format,
+            id: lokalna ? null : (izStabla?.id ?? null),
+          })
         }
         primijeniFiltarOmoguceno={Boolean(datoteka?.datoteka)}
       />

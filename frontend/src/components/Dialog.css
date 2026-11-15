@@ -259,3 +259,8 @@
 .dlg-format-sel .dlg-format-opis {
   color: inherit;
 }
+
+/* dva izbora u retku (npr. nova datoteka / prepiši) */
+.dlg-formati-red-dva {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
