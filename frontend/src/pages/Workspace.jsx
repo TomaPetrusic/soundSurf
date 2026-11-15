@@ -318,7 +318,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
       <Toolbar
         onNovaMapa={() => setDijalog({ vrsta: "novaMapa" })}
         onUcitaj={() => ulaz.current.click()}
-        odredisnaMapa={odabranaMapa ? nadji(stavke, odabranaMapa)?.naziv ?? null : null}
+        odredisnaMapa={(odabranaMapa ? nadji(stavke, odabranaMapa)?.naziv : null) ?? KORIJEN_NAZIV}
         onPrimijeniFiltar={() =>
           setDijalog({ vrsta: "filtar", datoteka: datoteka.datoteka, naziv: datoteka.naziv })
         }

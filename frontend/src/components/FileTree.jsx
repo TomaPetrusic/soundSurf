@@ -113,7 +113,7 @@ export default function FileTree({
 
   return (
     <div
-      className={"tree" + (iznad === "korijen" ? " tree-drop-root" : "")}
+      className="tree"
       role="treegrid"
       aria-label="Datoteke"
       onDragOver={(e) => nadVrhom(e, null)}
@@ -125,6 +125,28 @@ export default function FileTree({
       <div className="tree-grid tree-head ws-lbl">
         <span>Naziv</span>
         <span>Format</span>
+        <span />
+      </div>
+
+      {/* vrh stabla: odabir kao odredište za upload i novu mapu te cilj povlačenja */}
+      <div
+        role="row"
+        tabIndex={0}
+        className={
+          "tree-grid tree-row tree-root" +
+          (odabranaMapa === null ? " tree-row-target" : "") +
+          (iznad === "korijen" ? " tree-row-drop" : "")
+        }
+        onClick={() => onOdaberiMapu(null)}
+        onKeyDown={(e) => e.key === "Enter" && onOdaberiMapu(null)}
+      >
+        <span className="tree-name">
+          <Ikona>
+            <path d="M3 7h6l2 2h10v10H3z" />
+          </Ikona>
+          <span className="tree-name-text">Sve datoteke</span>
+        </span>
+        <span />
         <span />
       </div>
 
