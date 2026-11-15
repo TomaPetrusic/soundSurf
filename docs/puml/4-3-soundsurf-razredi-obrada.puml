@@ -36,9 +36,18 @@ package "IMPLEMENTIRANO - Django backend" #E8F4EC {
     +duration_sec: double [0..1]
     +sample_rate: int [0..1]
     +channels: int [0..1]
+    +origin: Node.Origin
     +is_folder: boolean
   }
 
+  class "Workspace\nworkspace.models.Workspace" as WorkspaceDB <<implementirano>> #E8F4EC {
+    +owner_id: long [OneToOne FK]
+    +created_at: datetime
+  }
+  class "workspace.seed\n(funkcije modula)" as Seed <<implementirano>> #E8F4EC {
+    +ensure_workspace(owner)
+    +_copy_samples(owner)
+  }
   class "TreeView" as Tree <<implementirano>> #E8F4EC {
     +get(request): Response
   }
@@ -50,18 +59,22 @@ package "IMPLEMENTIRANO - Django backend" #E8F4EC {
     +get_owned_folder(owner, folder_id)
     +name_taken(owner, parent_id, name, exclude_id)
     +build_tree(owner)
+    +free_name(owner, parent_id, name)
+    +storage_keys_in_subtree(node)
   }
   class "SupabaseStorage" as Supa <<implementirano>> #E8F4EC {
     +upload(key, data, content_type)
     +download(key): bytes
     +remove(keys)
     +signed_url(key, expires_in): String
+    +list(prefix): List<String>
   }
   class "LocalStorage" as Lokal <<implementirano>> #E8F4EC {
     +upload(key, data, content_type)
     +download(key): bytes
     +remove(keys)
     +signed_url(key, expires_in): String
+    +list(prefix): List<String>
   }
 }
 
@@ -83,14 +96,14 @@ package "KONCEPTUALNI DOMENSKI MODEL" #EBF0FA {
     +trajanjeSekundi: double
     +sampleRate: int
     +kanali: int
-    +porijeklo: Porijeklo <<planirano>>
+    +porijeklo: Porijeklo <<preslika Node.origin>>
   }
   enum "AudioFormat (Node.Format)" as Format <<konceptualni prikaz>> {
     WAV
     MP3
     FLAC
   }
-  enum "Porijeklo" as Porijeklo <<planirano>> {
+  enum "Porijeklo (Node.Origin)" as Porijeklo <<konceptualni prikaz>> {
     UPLOAD
     FREESOUND
     GENERATED
@@ -154,14 +167,18 @@ package "LOGIČKA ARHITEKTURA I PLANIRANA PROŠIRENJA" #FFF4E5 {
     PILA
     TROKUT
   }
-  enum "NacinSpremanja" as Nacin <<planirano>> {
+  enum "NacinSpremanja" as Nacin <<konceptualni prikaz>> {
     NOVA_DATOTEKA
     PREPISI_IZVOR
   }
 }
 
+WorkspaceDB "1" --> "1" User : owner (OneToOne FK)
+Seed ..> WorkspaceDB : get_or_create
+Seed ..> Node : do tri početna zapisa
 Node "0..*" --> "1" User : owner (FK)
 Node "0..*" --> "0..1" Node : parent (FK)
+Tree ..> Seed : ensure_workspace
 Tree ..> Functions : build_tree
 FolderView ..> Functions : validacija
 Functions ..> Node : Django ORM
@@ -177,7 +194,7 @@ Repo ..> Node : Django ORM
 WS ..> Store : logička pohrana bajtova
 Supa ..> Store : odgovara ugovoru (bez interfacea u Pythonu)
 Lokal ..> Store : odgovara ugovoru (bez interfacea u Pythonu)
-WS ..> Okolina : planirana inicijalizacija (F-02)
+WorkspaceDB ..> Okolina : konceptualna preslika
 Gen ..> WS : planirano spremanje
 Gen ..> OscParam
 Obrada ..> WS : planirano spremanje
@@ -192,7 +209,8 @@ note bottom of Node
   Nema Django nasljeđivanja Direktorij / ZvukovnaDatoteka;
   njih predstavlja polje kind. format je CharField s Node.Format choices.
   AudioFormat u dijagramu konceptualno prikazuje dopuštene vrijednosti.
-  Polje origin_type nije implementirano.
+  Node.origin postoji i koristi Node.Origin vrijednosti.
+  Zasebno polje origin_type ne postoji.
   Vlasništvo i roditelj provjeravaju se u postojećim servisima pri
   podržanim operacijama; nisu sve buduće operacije implementirane.
 end note
@@ -203,7 +221,15 @@ note bottom of WS
   FileContentView, NodeDetailView) uz workspace.services i Django ORM.
   React radna okolina koristi stablo, učitaj, preuzmi,
   preimenujIliPremjesti i obriši preko services/api.js.
-  F-02 (tri početna zapisa) još nema potvrđenu implementaciju.
+  F-02: inicijalizacija postoji pri prvom GET stabla,
+  ali dostupnost sva tri primjera ovisi o Storage sadržaju.
+end note
+
+note bottom of Seed
+  TreeView.get() poziva ensure_workspace().
+  Workspace se stvara pri prvom dohvatu stabla.
+  Kopira se do tri zapisa iz Storagea, ako su dostupni.
+  Točno tri početna zapisa nisu zajamčena.
 end note
 
 note bottom of Store
@@ -215,10 +241,12 @@ note bottom of Store
 end note
 
 note bottom of Obrada
-  Cjeloviti UC-07 tijek i spremanje rezultata ce ici ovdje.
-  U frontendu vec postoji pocetni rad sa Web Audio API.
-  konačna raspodjela obrade između preglednika i backenda
-  nije potvrđena.
-  Prikaz ne zahtijeva izmjenu aplikacijskog koda.
+  UslugaObradeZvuka nije postojeći Python razred.
+  Low-pass radi u pregledniku (audio.js, FiltarDijalog).
+  Spremanje nove WAV datoteke i prepisivanje izvora
+  koriste postojeće backend API operacije.
+  Ostala četiri filtra i servisna apstrakcija su planirani.
+  Funkcija generiraj() postoji, a integraciju UC-06
+  treba zasebno potvrditi.
 end note
 @enduml

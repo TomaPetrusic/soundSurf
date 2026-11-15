@@ -72,26 +72,21 @@ Primjer: Ana se prvi put prijavljuje Google računom. Poslužitelj joj stvara ko
 
 ### 4.3.2 Reprezentativni UML dijagram razreda
 
-**Cilj:** Prije implementacije reprezentativnog dijela sustava modelirati i prikazati razrede ili sučelja potrebna za dodjelu odgovornosti, operacija i veza. Oblikovanje ažurirajte kada se te odluke promijene.
+Dijagram prikazuje strukturu i odgovornosti razreda povezanih s korisničkim profilom, radnom okolinom, zvukovnim datotekama i pohranom sadržaja u sustavu soundSurf. Razlikuje stvarne Django modele i implementirane funkcije od konceptualnog domenskog modela i planiranih proširenja.
 
-**Dijagram razreda:** [Ugradite čitljiv UML dijagram razreda za reprezentativni dio oblikovanja.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]  
-**Referenca na kod pri završnom pregledu:** [Poveznica na odgovarajuću implementaciju.]
+![UML dijagram razreda sustava soundSurf](./assets/diagrams/4-3-soundsurf-razredi-obrada.svg)
 
-<details>
-<summary><strong>Oblikovanje odgovornosti prijave i dopuštenih promjena</strong></summary>
+**Slika 4.3. Reprezentativni UML dijagram razreda sustava soundSurf**
 
-**Primjer — CrisisMap:** Prijava sadrži pravila za promjenu vlastitog statusa. Razred tijeka rada koordinira podnošenje i pregled, dok sučelje repozitorija opisuje potrebne operacije trajne pohrane. Dijagram predlaže te odgovornosti prije implementacije.
+**PlantUML izvor:** [4-3-soundsurf-razredi-obrada.puml](./puml/4-3-soundsurf-razredi-obrada.puml)
 
-![Dijagram razreda za obradu prijava kriznih događaja](./assets/diagrams/4-3-crisismap-domain-CD.svg)
+**Relevantna implementacija:** [modeli radne okoline](../backend/workspace/models.py), [inicijalizacija početnih zapisa](../backend/workspace/seed.py), [API pogledi](../backend/workspace/views.py), [servisne funkcije](../backend/workspace/services.py) i [spremišni adapteri](../backend/workspace/storage.py).
 
-**Slika 4.3. Dijagram razreda za obradu prijava kriznih događaja**
+Model `UserProfile` predstavlja korisnika, dok model `Workspace` predstavlja njegovu radnu okolinu. Model `Node` koristi se za direktorije i datoteke, uz hijerarhiju roditeljskih stavki, metapodatke zvuka i oznaku porijekla sadržaja. Ne postoje zasebni Django modeli `Direktorij` i `ZvukovnaDatoteka`; oni su konceptualni prikaz različitih vrsta stavki.
 
-**PlantUML izvor:** [izvor](./puml/4-3-crisismap-domain-CD.puml)
+Inicijalizacija radne okoline implementirana je funkcijom `ensure_workspace()` pri prvom dohvaćanju stabla. Sustav pokušava dodati do tri početna zvukovna zapisa, ovisno o njihovoj dostupnosti u spremištu.
 
-**Analiza primjera:** `DisasterReport` sadrži dopuštena pravila promjene stanja pa tijek rada ne može prešutno odobriti već odbijenu prijavu. `ReportWorkflow` koordinira operaciju bez preuzimanja pravila prijelaza stanja same prijave; `ReportRepository` definira potrebne operacije pohrane. Kompozicija `Location` i odabrani tipovi prikazuju veze korisne za oblikovanje. Dijagram namjerno izostavlja stupce baze podataka i nepovezane razrede: ER model objašnjava pohranjene podatke, dok ovaj dijagram dodjeljuje programske odgovornosti i operacije. Ti su razredi odluka oblikovanja, a ne obavezni slojevi za svaki tim. Završnu implementaciju usporedite s početnim oblikovanjem i ažurirajte dijagram tamo gdje su se odluke promijenile; generiranje dijagrama iz koda tek na kraju ne može zamijeniti ovo početno modeliranje.
-
-</details>
+`SupabaseStorage` i `LocalStorage` omogućuju spremanje, dohvat, uklanjanje i pristup zvukovnom sadržaju. Obrada niskopropusnim filtrom i spremanje rezultata postoje u aplikaciji, ali prikazane planirane servisne apstrakcije nisu zasebni implementirani Python razredi. Ostale vrste filtara predstavljaju planirana proširenja.
 
 ## 4.4 Ponašanje tijekom izvođenja
 

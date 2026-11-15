@@ -1,5 +1,19 @@
 # 3. Obrasci uporabe
 
+## 3.1 Dijagram obrazaca uporabe
+
+UML dijagram obrazaca uporabe prikazuje granicu sustava soundSurf, relevantne aktere i petnaest obrazaca uporabe definiranih projektnim zahtjevima.
+
+Obrasci uporabe grupirani su prema funkcionalnim cjelinama: prijava i sesija, radna okolina i obrada zvuka te javni profil i zajednica.
+
+![UML dijagram obrazaca uporabe sustava soundSurf](./assets/diagrams/3-1-soundsurf-obrasci-uporabe.svg)
+
+**Slika 3.1. UML dijagram obrazaca uporabe sustava soundSurf**
+
+[Otvori dijagram u punoj veličini](./assets/diagrams/3-1-soundsurf-obrasci-uporabe.svg) | [PlantUML izvor](./puml/3-1-soundsurf-obrasci-uporabe.puml)
+
+Dijagram prikazuje ukupni projektni opseg. Prisutnost obrasca uporabe ne podrazumijeva da je pripadajuća funkcionalnost u cijelosti implementirana. Detaljne specifikacije svih obrazaca nalaze se u odjeljku 3.2.
+
 ### Akteri
 
 | ID | Naziv | Vrsta | Generalizacija |
