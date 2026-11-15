@@ -10,14 +10,24 @@ import ObrisiDijalog from "../components/dialogs/ObrisiDijalog";
 import PreimenujDijalog from "../components/dialogs/PreimenujDijalog";
 import PremjestiDijalog from "../components/dialogs/PremjestiDijalog";
 import PreuzmiDijalog from "../components/dialogs/PreuzmiDijalog";
-import { ApiError, createFolder, getTree } from "../services/api";
+import {
+  createFolder,
+  deleteNode,
+  downloadFile,
+  getTree,
+  porukaGreske,
+  spremiNaRacunalo,
+  updateNode,
+  uploadFile,
+} from "../services/api";
 import { OBAVIJESTI } from "../services/probniPodaci";
-import { nadji, roditelj } from "../services/stablo";
+import { datotekeUMapi, nadji, putDo, roditelj } from "../services/stablo";
 import "./Workspace.css";
 
 const KORIJEN_NAZIV = "Sve datoteke";
 const FORMATI = ["WAV", "MP3", "FLAC"];
 const NAJVECA_VELICINA = 50 * 1024 * 1024; // 50 MB
+const ZAPAMCENIH_ZVUKOVA = 8; // koliko preuzetih datoteka čuvamo da se ne preuzimaju ponovno
 
 // stablo se dohvaća iz API-ja; ako se preda `podaci` (lokalni pregled), koriste se probni
 export default function Workspace({ session, podaci = null, pocetnaObavijest = null }) {
@@ -28,8 +38,12 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   const [izbornik, setIzbornik] = useState(null);
   const [dijalog, setDijalog] = useState(null);
   const [obavijest, setObavijest] = useState(OBAVIJESTI[pocetnaObavijest] ?? null);
-  // datoteka s računala koja se samo sluša, ne sprema se na poslužitelj
+  // datoteka s računala koja se samo sluša (samo lokalni pregled bez poslužitelja)
   const [lokalna, setLokalna] = useState(null);
+  const [salje, setSalje] = useState(false); // upload u tijeku
+  // zvuk odabrane datoteke s poslužitelja: { id, datoteka: File } ili { id, greska }
+  const [izPosluzitelja, setIzPosluzitelja] = useState(null);
+  const zvukovi = useRef(new Map()); // id -> File, nedavno preuzeti ili učitani
   const ulaz = useRef(null);
 
   useEffect(() => {
@@ -37,26 +51,67 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     let aktivno = true;
     getTree(session.access_token)
       .then((stablo) => aktivno && setStavke(stablo))
-      .catch(
-        (err) =>
-          aktivno &&
-          setGreska(err instanceof ApiError ? err.message : "Došlo je do neočekivane pogreške.")
-      );
+      .catch((err) => aktivno && setGreska(porukaGreske(err)));
     return () => {
       aktivno = false;
     };
   }, [session, podaci]);
 
   const izStabla = odabrano && stavke ? nadji(stavke, odabrano) : null;
-  const datoteka = lokalna ?? izStabla;
+
+  function zapamtiZvuk(id, file) {
+    const mapa = zvukovi.current;
+    mapa.delete(id);
+    mapa.set(id, file);
+    if (mapa.size > ZAPAMCENIH_ZVUKOVA) mapa.delete(mapa.keys().next().value); // najstariji
+  }
+
+  // datoteku iz stabla preuzmemo i PlayerPanelu damo kao File, kao i lokalnu
+  useEffect(() => {
+    setIzPosluzitelja(null);
+    if (podaci || !izStabla || izStabla.tip !== "datoteka") return;
+    const id = izStabla.id;
+    const zapamcen = zvukovi.current.get(id);
+    if (zapamcen) {
+      setIzPosluzitelja({ id, datoteka: zapamcen });
+      return;
+    }
+    let aktivno = true;
+    downloadFile(session.access_token, id)
+      .then((blob) => {
+        if (!aktivno) return;
+        const ime = `${izStabla.naziv}.${izStabla.format.toLowerCase()}`;
+        const file = new File([blob], ime, { type: blob.type });
+        zapamtiZvuk(id, file);
+        setIzPosluzitelja({ id, datoteka: file });
+      })
+      .catch((err) => aktivno && setIzPosluzitelja({ id, greska: porukaGreske(err) }));
+    return () => {
+      aktivno = false;
+    };
+    // ponovno samo kad se odabere druga datoteka, ne pri svakom osvježavanju stabla
+  }, [izStabla?.id, podaci]);
+
+  // naziv i ostali podaci uvijek iz stabla (npr. nakon preimenovanja), zvuk s poslužitelja
+  const zvuk = izPosluzitelja?.id === izStabla?.id ? izPosluzitelja : null;
+  const datoteka =
+    lokalna ?? (izStabla && zvuk ? { ...izStabla, datoteka: zvuk.datoteka } : izStabla);
+  // za stvarne datoteke bez preuzetog zvuka player ne smije prikazati probni valni oblik
+  const cekaZvuk = !podaci && !lokalna && Boolean(izStabla) && !zvuk?.datoteka;
   // poruka o veličini ide u plavu zonu, ali samo dok je ona prikazana
   const porukaUZoni = obavijest?.vrsta === "velicina" && !datoteka;
 
-  // provjerava format i veličinu odabrane datoteke, pa je otvara u playeru
+  // datoteka odabrana gumbom "Učitaj datoteku"
   function odabranaDatoteka(e) {
     const dat = e.target.files[0];
     e.target.value = ""; // da se ista datoteka može ponovno odabrati
-    if (!dat) return;
+    if (dat) ucitaj(dat);
+  }
+
+  // provjerava format i veličinu, sprema datoteku na poslužitelj u mapu odabrane
+  // datoteke (ili na vrh) i otvara je u playeru
+  async function ucitaj(dat) {
+    if (salje) return;
 
     const dijelovi = dat.name.split(".");
     const format = dijelovi.length > 1 ? dijelovi.pop().toUpperCase() : "";
@@ -75,8 +130,26 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     }
 
     setObavijest(null);
-    setOdabrano(null);
-    setLokalna({ id: "lokalno", naziv: dijelovi.join("."), format, datoteka: dat });
+    if (podaci) {
+      // lokalni pregled: nema poslužitelja, datoteka se samo sluša
+      setOdabrano(null);
+      setLokalna({ id: "lokalno", naziv: dijelovi.join("."), format, datoteka: dat });
+      return;
+    }
+
+    const otac = odabrano ? roditelj(stavke, odabrano) : null;
+    setSalje(true);
+    try {
+      const nova = await uploadFile(session.access_token, dat, otac ? otac.id : null);
+      zapamtiZvuk(nova.id, dat); // već je na računalu, ne treba ga preuzimati
+      await osvjeziStablo(nova.id);
+      setLokalna(null);
+      setOdabrano(nova.id);
+    } catch (err) {
+      setObavijest({ vrsta: "posluzitelj", datoteka: dat.name, tekst: porukaGreske(err) });
+    } finally {
+      setSalje(false);
+    }
   }
 
   function prebaciMapu(id) {
@@ -88,12 +161,52 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
 
   const zatvori = () => setDijalog(null);
 
+  // ponovno učita stablo s poslužitelja; ako je zadan `prikazi`, otvori sve mape do te stavke
+  async function osvjeziStablo(prikazi = null) {
+    const stablo = await getTree(session.access_token);
+    setStavke(stablo);
+    // odabrana stavka je možda obrisana (ili je bila u obrisanoj mapi)
+    if (odabrano !== null && !nadji(stablo, odabrano)) setOdabrano(null);
+    const put = prikazi !== null ? putDo(stablo, prikazi) : null;
+    if (put?.length) setOtvoreno((staro) => new Set([...staro, ...put]));
+    return stablo;
+  }
+
   // stvara mapu na poslužitelju, ponovno učita stablo i otvori mapu u kojoj je nastala
   async function stvoriMapu(naziv, roditeljId) {
     if (podaci) return; // lokalni pregled: nema poslužitelja
-    await createFolder(session.access_token, naziv, roditeljId);
-    setStavke(await getTree(session.access_token));
-    if (roditeljId !== null) setOtvoreno(new Set(otvoreno).add(roditeljId));
+    const nova = await createFolder(session.access_token, naziv, roditeljId);
+    await osvjeziStablo(nova.id);
+  }
+
+  // preuzima datoteku s poslužitelja (po potrebi pretvorenu) i sprema je na računalo;
+  // ime slaže frontend jer preglednik ne vidi Content-Disposition iz drugog izvora
+  async function preuzmi(stavka, format) {
+    if (podaci) return; // lokalni pregled: nema poslužitelja
+    const blob = await downloadFile(session.access_token, stavka.id, format);
+    spremiNaRacunalo(blob, `${stavka.naziv}.${format.toLowerCase()}`);
+  }
+
+  // promjene na poslužitelju; poruke grešaka (zauzet naziv, mapa u vlastitu
+  // podmapu...) dolaze u err.message i prikazuje ih dijalog
+  async function preimenuj(stavka, naziv) {
+    if (podaci) return;
+    await updateNode(session.access_token, stavka.id, { naziv });
+    await osvjeziStablo();
+  }
+
+  async function premjesti(stavka, ciljnaMapaId) {
+    if (podaci) return;
+    await updateNode(session.access_token, stavka.id, { roditelj: ciljnaMapaId });
+    await osvjeziStablo(stavka.id); // otvori odredište da se vidi gdje je stavka
+  }
+
+  async function obrisi(stavka) {
+    if (podaci) return;
+    await deleteNode(session.access_token, stavka.id);
+    const obrisane = stavka.tip === "mapa" ? datotekeUMapi(stavka) : [stavka];
+    for (const d of obrisane) zvukovi.current.delete(d.id);
+    await osvjeziStablo();
   }
 
   // popis imena na istoj razini, za provjeru "naziv već postoji"
@@ -116,6 +229,8 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     }
 
     const stavka = nadji(stavke, dijalog.id);
+    // nakon brisanja stavke više nema u stablu, a dijalog se zatvara tek poslije
+    if (!stavka) return null;
     const otac = roditelj(stavke, dijalog.id);
 
     if (dijalog.vrsta === "Preimenuj") {
@@ -124,6 +239,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           stavka={stavka}
           nadmapa={otac ? otac.naziv : KORIJEN_NAZIV}
           drugi={nazivi(otac).filter((n) => n !== stavka.naziv)}
+          onSpremi={(naziv) => preimenuj(stavka, naziv)}
           onZatvori={zatvori}
         />
       );
@@ -134,14 +250,21 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           stavke={stavke}
           stavka={stavka}
           trenutnaMapaId={otac ? otac.id : null}
+          onPremjesti={(mapaId) => premjesti(stavka, mapaId)}
           onZatvori={zatvori}
         />
       );
     }
     if (dijalog.vrsta === "Preuzmi") {
-      return <PreuzmiDijalog stavka={stavka} onZatvori={zatvori} />;
+      return (
+        <PreuzmiDijalog
+          stavka={stavka}
+          onPreuzmi={(format) => preuzmi(stavka, format)}
+          onZatvori={zatvori}
+        />
+      );
     }
-    return <ObrisiDijalog stavka={stavka} onZatvori={zatvori} />;
+    return <ObrisiDijalog stavka={stavka} onObrisi={() => obrisi(stavka)} onZatvori={zatvori} />;
   }
 
   return (
@@ -149,12 +272,18 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
       <Header session={session} />
       {stavke !== null &&
         (datoteka ? (
-          <PlayerPanel datoteka={datoteka} />
+          <PlayerPanel
+            datoteka={datoteka}
+            ucitava={cekaZvuk && !zvuk?.greska}
+            greskaUcitavanja={cekaZvuk ? zvuk?.greska : null}
+          />
         ) : (
           <DropZone
             obavijest={porukaUZoni ? obavijest : null}
             onZatvoriObavijest={() => setObavijest(null)}
             onUcitaj={() => ulaz.current.click()}
+            onDatoteka={ucitaj}
+            salje={salje}
           />
         ))}
       <input
@@ -168,6 +297,11 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
         onNovaMapa={() => setDijalog({ vrsta: "novaMapa" })}
         onUcitaj={() => ulaz.current.click()}
       />
+      {salje && datoteka && (
+        <p className="ws-poruka" role="status">
+          Spremanje datoteke...
+        </p>
+      )}
       {obavijest && !porukaUZoni && (
         <div className="ws-notice">
           <Obavijest
@@ -183,6 +317,8 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
         </p>
       ) : stavke === null ? (
         <p className="ws-poruka">Učitavanje datoteka...</p>
+      ) : stavke.length === 0 ? (
+        <p className="ws-poruka">Još nemaš nijednu datoteku ni mapu.</p>
       ) : (
         <FileTree
           stavke={stavke}

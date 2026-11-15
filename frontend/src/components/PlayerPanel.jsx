@@ -8,9 +8,9 @@ const OZNAKE = 7; // okomite crte u pozadini
 const PROBNO_TRAJANJE = 134; // za zapise bez stvarnog zvuka (probni podaci)
 const PROBNI_POLOZAJ = 0.381;
 
-// za datoteku s računala: stvarni valni oblik, trajanje i zvuk;
-// vrijeme i marker koji prate reprodukciju dolaze u sljedećim koracima
-export default function PlayerPanel({ datoteka }) {
+// za datoteku s File objektom (s računala ili preuzetu s poslužitelja): stvarni valni
+// oblik, trajanje i zvuk; bez njega probni prikaz, osim dok se zvuk tek preuzima
+export default function PlayerPanel({ datoteka, ucitava = false, greskaUcitavanja = null }) {
   const [svira, setSvira] = useState(false);
   const [adresa, setAdresa] = useState(null); // adresa zvuka za element <audio>
   const [trenutno, setTrenutno] = useState(0); // proteklo vrijeme u sekundama
@@ -19,7 +19,8 @@ export default function PlayerPanel({ datoteka }) {
   const [zvuk, setZvuk] = useState(null);
   const [greska, setGreska] = useState(false);
 
-  const lokalna = datoteka.datoteka; // File, samo za datoteke s računala
+  const lokalna = datoteka.datoteka; // File sa zvukom, ako ga imamo
+  const cekaZvuk = ucitava || Boolean(greskaUcitavanja);
 
   // preglednik napravi privremenu adresu iz datoteke; ništa se ne šalje na mrežu
   useEffect(() => {
@@ -99,14 +100,19 @@ export default function PlayerPanel({ datoteka }) {
     return probneVisine(BROJ_STUPICA, sjeme);
   }, [datoteka.id]);
 
-  const visine = lokalna ? zvuk?.visine : probne;
-  const trajanje = lokalna ? zvuk?.trajanje : (datoteka.trajanje ?? PROBNO_TRAJANJE);
+  const visine = lokalna ? zvuk?.visine : cekaZvuk ? null : probne;
+  // dok se zvuk preuzima ili dekodira, trajanje znamo iz podataka o datoteci
+  const trajanje = lokalna
+    ? (zvuk?.trajanje ?? datoteka.trajanje)
+    : (datoteka.trajanje ?? (cekaZvuk ? null : PROBNO_TRAJANJE));
   // udio pjesme koji je odsviran (0 do 1)
   const polozaj = lokalna
     ? trajanje
       ? Math.min(1, trenutno / trajanje)
       : 0
-    : PROBNI_POLOZAJ;
+    : cekaZvuk
+      ? 0
+      : PROBNI_POLOZAJ;
 
   return (
     <section className="player" aria-label="Reprodukcija">
@@ -180,7 +186,12 @@ export default function PlayerPanel({ datoteka }) {
           </div>
         ) : (
           <div className="wave-message">
-            {greska ? "Zapis se ne može dekodirati" : "Dekodiranje zvuka..."}
+            {greskaUcitavanja ||
+              (greska
+                ? "Zapis se ne može dekodirati"
+                : ucitava
+                  ? "Učitavanje zvuka..."
+                  : "Dekodiranje zvuka...")}
           </div>
         )}
 
