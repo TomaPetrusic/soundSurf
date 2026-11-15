@@ -66,7 +66,7 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 ### 4.3.1 ER dijagram i model podataka
 
-Ana se prvi put prijavljuje Google računom. Poslužitelj joj stvara korisnički profil, a pri prvom otvaranju radne okoline i zapis o radnoj okolini te mapu *Primjeri* s tri početna zvukovna zapisa (F-02). Ana zatim stvara mapu *Projekti* i u nju učitava datoteku *Bas linija.wav*. Mapa i datoteka su stavke radne okoline: datoteka pokazuje na mapu *Projekti* kao nadređenu stavku, a mapa *Projekti* nema nadređenu stavku jer je u korijenu. Bajtovi zvuka nisu u bazi; stavka datoteke čuva samo ključ pod kojim su spremljeni u Supabase Storageu.
+Primjer: Ana se prvi put prijavljuje Google računom. Poslužitelj joj stvara korisnički profil, a pri prvom otvaranju radne okoline i zapis o radnoj okolini te mapu *Primjeri* s tri početna zvukovna zapisa (F-02). Ana zatim stvara mapu *Projekti* i u nju učitava datoteku *Bas linija.wav*. Mapa i datoteka su stavke radne okoline: datoteka pokazuje na mapu *Projekti* kao nadređenu stavku, a mapa *Projekti* nema nadređenu stavku jer je u korijenu. Bajtovi zvuka nisu u bazi; stavka datoteke čuva samo ključ pod kojim su spremljeni u Supabase Storageu.
 
 ![ER dijagram podataka sustava soundSurf](./assets/diagrams/4-2-soundsurf-podaci-ERD.svg)
 
