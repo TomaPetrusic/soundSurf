@@ -40,6 +40,16 @@
   font-weight: 500;
 }
 
+/* mapa koja je trenutno odredište za upload i novu mapu */
+.tree-row-target {
+  box-shadow: inset 3px 0 0 0 #f58426;
+  background: rgba(245, 132, 38, 0.08);
+}
+
+.tree-row-target:hover {
+  background: rgba(245, 132, 38, 0.14);
+}
+
 .tree-name {
   display: flex;
   align-items: center;

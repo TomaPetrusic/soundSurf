@@ -30,14 +30,16 @@ function Ikona({ velicina = 18, debljina = 1.5, children }) {
 
 // preuzimanje ima smisla samo za datoteke
 const RADNJE_DATOTEKE = ["Preimenuj", "Premjesti", "Preuzmi"];
-const RADNJE_MAPE = ["Preimenuj", "Premjesti"];
+const RADNJE_MAPE = ["Nova mapa", "Preimenuj", "Premjesti"];
 
 export default function FileTree({
   stavke,
   otvoreno,
   odabrano,
+  odabranaMapa,
   izbornik,
   onOdaberi,
+  onOdaberiMapu,
   onPrebaciMapu,
   onIzbornik,
   onRadnja,
@@ -53,14 +55,27 @@ export default function FileTree({
   }, [izbornik, onIzbornik]);
 
   function kliknuto(redak) {
-    if (redak.tip === "mapa") onPrebaciMapu(redak.id);
-    else onOdaberi(redak.id);
+    if (redak.tip === "mapa") {
+      onPrebaciMapu(redak.id);
+      onOdaberiMapu(redak.id); // odabrana mapa postaje odredište za upload i novu mapu
+    } else {
+      onOdaberi(redak.id);
+    }
   }
 
   function pokreni(e, radnja, redak) {
     e.stopPropagation();
     onIzbornik(null);
-    onRadnja(radnja, redak);
+    // "Nova mapa" iz izbornika stavke koristi isti dijalog kao i gumb u alatnoj traci
+    onRadnja(radnja === "Nova mapa" ? "novaMapa" : radnja, redak);
+  }
+
+  // desni klik na mapu otvara isti izbornik kao gumb s tri točke
+  function kontekstniIzbornik(e, redak) {
+    if (redak.tip !== "mapa") return;
+    e.preventDefault();
+    e.stopPropagation();
+    onIzbornik(izbornik === redak.id ? null : redak.id);
   }
 
   return (
@@ -74,15 +89,21 @@ export default function FileTree({
       {reci.map((r) => {
         const jeMapa = r.tip === "mapa";
         const odabran = r.id === odabrano;
+        const jeOdrediste = jeMapa && r.id === odabranaMapa;
         return (
           <div
             key={r.id}
             role="row"
             aria-selected={odabran}
             tabIndex={0}
-            className={"tree-grid tree-row" + (odabran ? " tree-row-selected" : "")}
+            className={
+              "tree-grid tree-row" +
+              (odabran ? " tree-row-selected" : "") +
+              (jeOdrediste ? " tree-row-target" : "")
+            }
             onClick={() => kliknuto(r)}
             onKeyDown={(e) => e.key === "Enter" && kliknuto(r)}
+            onContextMenu={(e) => kontekstniIzbornik(e, r)}
           >
             <span
               className="tree-name"
