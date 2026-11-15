@@ -31,6 +31,9 @@ class SupabaseStorage:
         res = self.bucket.create_signed_url(key, expires_in)
         return res.get("signedURL") or res.get("signedUrl")
 
+    def list(self, prefix):
+        return [f"{prefix}/{o['name']}" for o in self.bucket.list(prefix) if o.get("id")]
+
 
 class LocalStorage:
     def __init__(self, root=None):
@@ -57,6 +60,10 @@ class LocalStorage:
 
     def signed_url(self, key, expires_in):
         return self._path(key).as_uri()
+
+    def list(self, prefix):
+        d = self._path(prefix)
+        return sorted(f"{prefix}/{f.name}" for f in d.iterdir() if f.is_file()) if d.exists() else []
 
 
 _storage = None

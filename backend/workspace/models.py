@@ -59,3 +59,9 @@ class Node(models.Model):
     def is_folder(self):
         return self.kind == self.Kind.FOLDER
 
+
+class Workspace(models.Model):
+    owner = models.OneToOneField(
+        "accounts.UserProfile", on_delete=models.CASCADE, related_name="workspace"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
