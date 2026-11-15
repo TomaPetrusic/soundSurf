@@ -32,18 +32,16 @@ Detaljniji zapisi nalaze se u [zapisnicima sastanaka](meeting-notes/sprint-01.md
 
 | Aktivnost ili rezultat | Član | Prijavljeni sati | Reprezentativni rezultat ili poveznica |
 | --- | --- | --- | --- |
-| Zahtjevi, README i organizacija repozitorija | TP | [h] | #2, #4 |
-| Obrasci uporabe | AV | [h] | #5, #6 |
-| UML dijagrami sustava i usklađivanje s implementacijom | AV | [h] | #7, #12, #26, #28 |
-| Kostur aplikacije: Django, prijava preko Supabasea, React, Docker i Railway, CI | TP | [h] | #9 |
-| Dizajn prijave, izgled radne okoline, player i valni oblik | TG | [h] | #11, #14, #24 |
-| Backend radne okoline: model, pohrana datoteka, mape, upload, download, prepisivanje, preimenovanje, premještanje, brisanje, početni zapisi | FC | [h] | #16, #18, #20, #30, #32, #34, #36, #38 |
-| Spajanje radne okoline s poslužiteljem: upload, player za datoteke iz stabla, download, dijalozi | JD, TP | [h] | #39 |
-| Obrada zvuka: generator, niskopropusni i visokopropusni filtar, izvoz u WAV | LF | [h] | Grana `feature/obrada-zvuka`; generator i niskopropusni filtar u `main` |
-| Primjena filtra, spremanje rezultata i dorada sučelja prije predaje | TP | [h] | #43 – #50 |
-| Dokumentacija: arhitekturne odluke, ER dijagram, dijagram razreda | FC | [h] | #51 |
-| Vođenje tima, zapisnici i pregled aktivnosti grupe | FC | [h] | Ovaj dokument; [zapisnici](meeting-notes/sprint-01.md) |
-| Pregled i spajanje PR-ova, postavljanje aplikacije na Railway | TP | [h] | Spojeni PR-ovi u repozitoriju |
+| Zahtjevi, README i organizacija repozitorija | TP | 5 | #2, #4 |
+| Obrasci uporabe | AV | 5 | #5, #6 |
+| UML dijagrami sustava i usklađivanje s implementacijom | 5 | [h] | #7, #12, #26, #28 |
+| Kostur aplikacije: Django, prijava preko Supabasea, React, Docker i Railway, CI | TP | 5 | #9 |
+| Dizajn prijave, izgled radne okoline, player i valni oblik | TG | 5 | #11, #14, #24 |
+| Backend radne okoline: model, pohrana datoteka, mape, upload, download, prepisivanje, preimenovanje, premještanje, brisanje, početni zapisi | FC | 10 | #16, #18, #20, #30, #32, #34, #36, #38 |
+| Spajanje radne okoline s poslužiteljem: upload, player za datoteke iz stabla, download, dijalozi | JD, TP | 3 | #39 |
+| Obrada zvuka: generator, niskopropusni i visokopropusni filtar, izvoz u WAV | LF | 3 | Grana `feature/obrada-zvuka`; generator i niskopropusni filtar u `main` |
+| Primjena filtra, spremanje rezultata i dorada sučelja prije predaje | TP | 2 | #43 – #50 |
+| Dokumentacija: arhitekturne odluke, ER dijagram, dijagram razreda | FC | 2 | #51 |
 
 Sati su samoprijavljena procjena svakog člana.
 
