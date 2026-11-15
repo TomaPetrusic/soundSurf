@@ -1,117 +1,61 @@
 # A. Pregled aktivnosti grupe
 
-**Cilj:** Prikazati kako je tim organizirao projekt, raspodijelio rad, reagirao na važne probleme i pridonio rezultatu. Zapisi trebaju opisivati ishode, a ne samo navoditi da je sastanak održan ili da se o nekoj temi raspravljalo.
-
 ## A.1 Evidencija sastanaka
 
-**Cilj:** Voditi kratak zapis projektnih sastanaka i tjedne koordinacije: tko je sudjelovao, što je odlučeno i koja je radnja uslijedila. Raspravu koja nije dovela do odluke zabilježite samo ako je važno pitanje ostalo otvoreno.
+**Kratice članova tima:** FC = Filip Celić; JD = Jakov Džijan; TG = Toni Grdović; LF = Leonard Fabris; AV = Ante Vrkić; TP = Toma Petrušić.
 
->Definirati prije prve uporabe:
-`[Inicijali/Kratica] = [Ime i prezime]` (npr. *AK = Ana Kovač; LM = Luka Marić; EP = Ema Petrović; NK = Nika Kralj*).																														
+Detaljniji zapisi nalaze se u [zapisnicima sastanaka](meeting-notes/sprint-01.md).
 
-| Datum i sudionici | Glavna tema | Donesena odluka ili zadatak  | Poveznica na zadatak ili  rezultat, ako postoji |
+| Datum i sudionici | Glavna tema | Donesena odluka ili zadatak | Poveznica na zadatak ili rezultat, ako postoji |
 | --- | --- | --- | --- |
-|  |  |  |  |
-
-Za svaki relevantan sastanak ili zapis tjedne koordinacije upišite jedan sažet redak. Dodijeljeni zadatak treba imati odgovornu osobu; za neriješeno pitanje treba navesti tko će ga dalje obraditi. Sam naslov sastanka ne pokazuje što se promijenilo. U ovu evidenciju nemojte kopirati cijeli popis issuea ni prijepis razgovora.
-
-<details>
-<summary><strong>Primjer evidencije sastanaka (CrisisMap)</strong></summary>
-
-**Primjer — CrisisMap:**
-
-**Kratice članova tima:** AK = Ana Kovač; LM = Luka Marić; EP = Ema Petrović; NK = Nika Kralj.
-
-| Datum i sudionici | Glavna tema | Odluka, radnja ili otvoreno pitanje | Poveznica na zadatak ili nastali rezultat, ako postoji |
-| --- | --- | --- | --- |
-| 15. 11. 2025.; AK, LM, EP | Lokacija kada je pristup preglednika odbijen | Dodati ručni odabir položaja na karti u obrazac za prijavu. AK obrađuje obrazac; LM provjerava valjanost lokacije. | Zadataka #21 i #23. |
-| 22. 11. 2025.; AK, EP | Usklađivanje formata lokacijskih podataka | klijentski dio i poslužiteljski API koriste neusklađene formate koordinata. EP će uskladiti format zahtjeva i demonstrira spremanje na sljedećem pregledu. | Zadatak #25. |
-
-**Ishod i odgovornost:** Zapisi jasno definiraju tko je odgovoran za koji dio posla i koji je provjerljivi rezultat dogovoren. npr Rečenica „Raspravljali smo o obradi lokacije” prikrila bi je li se itko obvezao na promjenu. Ovi redci navode odluku ili otvorenu radnju, odgovornu osobu i rezultat koji se može pregledati.
-
-</details>
+| 16. 10. 2026.; FC, JD, TG, LF, AV, TP | Početna podjela posla | Uloge raspodijeljene po dijelovima aplikacije (vidi A.3). TP otvara repozitorij i postavlja dokumentaciju prema predlošku kolegija. | Zahtjevi i README: #2, #4. |
+| 22. 10. 2026.; FC, JD, TG, AV, TP | Pokretanje rada po ulogama | Svatko pregledava svoje funkcijske zahtjeve, istražuje tehnologije za svoj dio i javlja prijedlog TP-u; razliku od plana u dokumentaciji javlja AV-u. Svi počinju do 26. 10. JD i TG izrađuju dizajn web-stranice. | Obrasci uporabe: #5, #6; kostur aplikacije: #9; dizajn prijave: #11. |
+| 6. 11. 2026.; FC, JD, TG, LF, AV, TP | Plan za prvu predaju | Za predaju: radna okolina po korisniku, upload i download, filtar sa spremanjem rezultata, player. FC dovršava API radne okoline (upload, download, prepisivanje), TG player i valni oblik, AV usklađuje UML dijagrame s implementacijom, TP pregledava i spaja PR-ove. Otvoreno: spajanje sučelja radne okoline s API-jem (dogovoriti nakon završetka pojedinih funkcionalnosti). | #16 – #34, #24, #26, #28. |
+| 15. 11. 2026.; FC, JD, TG, AV, TP | Pregled funkcionalnosti i dokumentacije prije prve predaje | JD i TP spajaju radnu okolinu s poslužiteljem (upload, player za datoteke iz stabla, download, dijalozi); TP spaja niskopropusni filtar sa spremanjem i dorađuje sučelje; FC piše poglavlja 4.1 i 4.3, zapisnike i pregled aktivnosti grupe. | #39, #43 – #50, #51. |
 
 ## A.2 Plan rada
 
-**Cilj:** Prikazati planirani redoslijed rada i odgovornosti u timu. Prikažite projektne tjedne ili druga kratka razdoblja koja tim koristi, uključujući pripremu za formalne provjere.
-
-**Trenutačni plan:** [Poveznica na GitHub Projects ploču, Gantogram ili održavanu tablicu u nastavku. Navesti osobu zaduženu za ažurnost plana. Odaberite jedan glavni prikaz i navedite tko ga održava ažurnim.]
+**Trenutačni plan:** GitHub Issues u repozitoriju i tablica u nastavku. Ažurnost održavaju FC, AV, TP.
 
 | Razdoblje/Tjedan | Glavni planirani rad | Odgovorni članovi | Poveznica na zadatke |
 | --- | --- | --- | --- |
-|  |  |  |  |
-
-Ako koristite tablicu, plan vodite na korisnoj tjednoj razini i ažurirajte ga kada se prioriteti promijene. Kratice članova tima definirajte  u A.1 i ovdje ih primjenjujte dosljedno; ako dva člana imaju iste inicijale, proširite kraticu. Plan nije dokaz da je planirani rad dovršen (to dokazuje kod i dokumentacija).
-
-<details>
-<summary><strong>Primjer plana rada</strong></summary>
-
-**Primjer — CrisisMap:** Plan rada obuhvaća razvoj prijava, karte i postavljanja aplikacije. Za svako razdoblje navedeni su glavni zadaci i odgovorni članovi.
-
-| Razdoblje | Glavni planirani rad | Odgovorni članovi | Poveznica na zadatke/opis |
-| --- | --- | --- | --- |
-| Projektni tjedan 6 | Obrazac za prijavu i provjera valjanosti lokacije | AK, LM | Zadataka #21 i #23. |
-| Projektni tjedan 7 | Povezivanje obrasca s API-jem za prijave | EP | Zadatak #25. |
-
-**Čitanje plana:** Kratice štede prostor u sažetom planu; njihove definicije s početka A.1 vrijede u cijelom ovom primjeru. Kada rad kasni, ažurirajte stvarni zadatak i očekivanje u planu; nemojte tvrditi da je nedovršena funkcionalnost završena samo zato što je predviđeni tjedan prošao.
-
-</details>
+| 20. – 26. 10. 2026. | Zahtjevi, obrasci uporabe, README, podjela uloga | TP, AV | #2, #4, #5 |
+| 27. 10. – 2. 11. 2026. | Odabir tehnologija i kostur aplikacije s prijavom; UML dijagrami; dizajn prijave; početak obrade zvuka | TP, AV, TG, LF | #7, #9, #10 |
+| 3. – 9. 11. 2026. | Izgled radne okoline; model podataka i spajanje na pohranu datoteka | TG, FC | #13, #15, #17 |
+| 10. – 16. 11. 2026. (prva predaja) | API radne okoline; player i valni oblik; spajanje sučelja s API-jem; filtar i spremanje; usklađivanje dijagrama i dokumentacija | FC, TG, JD, TP, AV | #19 – #51 |
+| Nakon prve predaje (planirano) | Pet filtara (F-14) i generiranje zvuka u sučelju (F-12, F-13) | LF | [issue] |
+| Nakon prve predaje (planirano) | Javna stranica, postovi i favoriti (F-18 – F-27) | JD | [issue] |
+| Nakon prve predaje (planirano) | Uvoz s Freesounda (F-05) i kopiranje tuđeg zapisa (F-29) | FC | [issue] |
+| Nakon prve predaje (planirano) | Ispitivanja (poglavlje 5) | AV | [issue] |
 
 ## A.3 Aktivnosti i doprinosi članova
 
-**Cilj:** Prikazati koji su članovi radili na važnim projektnim aktivnostima i približan trud koji prijavljuju. Uz implementaciju uključite oblikovanje, dokumentaciju, integraciju, ispitivanje i postavljanje.
-
 | Aktivnost ili rezultat | Član | Prijavljeni sati | Reprezentativni rezultat ili poveznica |
 | --- | --- | --- | --- |
-|  |  |  |  |
+| Zahtjevi, README i organizacija repozitorija | TP | 5 | #2, #4 |
+| Obrasci uporabe | AV | 5 | #5, #6 |
+| UML dijagrami sustava i usklađivanje s implementacijom | AV | 5 | #7, #12, #26, #28 |
+| Kostur aplikacije: Django, prijava preko Supabasea, React, Docker i Railway, CI | TP | 5 | #9 |
+| Dizajn prijave, izgled radne okoline, player i valni oblik | TG | 5 | #11, #14, #24 |
+| Backend radne okoline: model, pohrana datoteka, mape, upload, download, prepisivanje, preimenovanje, premještanje, brisanje, početni zapisi | FC | 10 | #16, #18, #20, #30, #32, #34, #36, #38 |
+| Spajanje radne okoline s poslužiteljem: upload, player za datoteke iz stabla, download, dijalozi | JD, TP | 3 | #39 |
+| Obrada zvuka: generator, niskopropusni i visokopropusni filtar, izvoz u WAV | LF | 3 | Grana `feature/obrada-zvuka`; generator i niskopropusni filtar u `main` |
+| Primjena filtra, spremanje rezultata i dorada sučelja prije predaje | TP | 2 | #43 – #50 |
+| Dokumentacija: arhitekturne odluke, ER dijagram, dijagram razreda | FC | 2 | #51 |
 
-Koristite aktivnosti specifične za projekt umjesto obaveznog retka za svako poglavlje dokumentacije ili svaki UML dijagram. Tim treba dosljedno bilježiti sate i izbjegavati dvostruko brojanje zajedničkog rada; reprezentativni rezultat objašnjava što je prijavljeni trud proizveo. Sati su samoprijavljena procjena uloženog rada, a ne mjera kvalitete niti zamjena za pregled koda i artefakata.
-
-<details>
-<summary><strong>Primjer aktivnosti i rezultata rada</strong></summary>
-
-**Primjer — CrisisMap:** Tablica razlikuje implementaciju, integraciju i dokumentaciju te svaku aktivnost povezuje s rezultatom.
-
-| Aktivnost ili rezultat | Član | Prijavljeni sati | Reprezentativni rezultat ili poveznica |
-| --- | --- | --- | --- |
-| Ručni unos položaja na karti | AK | 8 | Zadatak #21; promjena klijentskog dijela. |
-| Provjera valjanosti i trajna pohrana prijave | LM | 10 | Zadatak #23; promjena pozadinskog sustava i ispitivanje. |
-| Integracija klijenta i API-ja te javno postavljanje | EP | 7 | Zadatak #25; konfiguracija u `render.yaml` i `dist/` |
-| Obrazac uporabe za podnošenje prijave i provjera odbijenog dopuštenja | NK | 5 | Završene izmjene UC-002 i ispitivanje ST-03. |
-
-**Trud i rezultat:** Završni stupac omogućuje raspravu o doprinosu bez tretiranja velikog broja sati kao dokaza isporuke. Tim može prijaviti stvarno dugotrajan, još neriješen problem integracije kao obavljen rad i iskreno opisati njegov ishod.
-
-</details>
+Sati su samoprijavljena procjena svakog člana.
 
 ## A.4 Pregled promjena u repozitoriju
 
-**Cilj:** Prikazati kada su promjene napravljene u repozitoriju i tko ih je napravio, uz napomenu da sam broj zapisa promjena ne mjeri kvalitetu doprinosa.
+**Prikaz aktivnosti repozitorija:** [GitHub Contributors](https://github.com/TomaPetrusic/soundSurf/graphs/contributors), razdoblje 21. 10. – 15. 11. 2026.
 
-**Prikaz aktivnosti repozitorija:** [Ugradite ili povežite GitHubov prikaz `Contributors` i generirani graf za projektni repozitorij; navedite razdoblje koje obuhvaća.]
-
-Graf može pokazati kada su zapisi promjena napravljeni i tko ih je napravio, ali ne prikazuje sav rad na oblikovanju, ispitivanju, integraciji, pregledu ili dokumentaciji. Ako postoji uočljiv nesklad s tablicom aktivnosti, kratko ga objasnite; nemojte iz grafa izvoditi broj sati. Generirani prikaz neka bude vezan uz stvarni repozitorij umjesto da se ručno crta drugi graf.
+Graf ne odražava potpuno raspodjelu rada:
+- Spajanja PR-ova, pregledi koda, usklađivanje dokumentacije i dogovori u timu nisu vidljivi kao broj commitova.
 
 ## A.5 Ključni inženjerski izazovi i rješenja
 
-**Cilj:** Dokumentirati stvarne tehničke i organizacijske prepreke s kojima se tim suočio, poduzete korektivne inženjerske korake te konačni ishod. Odaberite konkretne izazove umjesto općenite pohvale timskog rada.
-
 | Izazov | Poduzeta radnja | Ishod ili preostalo ograničenje |
 | --- | --- | --- |
-|  |  |  |
-
-<details>
-<summary><strong>Rješavanje nesklada formata lokacije</strong></summary>
-
-**Primjer — CrisisMap:**
-
-| Izazov | Poduzeta radnja | Ishod ili preostalo ograničenje |
-| --- | --- | --- |
-| Odabrani položaj na karti prikazivao se u klijentu, ali podnesena prijava nije zadržavala koordinate. | AK i EP usporedile su zahtjev preglednika s poljima lokacije koje očekuje API; AK je uskladila format zahtjeva, a LM je dodao provjeru valjanosti lokacije. | Nova prijava u ovom se scenariju može dohvatiti sa spremljenim položajem; tim povezuje odgovarajuću promjenu integracije i provjeru. |
-
-**Problem, odgovor i ishod:** Svaki se dio može provjeriti u projektu. Rečenica poput „imali smo poteškoće s integracijom i riješili ih timskim radom” ne bi čitatelju rekla što nije radilo ni kako je rješenje promijenjeno.
-
-</details>
-
----
-
->**Završna provjera:** Sastanci navode smislene ishode i odgovorne osobe; plan odražava namjeravani rad; tablica uloženog rada i generirani prikaz repozitorija odnose na ovaj vidljivi projekt; konkretni izazovi povezani su s radnjama i njihovim rezultatima. 
+| Tablice u bazi bile su dostupne preko Supabaseova REST API-ja s javnim ključem iz klijenta. | Uključen RLS bez pravila na svim tablicama; svaka nova tablica dobiva vlastitu RLS migraciju (prva migracija obuhvatila je samo tada postojeće tablice). Podacima pristupa samo Django. | Tablicama se ne može pristupiti izvana; migracije `accounts/0002`, `workspace/0002` i `workspace/0005`. |
+| Bajtovi zvuka i zapisi u bazi nisu u istoj transakciji, pa brisanje ili neuspjelo spremanje može ostaviti datoteku bez zapisa ili zapis bez sadržaja. | Upload briše spremljeni sadržaj ako zapis u bazi ne uspije; prepisivanje sprema pod novi ključ i stari briše tek nakon uspjeha; brisanje mape skuplja ključeve iz cijelog podstabla. | Izvorni zvuk ostaje sačuvan ako prepisivanje ne uspije (#34); brisanje uklanja i sadržaj (#36). Ako brisanje iz pohrane ne uspije, zapis se ipak briše, a greška se bilježi u log. |
+| UML dijagrami iz faze oblikovanja razlikovali su se od implementacije (dvije tablice umjesto jedne, nedostajalo porijeklo datoteke, obrada na poslužitelju umjesto u pregledniku). | Dijagrami usklađeni s kodom, uz oznaku što je implementirano, a što planirano; izrađen ER dijagram prema migracijama. | #26, #28, #51; dijagrame treba ponovno uskladiti pri svakoj većoj promjeni modela. |
