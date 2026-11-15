@@ -129,7 +129,7 @@
   box-shadow: inset 0 0 0 2px #f58426;
 }
 
-/* ispuštanje na prazno mjesto vraća stavku na vrh */
-.tree-drop-root {
-  box-shadow: inset 0 0 0 2px #f58426;
+/* redak "Sve datoteke": vrh stabla */
+.tree-root {
+  font-weight: 500;
 }
