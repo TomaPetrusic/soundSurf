@@ -10,7 +10,7 @@ import ObrisiDijalog from "../components/dialogs/ObrisiDijalog";
 import PreimenujDijalog from "../components/dialogs/PreimenujDijalog";
 import PremjestiDijalog from "../components/dialogs/PremjestiDijalog";
 import PreuzmiDijalog from "../components/dialogs/PreuzmiDijalog";
-import { createFolder, getTree, porukaGreske, uploadFile } from "../services/api";
+import { createFolder, downloadFile, getTree, porukaGreske, uploadFile } from "../services/api";
 import { OBAVIJESTI } from "../services/probniPodaci";
 import { nadji, putDo, roditelj } from "../services/stablo";
 import "./Workspace.css";
@@ -18,6 +18,7 @@ import "./Workspace.css";
 const KORIJEN_NAZIV = "Sve datoteke";
 const FORMATI = ["WAV", "MP3", "FLAC"];
 const NAJVECA_VELICINA = 50 * 1024 * 1024; // 50 MB
+const ZAPAMCENIH_ZVUKOVA = 8; // koliko preuzetih datoteka čuvamo da se ne preuzimaju ponovno
 
 // stablo se dohvaća iz API-ja; ako se preda `podaci` (lokalni pregled), koriste se probni
 export default function Workspace({ session, podaci = null, pocetnaObavijest = null }) {
@@ -31,6 +32,9 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   // datoteka s računala koja se samo sluša (samo lokalni pregled bez poslužitelja)
   const [lokalna, setLokalna] = useState(null);
   const [salje, setSalje] = useState(false); // upload u tijeku
+  // zvuk odabrane datoteke s poslužitelja: { id, datoteka: File } ili { id, greska }
+  const [izPosluzitelja, setIzPosluzitelja] = useState(null);
+  const zvukovi = useRef(new Map()); // id -> File, nedavno preuzeti ili učitani
   const ulaz = useRef(null);
 
   useEffect(() => {
@@ -45,7 +49,46 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   }, [session, podaci]);
 
   const izStabla = odabrano && stavke ? nadji(stavke, odabrano) : null;
-  const datoteka = lokalna ?? izStabla;
+
+  function zapamtiZvuk(id, file) {
+    const mapa = zvukovi.current;
+    mapa.delete(id);
+    mapa.set(id, file);
+    if (mapa.size > ZAPAMCENIH_ZVUKOVA) mapa.delete(mapa.keys().next().value); // najstariji
+  }
+
+  // datoteku iz stabla preuzmemo i PlayerPanelu damo kao File, kao i lokalnu
+  useEffect(() => {
+    setIzPosluzitelja(null);
+    if (podaci || !izStabla || izStabla.tip !== "datoteka") return;
+    const id = izStabla.id;
+    const zapamcen = zvukovi.current.get(id);
+    if (zapamcen) {
+      setIzPosluzitelja({ id, datoteka: zapamcen });
+      return;
+    }
+    let aktivno = true;
+    downloadFile(session.access_token, id)
+      .then((blob) => {
+        if (!aktivno) return;
+        const ime = `${izStabla.naziv}.${izStabla.format.toLowerCase()}`;
+        const file = new File([blob], ime, { type: blob.type });
+        zapamtiZvuk(id, file);
+        setIzPosluzitelja({ id, datoteka: file });
+      })
+      .catch((err) => aktivno && setIzPosluzitelja({ id, greska: porukaGreske(err) }));
+    return () => {
+      aktivno = false;
+    };
+    // ponovno samo kad se odabere druga datoteka, ne pri svakom osvježavanju stabla
+  }, [izStabla?.id, podaci]);
+
+  // naziv i ostali podaci uvijek iz stabla (npr. nakon preimenovanja), zvuk s poslužitelja
+  const zvuk = izPosluzitelja?.id === izStabla?.id ? izPosluzitelja : null;
+  const datoteka =
+    lokalna ?? (izStabla && zvuk ? { ...izStabla, datoteka: zvuk.datoteka } : izStabla);
+  // za stvarne datoteke bez preuzetog zvuka player ne smije prikazati probni valni oblik
+  const cekaZvuk = !podaci && !lokalna && Boolean(izStabla) && !zvuk?.datoteka;
   // poruka o veličini ide u plavu zonu, ali samo dok je ona prikazana
   const porukaUZoni = obavijest?.vrsta === "velicina" && !datoteka;
 
@@ -89,6 +132,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     setSalje(true);
     try {
       const nova = await uploadFile(session.access_token, dat, otac ? otac.id : null);
+      zapamtiZvuk(nova.id, dat); // već je na računalu, ne treba ga preuzimati
       await osvjeziStablo(nova.id);
       setLokalna(null);
       setOdabrano(nova.id);
@@ -179,7 +223,11 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
       <Header session={session} />
       {stavke !== null &&
         (datoteka ? (
-          <PlayerPanel datoteka={datoteka} />
+          <PlayerPanel
+            datoteka={datoteka}
+            ucitava={cekaZvuk && !zvuk?.greska}
+            greskaUcitavanja={cekaZvuk ? zvuk?.greska : null}
+          />
         ) : (
           <DropZone
             obavijest={porukaUZoni ? obavijest : null}
