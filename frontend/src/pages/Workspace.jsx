@@ -10,7 +10,7 @@ import ObrisiDijalog from "../components/dialogs/ObrisiDijalog";
 import PreimenujDijalog from "../components/dialogs/PreimenujDijalog";
 import PremjestiDijalog from "../components/dialogs/PremjestiDijalog";
 import PreuzmiDijalog from "../components/dialogs/PreuzmiDijalog";
-import { createFolder, getTree, porukaGreske } from "../services/api";
+import { createFolder, getTree, porukaGreske, uploadFile } from "../services/api";
 import { OBAVIJESTI } from "../services/probniPodaci";
 import { nadji, putDo, roditelj } from "../services/stablo";
 import "./Workspace.css";
@@ -28,8 +28,9 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   const [izbornik, setIzbornik] = useState(null);
   const [dijalog, setDijalog] = useState(null);
   const [obavijest, setObavijest] = useState(OBAVIJESTI[pocetnaObavijest] ?? null);
-  // datoteka s računala koja se samo sluša, ne sprema se na poslužitelj
+  // datoteka s računala koja se samo sluša (samo lokalni pregled bez poslužitelja)
   const [lokalna, setLokalna] = useState(null);
+  const [salje, setSalje] = useState(false); // upload u tijeku
   const ulaz = useRef(null);
 
   useEffect(() => {
@@ -48,11 +49,17 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   // poruka o veličini ide u plavu zonu, ali samo dok je ona prikazana
   const porukaUZoni = obavijest?.vrsta === "velicina" && !datoteka;
 
-  // provjerava format i veličinu odabrane datoteke, pa je otvara u playeru
+  // datoteka odabrana gumbom "Učitaj datoteku"
   function odabranaDatoteka(e) {
     const dat = e.target.files[0];
     e.target.value = ""; // da se ista datoteka može ponovno odabrati
-    if (!dat) return;
+    if (dat) ucitaj(dat);
+  }
+
+  // provjerava format i veličinu, sprema datoteku na poslužitelj u mapu odabrane
+  // datoteke (ili na vrh) i otvara je u playeru
+  async function ucitaj(dat) {
+    if (salje) return;
 
     const dijelovi = dat.name.split(".");
     const format = dijelovi.length > 1 ? dijelovi.pop().toUpperCase() : "";
@@ -71,8 +78,25 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     }
 
     setObavijest(null);
-    setOdabrano(null);
-    setLokalna({ id: "lokalno", naziv: dijelovi.join("."), format, datoteka: dat });
+    if (podaci) {
+      // lokalni pregled: nema poslužitelja, datoteka se samo sluša
+      setOdabrano(null);
+      setLokalna({ id: "lokalno", naziv: dijelovi.join("."), format, datoteka: dat });
+      return;
+    }
+
+    const otac = odabrano ? roditelj(stavke, odabrano) : null;
+    setSalje(true);
+    try {
+      const nova = await uploadFile(session.access_token, dat, otac ? otac.id : null);
+      await osvjeziStablo(nova.id);
+      setLokalna(null);
+      setOdabrano(nova.id);
+    } catch (err) {
+      setObavijest({ vrsta: "posluzitelj", datoteka: dat.name, tekst: porukaGreske(err) });
+    } finally {
+      setSalje(false);
+    }
   }
 
   function prebaciMapu(id) {
@@ -161,6 +185,8 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
             obavijest={porukaUZoni ? obavijest : null}
             onZatvoriObavijest={() => setObavijest(null)}
             onUcitaj={() => ulaz.current.click()}
+            onDatoteka={ucitaj}
+            salje={salje}
           />
         ))}
       <input
@@ -174,6 +200,11 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
         onNovaMapa={() => setDijalog({ vrsta: "novaMapa" })}
         onUcitaj={() => ulaz.current.click()}
       />
+      {salje && datoteka && (
+        <p className="ws-poruka" role="status">
+          Spremanje datoteke...
+        </p>
+      )}
       {obavijest && !porukaUZoni && (
         <div className="ws-notice">
           <Obavijest
