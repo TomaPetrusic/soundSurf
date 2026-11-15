@@ -12,14 +12,16 @@ import PremjestiDijalog from "../components/dialogs/PremjestiDijalog";
 import PreuzmiDijalog from "../components/dialogs/PreuzmiDijalog";
 import {
   createFolder,
+  deleteNode,
   downloadFile,
   getTree,
   porukaGreske,
   spremiNaRacunalo,
+  updateNode,
   uploadFile,
 } from "../services/api";
 import { OBAVIJESTI } from "../services/probniPodaci";
-import { nadji, putDo, roditelj } from "../services/stablo";
+import { datotekeUMapi, nadji, putDo, roditelj } from "../services/stablo";
 import "./Workspace.css";
 
 const KORIJEN_NAZIV = "Sve datoteke";
@@ -185,6 +187,28 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     spremiNaRacunalo(blob, `${stavka.naziv}.${format.toLowerCase()}`);
   }
 
+  // promjene na poslužitelju; poruke grešaka (zauzet naziv, mapa u vlastitu
+  // podmapu...) dolaze u err.message i prikazuje ih dijalog
+  async function preimenuj(stavka, naziv) {
+    if (podaci) return;
+    await updateNode(session.access_token, stavka.id, { naziv });
+    await osvjeziStablo();
+  }
+
+  async function premjesti(stavka, ciljnaMapaId) {
+    if (podaci) return;
+    await updateNode(session.access_token, stavka.id, { roditelj: ciljnaMapaId });
+    await osvjeziStablo(stavka.id); // otvori odredište da se vidi gdje je stavka
+  }
+
+  async function obrisi(stavka) {
+    if (podaci) return;
+    await deleteNode(session.access_token, stavka.id);
+    const obrisane = stavka.tip === "mapa" ? datotekeUMapi(stavka) : [stavka];
+    for (const d of obrisane) zvukovi.current.delete(d.id);
+    await osvjeziStablo();
+  }
+
   // popis imena na istoj razini, za provjeru "naziv već postoji"
   function nazivi(otac) {
     return (otac ? otac.djeca : stavke).map((s) => s.naziv);
@@ -205,6 +229,8 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     }
 
     const stavka = nadji(stavke, dijalog.id);
+    // nakon brisanja stavke više nema u stablu, a dijalog se zatvara tek poslije
+    if (!stavka) return null;
     const otac = roditelj(stavke, dijalog.id);
 
     if (dijalog.vrsta === "Preimenuj") {
@@ -213,6 +239,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           stavka={stavka}
           nadmapa={otac ? otac.naziv : KORIJEN_NAZIV}
           drugi={nazivi(otac).filter((n) => n !== stavka.naziv)}
+          onSpremi={(naziv) => preimenuj(stavka, naziv)}
           onZatvori={zatvori}
         />
       );
@@ -223,6 +250,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           stavke={stavke}
           stavka={stavka}
           trenutnaMapaId={otac ? otac.id : null}
+          onPremjesti={(mapaId) => premjesti(stavka, mapaId)}
           onZatvori={zatvori}
         />
       );
@@ -236,7 +264,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
         />
       );
     }
-    return <ObrisiDijalog stavka={stavka} onZatvori={zatvori} />;
+    return <ObrisiDijalog stavka={stavka} onObrisi={() => obrisi(stavka)} onZatvori={zatvori} />;
   }
 
   return (
