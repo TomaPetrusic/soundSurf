@@ -54,10 +54,14 @@ package "IMPLEMENTIRANO - Django backend" #E8F4EC {
   class "SupabaseStorage" as Supa <<implementirano>> #E8F4EC {
     +upload(key, data, content_type)
     +download(key): bytes
+    +remove(keys)
+    +signed_url(key, expires_in): String
   }
   class "LocalStorage" as Lokal <<implementirano>> #E8F4EC {
     +upload(key, data, content_type)
     +download(key): bytes
+    +remove(keys)
+    +signed_url(key, expires_in): String
   }
 }
 
@@ -98,7 +102,6 @@ package "LOGIČKA ARHITEKTURA I PLANIRANA PROŠIRENJA" #FFF4E5 {
   class "UslugaRadneOkoline" as WS <<logički sloj>> #FFF4E5 {
     +stablo(korisnikId: long): List<StavkaRadneOkoline>
     +stvoriMapu(korisnikId: long, naziv: String, roditeljId: long [0..1]): Direktorij
-    -- planirane operacije --
     +ucitaj(korisnikId: long, sadrzaj: bytes, naziv: String, roditeljId: long [0..1]): ZvukovnaDatoteka
     +preuzmi(korisnikId: long, datotekaId: long, format: AudioFormat): bytes
     +preimenujIliPremjesti(korisnikId: long, stavkaId: long): StavkaRadneOkoline
@@ -113,7 +116,6 @@ package "LOGIČKA ARHITEKTURA I PLANIRANA PROŠIRENJA" #FFF4E5 {
   interface "SpremisteSadrzaja" as Store <<logičko sučelje>> #FFF4E5 {
     +upload(kljuc: String, sadrzaj: bytes, mimeTip: String): void
     +download(kljuc: String): bytes
-    -- planirano --
     +obrisi(kljucevi: List<String>): void
     +potpisaniUrl(kljuc: String, trajanjeSekundi: int): String
   }
@@ -196,17 +198,20 @@ note bottom of Node
 end note
 
 note bottom of WS
-  Nije Python razred. Stablo i stvaranje mape izvedeni su preko
-  TreeView / FolderCreateView, workspace.services i Django ORM-a.
-  Ostale navedene metode predstavljaju planirane funkcionalnosti.
+  Nije Python razred. Operacije su izvedene kao DRF pogledi
+  (TreeView, FolderCreateView, FileUploadView, FileDownloadView,
+  FileContentView, NodeDetailView) uz workspace.services i Django ORM.
+  React radna okolina koristi stablo, učitaj, preuzmi,
+  preimenujIliPremjesti i obriši preko services/api.js.
   F-02 (tri početna zapisa) još nema potvrđenu implementaciju.
 end note
 
 note bottom of Store
-  SupabaseStorage i LocalStorage imaju upload() i download().
+  SupabaseStorage i LocalStorage imaju upload(), download(),
+  remove() (obrisi) i signed_url() (potpisaniUrl).
   Nije implementirano zajedničko Python sučelje SpremisteSadrzaja.
-  obrisi() i potpisaniUrl() su planirane metode.
-  Brisanje redaka putem FK CASCADE ne briše automatski audio bajtove.
+  Pri brisanju stavke NodeDetailView skuplja ključeve cijelog podstabla
+  i briše audio bajtove preko remove().
 end note
 
 note bottom of Obrada
