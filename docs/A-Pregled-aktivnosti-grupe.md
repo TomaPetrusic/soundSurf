@@ -34,7 +34,7 @@ Detaljniji zapisi nalaze se u [zapisnicima sastanaka](meeting-notes/sprint-01.md
 | --- | --- | --- | --- |
 | Zahtjevi, README i organizacija repozitorija | TP | 5 | #2, #4 |
 | Obrasci uporabe | AV | 5 | #5, #6 |
-| UML dijagrami sustava i usklađivanje s implementacijom | 5 | [h] | #7, #12, #26, #28 |
+| UML dijagrami sustava i usklađivanje s implementacijom | AV | 5 | #7, #12, #26, #28 |
 | Kostur aplikacije: Django, prijava preko Supabasea, React, Docker i Railway, CI | TP | 5 | #9 |
 | Dizajn prijave, izgled radne okoline, player i valni oblik | TG | 5 | #11, #14, #24 |
 | Backend radne okoline: model, pohrana datoteka, mape, upload, download, prepisivanje, preimenovanje, premještanje, brisanje, početni zapisi | FC | 10 | #16, #18, #20, #30, #32, #34, #36, #38 |
