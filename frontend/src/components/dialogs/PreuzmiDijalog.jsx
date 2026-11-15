@@ -3,7 +3,7 @@ import { porukaGreske } from "../../services/api";
 import Dialog from "../Dialog";
 
 const FORMATI = [
-  { oznaka: "WAV", opis: "Bez sažimanja" },
+  { oznaka: "WAV", opis: "Bez kompresije" },
   { oznaka: "MP3", opis: "Manja datoteka" },
   { oznaka: "FLAC", opis: "Bez gubitka" },
 ];
