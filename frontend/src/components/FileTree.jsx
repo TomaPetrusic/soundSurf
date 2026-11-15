@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { nadji, putDo, roditelj } from "../services/stablo";
 import "./FileTree.css";
 
 // sve vidljive retke u jednu listu, s dubinom za uvlačenje
@@ -43,8 +44,40 @@ export default function FileTree({
   onPrebaciMapu,
   onIzbornik,
   onRadnja,
+  onPremjesti,
 }) {
   const reci = poravnaj(stavke, otvoreno);
+  // povlačenje: id stavke koja se vuče i id mape (ili "korijen") iznad koje je miš
+  const [povuceno, setPovuceno] = useState(null);
+  const [iznad, setIznad] = useState(null);
+
+  // može li se povučena stavka ispustiti u mapu (null = vrh stabla)
+  function mozePustiti(ciljId) {
+    if (povuceno === null) return false;
+    if (ciljId === povuceno) return false;
+    // mapa se ne može premjestiti u vlastitu podmapu
+    if (ciljId !== null && putDo(stavke, ciljId)?.includes(povuceno)) return false;
+    const otac = roditelj(stavke, povuceno);
+    return otac === undefined ? false : (otac ? otac.id : null) !== ciljId;
+  }
+
+  function nadVrhom(e, ciljId) {
+    if (!mozePustiti(ciljId)) return;
+    e.preventDefault(); // bez ovoga preglednik ne dopušta drop
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "move";
+    setIznad(ciljId === null ? "korijen" : ciljId);
+  }
+
+  function pusti(e, ciljId) {
+    if (!mozePustiti(ciljId)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const stavka = nadji(stavke, povuceno);
+    setPovuceno(null);
+    setIznad(null);
+    if (stavka) onPremjesti(stavka, ciljId);
+  }
 
   // izbornik se zatvara klikom bilo gdje drugdje
   useEffect(() => {
@@ -79,7 +112,16 @@ export default function FileTree({
   }
 
   return (
-    <div className="tree" role="treegrid" aria-label="Datoteke">
+    <div
+      className={"tree" + (iznad === "korijen" ? " tree-drop-root" : "")}
+      role="treegrid"
+      aria-label="Datoteke"
+      onDragOver={(e) => nadVrhom(e, null)}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setIznad(null);
+      }}
+      onDrop={(e) => pusti(e, null)}
+    >
       <div className="tree-grid tree-head ws-lbl">
         <span>Naziv</span>
         <span>Format</span>
@@ -99,8 +141,23 @@ export default function FileTree({
             className={
               "tree-grid tree-row" +
               (odabran ? " tree-row-selected" : "") +
-              (jeOdrediste ? " tree-row-target" : "")
+              (jeOdrediste ? " tree-row-target" : "") +
+              (povuceno === r.id ? " tree-row-dragging" : "") +
+              (iznad === r.id ? " tree-row-drop" : "")
             }
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", r.id); // Firefox traži podatke za početak povlačenja
+              setPovuceno(r.id);
+              onIzbornik(null);
+            }}
+            onDragEnd={() => {
+              setPovuceno(null);
+              setIznad(null);
+            }}
+            onDragOver={(e) => (jeMapa ? nadVrhom(e, r.id) : undefined)}
+            onDrop={(e) => (jeMapa ? pusti(e, r.id) : undefined)}
             onClick={() => kliknuto(r)}
             onKeyDown={(e) => e.key === "Enter" && kliknuto(r)}
             onContextMenu={(e) => kontekstniIzbornik(e, r)}

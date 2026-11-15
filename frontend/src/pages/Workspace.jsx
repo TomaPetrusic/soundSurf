@@ -206,6 +206,15 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     await osvjeziStablo(stavka.id); // otvori odredište da se vidi gdje je stavka
   }
 
+  // premještanje povlačenjem; greška (npr. zauzet naziv) ide u obavijest
+  async function povuciUMapu(stavka, ciljnaMapaId) {
+    try {
+      await premjesti(stavka, ciljnaMapaId);
+    } catch (err) {
+      setObavijest({ vrsta: "posluzitelj", datoteka: stavka.naziv, tekst: porukaGreske(err) });
+    }
+  }
+
   async function obrisi(stavka) {
     if (podaci) return;
     await deleteNode(session.access_token, stavka.id);
@@ -355,6 +364,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           onPrebaciMapu={prebaciMapu}
           onIzbornik={setIzbornik}
           onRadnja={(vrsta, stavka) => setDijalog({ vrsta, id: stavka.id })}
+          onPremjesti={povuciUMapu}
         />
       )}
       {dijalog && prikaziDijalog()}
