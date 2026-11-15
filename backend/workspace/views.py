@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from workspace import audio, conf, services
 from workspace.models import Node
+from workspace.seed import ensure_workspace
 from workspace.serializers import (
     FolderCreateSerializer, NodeSerializer, NodeUpdateSerializer, UploadSerializer,
 )
@@ -35,7 +36,8 @@ def _validate(serializer):
 
 class TreeView(APIView):
     def get(self, request):
-        return Response(services.build_tree(request.user))
+       ensure_workspace(request.user)
+       return Response(services.build_tree(request.user))
 
 
 class FolderCreateView(APIView):
