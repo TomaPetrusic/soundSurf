@@ -8,6 +8,11 @@ export class ApiError extends Error {
   }
 }
 
+// poruka za korisnika: s poslužitelja (ApiError) ili općenita
+export function porukaGreske(err) {
+  return err instanceof ApiError ? err.message : "Došlo je do neočekivane pogreške.";
+}
+
 async function request(path, { method = "GET", accessToken, body } = {}) {
   let response;
   try {
