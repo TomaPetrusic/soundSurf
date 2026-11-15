@@ -10,7 +10,14 @@ import ObrisiDijalog from "../components/dialogs/ObrisiDijalog";
 import PreimenujDijalog from "../components/dialogs/PreimenujDijalog";
 import PremjestiDijalog from "../components/dialogs/PremjestiDijalog";
 import PreuzmiDijalog from "../components/dialogs/PreuzmiDijalog";
-import { createFolder, downloadFile, getTree, porukaGreske, uploadFile } from "../services/api";
+import {
+  createFolder,
+  downloadFile,
+  getTree,
+  porukaGreske,
+  spremiNaRacunalo,
+  uploadFile,
+} from "../services/api";
 import { OBAVIJESTI } from "../services/probniPodaci";
 import { nadji, putDo, roditelj } from "../services/stablo";
 import "./Workspace.css";
@@ -170,6 +177,14 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     await osvjeziStablo(nova.id);
   }
 
+  // preuzima datoteku s poslužitelja (po potrebi pretvorenu) i sprema je na računalo;
+  // ime slaže frontend jer preglednik ne vidi Content-Disposition iz drugog izvora
+  async function preuzmi(stavka, format) {
+    if (podaci) return; // lokalni pregled: nema poslužitelja
+    const blob = await downloadFile(session.access_token, stavka.id, format);
+    spremiNaRacunalo(blob, `${stavka.naziv}.${format.toLowerCase()}`);
+  }
+
   // popis imena na istoj razini, za provjeru "naziv već postoji"
   function nazivi(otac) {
     return (otac ? otac.djeca : stavke).map((s) => s.naziv);
@@ -213,7 +228,13 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
       );
     }
     if (dijalog.vrsta === "Preuzmi") {
-      return <PreuzmiDijalog stavka={stavka} onZatvori={zatvori} />;
+      return (
+        <PreuzmiDijalog
+          stavka={stavka}
+          onPreuzmi={(format) => preuzmi(stavka, format)}
+          onZatvori={zatvori}
+        />
+      );
     }
     return <ObrisiDijalog stavka={stavka} onZatvori={zatvori} />;
   }
