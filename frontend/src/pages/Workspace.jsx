@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Obavijest from "../components/Obavijest";
 import PlayerPanel from "../components/PlayerPanel";
 import Toolbar from "../components/Toolbar";
+import FiltarDijalog from "../components/dialogs/FiltarDijalog";
 import NovaMapaDijalog from "../components/dialogs/NovaMapaDijalog";
 import ObrisiDijalog from "../components/dialogs/ObrisiDijalog";
 import PreimenujDijalog from "../components/dialogs/PreimenujDijalog";
@@ -34,6 +35,8 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   const [stavke, setStavke] = useState(podaci?.stavke ?? null);
   const [greska, setGreska] = useState("");
   const [odabrano, setOdabrano] = useState(podaci?.odabrano ?? null);
+  // mapa koja je trenutno odredište za upload i novu mapu (null = korijen)
+  const [odabranaMapa, setOdabranaMapa] = useState(null);
   const [otvoreno, setOtvoreno] = useState(new Set(podaci?.otvoreno ?? []));
   const [izbornik, setIzbornik] = useState(null);
   const [dijalog, setDijalog] = useState(null);
@@ -137,7 +140,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
       return;
     }
 
-    const otac = odabrano ? roditelj(stavke, odabrano) : null;
+    const otac = odabranaMapa ? nadji(stavke, odabranaMapa) : null;
     setSalje(true);
     try {
       const nova = await uploadFile(session.access_token, dat, otac ? otac.id : null);
@@ -167,6 +170,8 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     setStavke(stablo);
     // odabrana stavka je možda obrisana (ili je bila u obrisanoj mapi)
     if (odabrano !== null && !nadji(stablo, odabrano)) setOdabrano(null);
+    // odredišna mapa je možda obrisana (upload i nova mapa onda idu u korijen)
+    if (odabranaMapa !== null && !nadji(stablo, odabranaMapa)) setOdabranaMapa(null);
     const put = prikazi !== null ? putDo(stablo, prikazi) : null;
     if (put?.length) setOtvoreno((staro) => new Set([...staro, ...put]));
     return stablo;
@@ -215,9 +220,17 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
   }
 
   function prikaziDijalog() {
+    if (dijalog.vrsta === "filtar") {
+      // samo pregled zvuka: ne ovisi o stavki u stablu, pa se zatvaranjem
+      // dijaloga reprodukcija ne prekida
+      return (
+        <FiltarDijalog datoteka={dijalog.datoteka} naziv={dijalog.naziv} onZatvori={zatvori} />
+      );
+    }
     if (dijalog.vrsta === "novaMapa") {
-      // nova mapa ide u mapu odabrane datoteke, ili na vrh ako ništa nije odabrano
-      const otac = odabrano ? roditelj(stavke, odabrano) : null;
+      // iz izbornika mape ide u tu mapu (dijalog.id); iz alatne trake u odabranu mapu
+      const ciljId = "id" in dijalog ? dijalog.id : odabranaMapa;
+      const otac = ciljId ? nadji(stavke, ciljId) : null;
       return (
         <NovaMapaDijalog
           nadmapa={otac ? otac.naziv : KORIJEN_NAZIV}
@@ -296,6 +309,11 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
       <Toolbar
         onNovaMapa={() => setDijalog({ vrsta: "novaMapa" })}
         onUcitaj={() => ulaz.current.click()}
+        odredisnaMapa={odabranaMapa ? nadji(stavke, odabranaMapa)?.naziv ?? null : null}
+        onPrimijeniFiltar={() =>
+          setDijalog({ vrsta: "filtar", datoteka: datoteka.datoteka, naziv: datoteka.naziv })
+        }
+        primijeniFiltarOmoguceno={Boolean(datoteka?.datoteka)}
       />
       {salje && datoteka && (
         <p className="ws-poruka" role="status">
@@ -324,11 +342,16 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
           stavke={stavke}
           otvoreno={otvoreno}
           odabrano={odabrano}
+          odabranaMapa={odabranaMapa}
           izbornik={izbornik}
           onOdaberi={(id) => {
             setLokalna(null);
             setOdabrano(id);
+            // upload i nova mapa idu u mapu odabrane datoteke
+            const otac = roditelj(stavke, id);
+            setOdabranaMapa(otac ? otac.id : null);
           }}
+          onOdaberiMapu={setOdabranaMapa}
           onPrebaciMapu={prebaciMapu}
           onIzbornik={setIzbornik}
           onRadnja={(vrsta, stavka) => setDijalog({ vrsta, id: stavka.id })}

@@ -17,10 +17,21 @@ function Ikona({ children }) {
   );
 }
 
-// za sada samo "Nova mapa" otvara dijalog, ostali gumbi još ništa ne rade
-export default function Toolbar({ onNovaMapa, onUcitaj }) {
+// za sada "Nova mapa", "Učitaj datoteku" i "Primijeni filtar" rade, ostali gumbi još ništa ne rade
+export default function Toolbar({
+  onNovaMapa,
+  onUcitaj,
+  odredisnaMapa,
+  onPrimijeniFiltar,
+  primijeniFiltarOmoguceno = false,
+}) {
   return (
     <div className="toolbar">
+      {odredisnaMapa && (
+        <span className="toolbar-odrediste ws-lbl" title="Upload i nova mapa idu ovamo">
+          U mapu: {odredisnaMapa}
+        </span>
+      )}
       <button type="button" className="ws-btn" onClick={onNovaMapa}>
         <Ikona>
           <path d="M3 7h6l2 2h10v10H3z" />
@@ -47,7 +58,12 @@ export default function Toolbar({ onNovaMapa, onUcitaj }) {
       <button type="button" className="ws-btn">
         Generiraj zvuk
       </button>
-      <button type="button" className="ws-btn">
+      <button
+        type="button"
+        className="ws-btn"
+        disabled={!primijeniFiltarOmoguceno}
+        onClick={onPrimijeniFiltar}
+      >
         Primijeni filtar
       </button>
     </div>

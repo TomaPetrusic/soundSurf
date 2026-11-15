@@ -10,3 +10,10 @@
 .toolbar-space {
   flex: 1;
 }
+
+.toolbar-odrediste {
+  padding: 4px 10px;
+  border: 1px solid #f58426;
+  border-radius: 999px;
+  color: #f58426;
+}
