@@ -15,6 +15,16 @@
   color: #ffffff;
 }
 
+/* datoteka se vuče iznad zone */
+.drop-over {
+  background: #006bb2;
+}
+
+.drop-over .drop-frame {
+  border-style: solid;
+  border-color: #ffffff;
+}
+
 /* isprekidani okvir */
 .drop-frame {
   position: absolute;

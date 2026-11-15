@@ -1,10 +1,32 @@
+import { useState } from "react";
 import Obavijest from "./Obavijest";
 import "./DropZone.css";
 
-// pojas za prvu prijavu, kad ništa nije odabrano; za sada samo izgled
-export default function DropZone({ obavijest, onZatvoriObavijest, onUcitaj }) {
+// pojas kad ništa nije odabrano: datoteka se povuče ovamo ili odabere gumbom
+export default function DropZone({ obavijest, onZatvoriObavijest, onUcitaj, onDatoteka, salje = false }) {
+  const [iznad, setIznad] = useState(false); // datoteka se vuče iznad zone
+
   return (
-    <section className="drop" aria-label="Učitaj datoteku">
+    <section
+      className={"drop" + (iznad ? " drop-over" : "")}
+      aria-label="Učitaj datoteku"
+      aria-busy={salje}
+      onDragOver={(e) => {
+        e.preventDefault(); // bez ovoga preglednik ne dopušta ispuštanje
+        e.dataTransfer.dropEffect = salje ? "none" : "copy";
+        setIznad(true);
+      }}
+      onDragLeave={(e) => {
+        // dragleave stiže i pri prelasku na element unutar zone
+        if (!e.currentTarget.contains(e.relatedTarget)) setIznad(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setIznad(false);
+        const dat = e.dataTransfer.files[0];
+        if (dat && !salje) onDatoteka(dat);
+      }}
+    >
       <span className="drop-frame" />
       <span className="drop-line" />
       <svg
@@ -27,10 +49,10 @@ export default function DropZone({ obavijest, onZatvoriObavijest, onUcitaj }) {
         />
       </svg>
       <div className="drop-text">
-        <span className="drop-title">Povuci datoteku ovdje</span>
+        <span className="drop-title">{salje ? "Spremanje datoteke..." : "Povuci datoteku ovdje"}</span>
         <span className="drop-formats">WAV · MP3 · FLAC · do 50 MB</span>
       </div>
-      <button type="button" className="ws-btn drop-btn" onClick={onUcitaj}>
+      <button type="button" className="ws-btn drop-btn" disabled={salje} onClick={onUcitaj}>
         Učitaj datoteku
       </button>
       {obavijest && (
