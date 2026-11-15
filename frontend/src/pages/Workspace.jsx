@@ -10,9 +10,9 @@ import ObrisiDijalog from "../components/dialogs/ObrisiDijalog";
 import PreimenujDijalog from "../components/dialogs/PreimenujDijalog";
 import PremjestiDijalog from "../components/dialogs/PremjestiDijalog";
 import PreuzmiDijalog from "../components/dialogs/PreuzmiDijalog";
-import { ApiError, createFolder, getTree } from "../services/api";
+import { createFolder, getTree, porukaGreske } from "../services/api";
 import { OBAVIJESTI } from "../services/probniPodaci";
-import { nadji, roditelj } from "../services/stablo";
+import { nadji, putDo, roditelj } from "../services/stablo";
 import "./Workspace.css";
 
 const KORIJEN_NAZIV = "Sve datoteke";
@@ -37,11 +37,7 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
     let aktivno = true;
     getTree(session.access_token)
       .then((stablo) => aktivno && setStavke(stablo))
-      .catch(
-        (err) =>
-          aktivno &&
-          setGreska(err instanceof ApiError ? err.message : "Došlo je do neočekivane pogreške.")
-      );
+      .catch((err) => aktivno && setGreska(porukaGreske(err)));
     return () => {
       aktivno = false;
     };
@@ -88,12 +84,22 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
 
   const zatvori = () => setDijalog(null);
 
+  // ponovno učita stablo s poslužitelja; ako je zadan `prikazi`, otvori sve mape do te stavke
+  async function osvjeziStablo(prikazi = null) {
+    const stablo = await getTree(session.access_token);
+    setStavke(stablo);
+    // odabrana stavka je možda obrisana (ili je bila u obrisanoj mapi)
+    if (odabrano !== null && !nadji(stablo, odabrano)) setOdabrano(null);
+    const put = prikazi !== null ? putDo(stablo, prikazi) : null;
+    if (put?.length) setOtvoreno((staro) => new Set([...staro, ...put]));
+    return stablo;
+  }
+
   // stvara mapu na poslužitelju, ponovno učita stablo i otvori mapu u kojoj je nastala
   async function stvoriMapu(naziv, roditeljId) {
     if (podaci) return; // lokalni pregled: nema poslužitelja
-    await createFolder(session.access_token, naziv, roditeljId);
-    setStavke(await getTree(session.access_token));
-    if (roditeljId !== null) setOtvoreno(new Set(otvoreno).add(roditeljId));
+    const nova = await createFolder(session.access_token, naziv, roditeljId);
+    await osvjeziStablo(nova.id);
   }
 
   // popis imena na istoj razini, za provjeru "naziv već postoji"
@@ -183,6 +189,8 @@ export default function Workspace({ session, podaci = null, pocetnaObavijest = n
         </p>
       ) : stavke === null ? (
         <p className="ws-poruka">Učitavanje datoteka...</p>
+      ) : stavke.length === 0 ? (
+        <p className="ws-poruka">Još nemaš nijednu datoteku ni mapu.</p>
       ) : (
         <FileTree
           stavke={stavke}

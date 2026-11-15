@@ -23,6 +23,18 @@ export function roditelj(stavke, id, otac = null) {
   return undefined;
 }
 
+// id-jevi mapa od vrha do stavke (bez nje same); null ako stavke nema
+export function putDo(stavke, id, put = []) {
+  for (const s of stavke) {
+    if (s.id === id) return put;
+    if (s.tip === "mapa") {
+      const u = putDo(s.djeca, id, [...put, s.id]);
+      if (u) return u;
+    }
+  }
+  return null;
+}
+
 // sve datoteke ispod mape, i u podmapama
 export function datotekeUMapi(mapa) {
   const izlaz = [];
