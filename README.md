@@ -1,6 +1,6 @@
 # ProAudio
 
-[soundsurf-production.up.railway.app](soundsurf-production.up.railway.app)
+[soundsurf-production.up.railway.app](https://soundsurf-production.up.railway.app/)
 
 **Programsko inženjerstvo, ak. god. 2026./2027.**
 
