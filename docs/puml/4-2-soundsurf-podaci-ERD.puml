@@ -4,7 +4,7 @@
 ' Svrha:    Prikazuje trajne entitete sustava soundSurf koji su implementirani
 '           u bazi (korisnik, radna okolina, stavka radne okoline), njihove
 '           ključeve, reprezentativne atribute i kardinalnosti.
-' Autor:    Filip Čelić
+' Autor:    Filip Celić
 ' AI:       Nacrt je izrađen uz pomoć AI alata (Claude). Autor je entitete,
 '           atribute i veze usporedio s Django modelima i migracijama i
 '           odgovara za konačni sadržaj.
