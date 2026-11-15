@@ -1,5 +1,5 @@
 // obrada zvuka preko Web Audio API-ja (UC-06, UC-07)
-// za sad generator, lowpass, highpass i export u wav, ostalo kasnije
+// za sad samo generator i lowpass, ostalo kasnije
 
 const SAMPLE_RATE = 44100;
 
@@ -20,29 +20,20 @@ export async function generiraj(tip, frekvencija, trajanje, amplituda) {
   return ctx.startRendering();
 }
 
-// lowpass i highpass su isti BiquadFilter, razlika je samo u tipu
-async function biquad(buffer, tip, granicna) {
+export async function lowpass(buffer, granicna) {
   const ctx = new OfflineAudioContext(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
 
   const src = ctx.createBufferSource();
   src.buffer = buffer;
 
   const filter = ctx.createBiquadFilter();
-  filter.type = tip;
+  filter.type = "lowpass";
   filter.frequency.value = granicna;
 
   src.connect(filter).connect(ctx.destination);
   src.start();
 
   return ctx.startRendering();
-}
-
-export function lowpass(buffer, granicna) {
-  return biquad(buffer, "lowpass", granicna);
-}
-
-export function highpass(buffer, granicna) {
-  return biquad(buffer, "highpass", granicna);
 }
 
 // AudioBuffer -> WAV (16-bitni PCM, kanali prepleteni), vraća Blob
@@ -82,4 +73,4 @@ export function uWav(buffer) {
   return new Blob([zapis], { type: "audio/wav" });
 }
 
-// TODO gain, reverb, tremolo
+// TODO highpass, gain, reverb, tremolo
