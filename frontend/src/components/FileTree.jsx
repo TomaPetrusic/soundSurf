@@ -1,0 +1,256 @@
+import { useEffect, useState } from "react";
+import { nadji, putDo, roditelj } from "../services/stablo";
+import "./FileTree.css";
+
+// sve vidljive retke u jednu listu, s dubinom za uvlačenje
+function poravnaj(stavke, otvoreno, dubina = 0, izlaz = []) {
+  for (const s of stavke) {
+    izlaz.push({ ...s, dubina });
+    if (s.tip === "mapa" && otvoreno.has(s.id)) {
+      poravnaj(s.djeca, otvoreno, dubina + 1, izlaz);
+    }
+  }
+  return izlaz;
+}
+
+function Ikona({ velicina = 18, debljina = 1.5, children }) {
+  return (
+    <svg
+      width={velicina}
+      height={velicina}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={debljina}
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
+
+// preuzimanje ima smisla samo za datoteke
+const RADNJE_DATOTEKE = ["Preimenuj", "Premjesti", "Preuzmi"];
+const RADNJE_MAPE = ["Nova mapa", "Preimenuj", "Premjesti"];
+
+export default function FileTree({
+  stavke,
+  otvoreno,
+  odabrano,
+  odabranaMapa,
+  izbornik,
+  onOdaberi,
+  onOdaberiMapu,
+  onPrebaciMapu,
+  onIzbornik,
+  onRadnja,
+  onPremjesti,
+}) {
+  const reci = poravnaj(stavke, otvoreno);
+  // povlačenje: id stavke koja se vuče i id mape (ili "korijen") iznad koje je miš
+  const [povuceno, setPovuceno] = useState(null);
+  const [iznad, setIznad] = useState(null);
+
+  // može li se povučena stavka ispustiti u mapu (null = vrh stabla)
+  function mozePustiti(ciljId) {
+    if (povuceno === null) return false;
+    if (ciljId === povuceno) return false;
+    // mapa se ne može premjestiti u vlastitu podmapu
+    if (ciljId !== null && putDo(stavke, ciljId)?.includes(povuceno)) return false;
+    const otac = roditelj(stavke, povuceno);
+    return otac === undefined ? false : (otac ? otac.id : null) !== ciljId;
+  }
+
+  function nadVrhom(e, ciljId) {
+    if (!mozePustiti(ciljId)) return;
+    e.preventDefault(); // bez ovoga preglednik ne dopušta drop
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "move";
+    setIznad(ciljId === null ? "korijen" : ciljId);
+  }
+
+  function pusti(e, ciljId) {
+    if (!mozePustiti(ciljId)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const stavka = nadji(stavke, povuceno);
+    setPovuceno(null);
+    setIznad(null);
+    if (stavka) onPremjesti(stavka, ciljId);
+  }
+
+  // izbornik se zatvara klikom bilo gdje drugdje
+  useEffect(() => {
+    if (!izbornik) return;
+    const zatvori = () => onIzbornik(null);
+    document.addEventListener("click", zatvori);
+    return () => document.removeEventListener("click", zatvori);
+  }, [izbornik, onIzbornik]);
+
+  function kliknuto(redak) {
+    if (redak.tip === "mapa") {
+      onPrebaciMapu(redak.id);
+      onOdaberiMapu(redak.id); // odabrana mapa postaje odredište za upload i novu mapu
+    } else {
+      onOdaberi(redak.id);
+    }
+  }
+
+  function pokreni(e, radnja, redak) {
+    e.stopPropagation();
+    onIzbornik(null);
+    // "Nova mapa" iz izbornika stavke koristi isti dijalog kao i gumb u alatnoj traci
+    onRadnja(radnja === "Nova mapa" ? "novaMapa" : radnja, redak);
+  }
+
+  // desni klik na mapu otvara isti izbornik kao gumb s tri točke
+  function kontekstniIzbornik(e, redak) {
+    if (redak.tip !== "mapa") return;
+    e.preventDefault();
+    e.stopPropagation();
+    onIzbornik(izbornik === redak.id ? null : redak.id);
+  }
+
+  return (
+    <div
+      className="tree"
+      role="treegrid"
+      aria-label="Datoteke"
+      onDragOver={(e) => nadVrhom(e, null)}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setIznad(null);
+      }}
+      onDrop={(e) => pusti(e, null)}
+    >
+      <div className="tree-grid tree-head ws-lbl">
+        <span>Naziv</span>
+        <span>Format</span>
+        <span />
+      </div>
+
+      {/* vrh stabla: odabir kao odredište za upload i novu mapu te cilj povlačenja */}
+      <div
+        role="row"
+        tabIndex={0}
+        className={
+          "tree-grid tree-row tree-root" +
+          (odabranaMapa === null ? " tree-row-target" : "") +
+          (iznad === "korijen" ? " tree-row-drop" : "")
+        }
+        onClick={() => onOdaberiMapu(null)}
+        onKeyDown={(e) => e.key === "Enter" && onOdaberiMapu(null)}
+      >
+        <span className="tree-name">
+          <Ikona>
+            <path d="M3 7h6l2 2h10v10H3z" />
+          </Ikona>
+          <span className="tree-name-text">Sve datoteke</span>
+        </span>
+        <span />
+        <span />
+      </div>
+
+      {reci.map((r) => {
+        const jeMapa = r.tip === "mapa";
+        const odabran = r.id === odabrano;
+        const jeOdrediste = jeMapa && r.id === odabranaMapa;
+        return (
+          <div
+            key={r.id}
+            role="row"
+            aria-selected={odabran}
+            tabIndex={0}
+            className={
+              "tree-grid tree-row" +
+              (odabran ? " tree-row-selected" : "") +
+              (jeOdrediste ? " tree-row-target" : "") +
+              (povuceno === r.id ? " tree-row-dragging" : "") +
+              (iznad === r.id ? " tree-row-drop" : "")
+            }
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", r.id); // Firefox traži podatke za početak povlačenja
+              setPovuceno(r.id);
+              onIzbornik(null);
+            }}
+            onDragEnd={() => {
+              setPovuceno(null);
+              setIznad(null);
+            }}
+            onDragOver={(e) => (jeMapa ? nadVrhom(e, r.id) : undefined)}
+            onDrop={(e) => (jeMapa ? pusti(e, r.id) : undefined)}
+            onClick={() => kliknuto(r)}
+            onKeyDown={(e) => e.key === "Enter" && kliknuto(r)}
+            onContextMenu={(e) => kontekstniIzbornik(e, r)}
+          >
+            <span
+              className="tree-name"
+              style={{ paddingLeft: r.dubina * 24 + (jeMapa ? 0 : 24) }}
+            >
+              {jeMapa && (
+                <Ikona velicina={16} debljina={1.8}>
+                  <path d={otvoreno.has(r.id) ? "M6 9l6 6 6-6" : "M9 6l6 6-6 6"} />
+                </Ikona>
+              )}
+              {jeMapa ? (
+                <Ikona>
+                  <path d="M3 7h6l2 2h10v10H3z" />
+                </Ikona>
+              ) : (
+                <Ikona>
+                  <path d="M6 3h8l4 4v14H6z" />
+                  <path d="M14 3v4h4" />
+                </Ikona>
+              )}
+              <span className="tree-name-text">{r.naziv}</span>
+            </span>
+
+            <span>{!jeMapa && <span className="tree-fmt">{r.format}</span>}</span>
+
+            <button
+              type="button"
+              className="ws-btn ws-btn-ghost tree-more"
+              aria-label="Radnje"
+              onClick={(e) => {
+                e.stopPropagation();
+                onIzbornik(izbornik === r.id ? null : r.id);
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.6" />
+                <circle cx="12" cy="12" r="1.6" />
+                <circle cx="19" cy="12" r="1.6" />
+              </svg>
+            </button>
+
+            {izbornik === r.id && (
+              <div className="tree-menu" role="menu" aria-label={"Radnje za " + r.naziv}>
+                {(jeMapa ? RADNJE_MAPE : RADNJE_DATOTEKE).map((radnja) => (
+                  <button
+                    key={radnja}
+                    type="button"
+                    role="menuitem"
+                    className="tree-menu-item"
+                    onClick={(e) => pokreni(e, radnja, r)}
+                  >
+                    {radnja}
+                  </button>
+                ))}
+                <div className="tree-menu-line" />
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="tree-menu-item"
+                  onClick={(e) => pokreni(e, "Obriši", r)}
+                >
+                  Obriši
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}

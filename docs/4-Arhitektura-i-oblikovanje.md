@@ -18,27 +18,14 @@ Za svaki UML dijagram čuvajte čitljivu sliku i PlantUML izvor, kako je opisano
 
 ## 4.1 Ključne arhitekturne odluke
 
-**Cilj:** Objasniti nekoliko arhitekturnih odluka koje najviše utječu na rješenje i navesti njihove projektno specifične razloge.
-
 | Odluka | Razmatrana alternativa | Projektno specifično obrazloženje i kompromis |
 | --- | --- | --- |
-|  |  |  |
-
-Objasnite glavne arhitekturne odluke bez ponavljanja popisa tehnologija. Ako važna odluka ima ADR, dovoljno je u tablici navesti njegov ID.
-
-<details>
-<summary><strong>Primjer arhitekturnih odluka i kompromisa</strong></summary>
-
-**Primjer — CrisisMap:**
-
-| Odluka | Razmatrana alternativa | Projektno specifično obrazloženje i kompromis |
-| --- | --- | --- |
-| Klijent u pregledniku i jedan poslužiteljski API | Više zasebno postavljenih poslužiteljskih usluga | Klijent prikazuje kartu, dok poslužiteljski sustav provjerava i pohranjuje prijave. Jedan poslužiteljski sustav upravljiv je za ovaj opseg; njegov kvar može privremeno prekinuti rad s prijavama. Obrazloženje je u ADR-01. |
-| Relacijska pohrana prijava | Dokumentno orijentirana pohrana | Prijave imaju prepoznatljive veze s korisnicima i lokacijama. Relacijska shema te veze čini eksplicitnima, ali zahtijeva migracije kada se shema promijeni. |
-
-**Analiza primjera:** Obje odluke navode razlog vezan uz aplikaciju za prijavljivanje kriznih događaja i priznaju kompromis. Odluka o poslužiteljskom sustavu upućuje na ADR-01 umjesto ponavljanja cijele usporedbe. Moduli unutar jedne aplikacije koja se postavlja kao cjelina nisu zasebne mikrousluge. U vlastitoj tablici navedite alternative koje je tim doista razmatrao.
-
-</details>
+| Web-klijent (React) i poslužiteljski API (Django REST) postavljaju se kao jedna aplikacija: jedna Docker slika na Railwayu, a Django poslužuje i izgrađeni klijent. | Zasebno postavljeni klijent i poslužiteljski sustav. | Jedna adresa i jedno postavljanje dovoljni su za opseg i veličinu tima, a u produkciji nema zahtjeva između različitih domena. Kompromis: klijent i poslužitelj uvijek se postavljaju zajedno, pa kvar tog servisa prekida cijelu aplikaciju. |
+| Prijava preko Supabase Autha (Google, OAuth 2.0 / OpenID Connect); poslužitelj samo provjerava potpis pristupnog tokena i pri prvom zahtjevu stvara korisnički profil. | Vlastita registracija i prijava s lozinkama u Djangu. | Ispunjava F-01 i NF-06: aplikacija ne pohranjuje lozinke i ne mora sama provoditi njihovu zaštitu. Kompromis: prijava ovisi o dostupnosti vanjskog pružatelja identiteta. |
+| Relacijska baza (Supabase PostgreSQL) kojoj pristupa isključivo poslužitelj preko Django ORM-a i migracija; na tablicama je uključen RLS bez pravila pristupa. | Klijent izravno čita i piše tablice preko Supabase klijenta, uz RLS pravila za svaku tablicu. | Pravila radne okoline (vlasništvo, jedinstven naziv u mapi, provjera formata) nalaze se na jednom mjestu i mogu se ispitati, a javni ključ iz klijenta ne daje pristup tablicama. Kompromis: svaki pristup podacima ide kroz poslužitelj, što znači više poslužiteljskog koda. |
+| Audio sadržaj sprema se u privatni spremnik datoteka (Supabase Storage), a u bazi su samo metapodaci i ključ oblika `<supabase_user_id>/<nasumični uuid>.<ext>`. | Sadržaj u bazi podataka ili na disku poslužitelja. | Baza ostaje mala, a disk na Railwayu nije trajan. Ključ ne ovisi o nazivu ni mapi, pa preimenovanje i premještanje (F-09, F-10) ne diraju sadržaj. Kompromis: baza i spremnik nisu u istoj transakciji, pa poslužitelj sam briše sadržaj pri brisanju, a pri prepisivanju (F-15) koristi novi ključ i stari briše tek nakon uspjeha. |
+| Mape i datoteke čuvaju se u jednoj tablici u kojoj svaka stavka pokazuje na nadređenu mapu. | Odvojene tablice za direktorije i datoteke. | Jedno pravilo jedinstvenosti naziva vrijedi za mape i datoteke na istoj razini (F-07, F-09), a premještanje i brisanje rade jednako za obje vrste (F-10, F-11). Kompromis: polja specifična za datoteke prazna su kod mapa, a da je nadređena stavka mapa istog korisnika provjerava poslužitelj, ne baza. |
+| Filtri i generator zvuka izvode se u pregledniku (Web Audio API); poslužitelj sprema rezultat i pretvara format pri preuzimanju. | Obrada na poslužitelju uz privremeni pregled rezultata. | Rezultat se može odmah preslušati i poslužitelj nije opterećen računanjem (F-12–F-15). Kompromis: obrada ovisi o mogućnostima preglednika i cijeli zapis mora stati u njegovu memoriju; poslužitelj ipak provjerava format svakog spremljenog rezultata. |
 
 ## 4.2 Gradivni blokovi i UML dijagram komponenata
 
@@ -77,30 +64,11 @@ Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dij
 
 ## 4.3 Model podataka i oblikovanje razreda
 
-**Cilj:** Objasniti važne informacije koje aplikacija pohranjuje i jedno reprezentativno područje oblikovanja na razini razreda. Model podataka i UML dijagram razreda odgovaraju na različita pitanja; jedno ne zamjenjuje drugo.
-
 ### 4.3.1 ER dijagram i model podataka
 
-**Cilj:** Prikazati važne pohranjene entitete, njihove identifikatore i veze te dovoljno atributa za razumijevanje podataka aplikacije. ER dijagram odvojen je od reprezentativnog UML dijagrama razreda u nastavku.
+Primjer: Ana se prvi put prijavljuje Google računom. Poslužitelj joj stvara korisnički profil, a pri prvom otvaranju radne okoline i zapis o radnoj okolini te mapu *Primjeri* s tri početna zvukovna zapisa (F-02). Ana zatim stvara mapu *Projekti* i u nju učitava datoteku *Bas linija.wav*. Mapa i datoteka su stavke radne okoline: datoteka pokazuje na mapu *Projekti* kao nadređenu stavku, a mapa *Projekti* nema nadređenu stavku jer je u korijenu. Bajtovi zvuka nisu u bazi; stavka datoteke čuva samo ključ pod kojim su spremljeni u Supabase Storageu.
 
-**ER dijagram:** [Ugradite čitljiv dijagram projekta.]  
-**Izvor dijagrama:** [Poveznica na njegov izvor.]  
-**Implementacija:** [Navedite gdje je odgovarajući model podataka definiran u projektu.]
-
-<details>
-<summary><strong>Jedna prijava poplave i povezani podaci</strong></summary>
-
-**Primjer — CrisisMap:** Ana putem svojeg korisničkog računa podnosi prijavu poplave `R-104`. Odabire lokaciju na karti i označava razinu ozbiljnosti kao visoku. Građanin može podnijeti više prijava; svaka prijava pripada jednoj kategoriji kriznog događaja, primjerice *Poplava*. Aplikacija pohranjuje prijavu i njezine koordinate. Kartografske pločice dolaze od vanjskog pružatelja i nisu entiteti u modelu podataka aplikacije.
-
-![ER dijagram podataka sustava CrisisMap](./assets/diagrams/4-2-crisismap-data-ERD.svg)
-
-**Slika 4.2. ER dijagram podataka sustava CrisisMap**
-
-**PlantUML izvor:** [izvor](./puml/4-2-crisismap-data-ERD.puml)
-
-**Analiza primjera:** `R-104` ima jednog autora i jednu kategoriju; Ana i kategorija *Poplava* mogu biti povezane s više prijava. Dijagram prikazuje veze bez prepisivanja svih stupaca baze podataka ili pisanja drugog tabličnog opisa za svaki entitet. Ako aplikacija prihvaća i **anonimne** prijave, tu mogućnost prikažite u vezi s entitetom `Citizen`. Ako su kategorije fiksne vrijednosti, a ne pohranjeni zapisi, nemojte izmišljati tablicu kategorija. Završni ER dijagram usporedite s modelom trajne pohrane i objasnite samo razlike važne za razumijevanje projekta.
-
-</details>
+![ER dijagram podataka sustava soundSurf](./assets/diagrams/4-2-soundsurf-podaci-ERD.svg)
 
 ### 4.3.2 Reprezentativni UML dijagram razreda
 

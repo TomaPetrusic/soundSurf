@@ -1,0 +1,56 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+hide footbox
+
+title soundSurf - UML dijagram slijeda: objava posta (UC-10)
+
+autonumber
+actor "Korisnik" as User
+participant "Web klijent" as UI
+participant "HTTP API" as API
+participant "Usluga objava" as PostService
+database "Repozitorij datoteka" as AudioRepo
+database "Repozitorij postova" as PostRepo
+
+User -> UI : pokreće objavu
+UI -> API : dohvati vlastite zvukovne zapise
+API -> AudioRepo : popis datoteka korisnika
+AudioRepo --> API : popis
+API --> UI : prikaži popis
+alt radna okolina nema zvukovnih zapisa
+  UI --> User : ponudi uvoz ili generiranje
+else barem jedan zvuk postoji
+  User -> UI : odabire zapis, opis i vidljivost
+  UI -> API : objavi(zapisId, opis, vidljivost)
+  API -> PostService : objavi(korisnikId, zapisId, opis, vidljivost)
+  PostService -> AudioRepo : provjeri vlasništvo zapisa
+  AudioRepo --> PostService : pripada vlasniku / nije dopušteno
+  alt zapis nije dostupan korisniku
+    PostService --> API : odbijeno
+    API --> UI : obavijest o neuspjehu
+  else opis je prazan
+    PostService --> API : zahtijeva se tekstualni opis
+    API --> UI : zatraži unos opisa
+  else podaci su ispravni
+    PostService -> PostRepo : spremi novi post i vidljivost
+    alt pohrana nije uspjela
+      PostRepo --> PostService : pogreška
+      PostService --> API : nije objavljeno
+      API --> UI : obavijest o pogrešci
+    else post je spremljen
+      PostRepo --> PostService : novi post
+      PostService --> API : post
+      API --> UI : prikaži post prema vidljivosti
+      UI --> User : objava je spremljena
+    end
+  end
+end
+
+note over PostService,PostRepo
+  F-19: objava povezuje zapis s tekstualnim opisom.
+  F-21 / F-23: privatni post nije vidljiv drugima;
+  filtriranje se provodi na poslužiteljskoj strani.
+  Odluka o ponašanju nakon brisanja zvuka ostaje otvorena.
+end note
+@enduml

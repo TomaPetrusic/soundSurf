@@ -1,0 +1,203 @@
+import logging
+
+from django.db import IntegrityError, transaction
+from django.http import HttpResponse
+from django.utils.http import content_disposition_header
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from workspace import audio, conf, services
+from workspace.models import Node
+from workspace.seed import ensure_workspace
+from workspace.serializers import (
+    FolderCreateSerializer, NodeSerializer, NodeUpdateSerializer, UploadSerializer,
+)
+from workspace.storage import get_storage, new_storage_key
+
+log = logging.getLogger(__name__)
+
+
+NAME_TAKEN_MSG = "Stavka s nazivom '{}' već postoji u ovoj mapi."
+
+
+def _conflict(name):
+    return Response({"detail": NAME_TAKEN_MSG.format(name)}, status=status.HTTP_409_CONFLICT)
+
+
+def _validate(serializer):
+    if not serializer.is_valid():
+        errors = serializer.errors
+        first = next(iter(errors.values()))
+        raise ValidationError({"detail": first[0] if isinstance(first, list) else first})
+    return serializer.validated_data
+
+
+class TreeView(APIView):
+    def get(self, request):
+       ensure_workspace(request.user)
+       return Response(services.build_tree(request.user))
+
+
+class FolderCreateView(APIView):
+    def post(self, request):
+        s = FolderCreateSerializer(data=request.data)
+        _validate(s)
+        name, parent_id = s.validated_data["naziv"], s.validated_data["roditelj"]
+
+        services.get_owned_folder(request.user, parent_id)
+        if services.name_taken(request.user, parent_id, name):
+            return _conflict(name)
+        try:
+            node = Node.objects.create(owner=request.user, parent_id=parent_id,
+                                       name=name, kind=Node.Kind.FOLDER)
+        except IntegrityError:
+            return _conflict(name)
+        return Response(NodeSerializer(node).data, status=status.HTTP_201_CREATED)
+
+
+class FormatsView(APIView):
+    def get(self, request):
+        return Response({
+            "formati": [{"format": f, "mime": audio.mime_type(f)} for f in audio.FORMATS],
+            "max_mb": conf.MAX_UPLOAD_MB,
+        })
+
+
+class FileUploadView(APIView):
+    def post(self, request):
+        s = UploadSerializer(data=request.data)
+        _validate(s)
+        upload, parent_id = s.validated_data["datoteka"], s.validated_data["roditelj"]
+        services.get_owned_folder(request.user, parent_id)
+
+        if upload.size > conf.MAX_UPLOAD_MB * 1024 * 1024:
+            return Response({"detail": f"Datoteka je veća od {conf.MAX_UPLOAD_MB} MB."},
+                            status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        data = upload.read()
+        try:
+            info = audio.inspect(data)
+        except audio.AudioError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+        node = save_new_file(request.user, parent_id, services.name_from_filename(upload.name),
+                             data, info, Node.Origin.UPLOAD)
+        return Response(NodeSerializer(node).data, status=status.HTTP_201_CREATED)
+
+
+def save_new_file(owner, parent_id, name, data, info, origin):
+    storage = get_storage()
+    key = new_storage_key(owner, info["format"])
+    storage.upload(key, data, audio.mime_type(info["format"]))
+    try:
+        with transaction.atomic():
+            return Node.objects.create(
+                owner=owner, parent_id=parent_id, kind=Node.Kind.FILE,
+                name=services.free_name(owner, parent_id, name),
+                storage_key=key, size_bytes=len(data), origin=origin, **info,
+            )
+    except Exception:
+        storage.remove([key])
+        raise
+
+
+def _owned_file(owner, node_id):
+    node = services.get_owned(owner, node_id)
+    if node.is_folder:
+        raise ValidationError({"detail": "To je mapa, a ne datoteka."})
+    return node
+
+
+class FileDownloadView(APIView):
+    def get(self, request, node_id):
+        node = _owned_file(request.user, node_id)
+        data = get_storage().download(node.storage_key)
+        fmt = (request.query_params.get("ciljni_format") or node.format).upper()
+
+        if fmt != node.format:
+            try:
+                data = audio.convert(data, fmt)
+            except audio.AudioError as exc:
+                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        response = HttpResponse(data, content_type=audio.mime_type(fmt))
+        response["Content-Disposition"] = content_disposition_header(
+            True, f"{node.name}.{fmt.lower()}")
+        return response
+
+
+class FileUrlView(APIView):
+    EXPIRES_IN = 3600
+
+    def get(self, request, node_id):
+        node = _owned_file(request.user, node_id)
+        url = get_storage().signed_url(node.storage_key, self.EXPIRES_IN)
+        return Response({"url": url, "vrijedi_sekundi": self.EXPIRES_IN})
+
+
+class FileContentView(APIView):
+    def put(self, request, node_id):
+        node = _owned_file(request.user, node_id)
+        upload = request.data.get("datoteka")
+        if upload is None:
+            return Response({"detail": "Nedostaje datoteka."}, status=status.HTTP_400_BAD_REQUEST)
+        if upload.size > conf.MAX_UPLOAD_MB * 1024 * 1024:
+            return Response({"detail": f"Datoteka je veća od {conf.MAX_UPLOAD_MB} MB."},
+                            status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        data = upload.read()
+        try:
+            info = audio.inspect(data)
+        except audio.AudioError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+        storage = get_storage()
+        old_key = node.storage_key
+        new_key = new_storage_key(request.user, info["format"])
+        storage.upload(new_key, data, audio.mime_type(info["format"]))
+        try:
+            node.storage_key = new_key
+            node.size_bytes = len(data)
+            for field, value in info.items():
+                setattr(node, field, value)
+            node.save()
+        except Exception:
+            storage.remove([new_key])
+            raise
+        storage.remove([old_key])
+        return Response(NodeSerializer(node).data)
+
+
+class NodeDetailView(APIView):
+    def patch(self, request, node_id):
+        node = services.get_owned(request.user, node_id)
+        s = NodeUpdateSerializer(data=request.data)
+        _validate(s)
+        new_name = s.validated_data.get("naziv", node.name)
+        new_parent = s.validated_data.get("roditelj", node.parent_id)
+
+        if new_parent != node.parent_id:
+            services.get_owned_folder(request.user, new_parent)
+            if node.is_folder and new_parent is not None and services.is_inside(node, new_parent):
+                return Response({"detail": "Mapa se ne može premjestiti u samu sebe ni u svoju podmapu."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        if services.name_taken(request.user, new_parent, new_name, exclude_id=node.id):
+            return _conflict(new_name)
+
+        node.name, node.parent_id = new_name, new_parent
+        try:
+            node.save(update_fields=["name", "parent", "updated_at"])
+        except IntegrityError:
+            return _conflict(new_name)
+        return Response(NodeSerializer(node).data)
+
+    def delete(self, request, node_id):
+        node = services.get_owned(request.user, node_id)
+        keys = services.storage_keys_in_subtree(node)
+        node.delete()
+        try:
+            get_storage().remove(keys)
+        except Exception:
+            log.exception("Brisanje sadržaja iz Storagea nije uspjelo: %s", keys)
+        return Response(status=status.HTTP_204_NO_CONTENT)

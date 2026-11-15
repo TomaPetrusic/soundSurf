@@ -1,0 +1,54 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+hide footbox
+
+title soundSurf - UML dijagram slijeda: tuđi zvuk u vlastitu okolinu (UC-14)
+
+autonumber
+actor "Korisnik" as User
+participant "Web klijent" as UI
+participant "HTTP API" as API
+participant "Usluga javnih postova" as Posts
+database "Repozitorij postova" as PostRepo
+participant "Usluga radne okoline" as WS
+participant "Pohrana zvuka" as Store
+database "Repozitorij datoteka" as Files
+
+User -> UI : na tuđem javnom postu odabire dodavanje
+User -> UI : odabire direktorij u vlastitoj okolini
+UI -> API : kopiraj(postId, odredišniDirektorijId)
+API -> Posts : provjeri dostupnost javnog posta
+Posts -> PostRepo : dohvati post i vidljivost
+PostRepo --> Posts : podaci o postu
+alt post ne postoji ili nije javan
+  Posts --> API : nedostupan
+  API --> UI : odbij pristup
+else post je javno dostupan
+  Posts --> API : izvorni zapis
+  API -> WS : provjeri odredišni direktorij korisnika
+  alt direktorij ne pripada korisniku
+    WS --> API : odbijeno
+    API --> UI : obavijest o neuspjehu
+  else odredište dopušteno
+    API -> Store : stvori neovisnu kopiju zvuka
+    Store --> API : ključ kopije
+    API -> Files : evidentiraj novi zapis s novim ID-jem
+    alt kopiranje ili spremanje nije uspjelo
+      Files --> API : pogreška
+      API --> UI : neuspjeh, bez prikaza kopije
+    else pohrana uspješna
+      Files --> API : novi zapis
+      API --> UI : prikaži novi zapis u direktoriju
+      UI --> User : kopija je spremna za obradu
+    end
+  end
+end
+
+note over API,Files
+  F-29: novi zapis mora biti neovisan o izvornoj objavi.
+  Alternativa F-28 (preuzimanje na računalo)
+  ne stvara datoteku u radnoj okolini.
+  Prava nad izvornim postom provjeravaju se pri svakom zahtjevu.
+end note
+@enduml

@@ -1,0 +1,205 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { visineStupica as probneVisine } from "../services/probniPodaci";
+import { dekodiraj, oblikujVrijeme, visineStupica } from "../services/valniOblik";
+import "./PlayerPanel.css";
+
+const BROJ_STUPICA = 220;
+const OZNAKE = 7; // okomite crte u pozadini
+const PROBNO_TRAJANJE = 134; // za zapise bez stvarnog zvuka (probni podaci)
+const PROBNI_POLOZAJ = 0.381;
+
+// za datoteku s File objektom (s računala ili preuzetu s poslužitelja): stvarni valni
+// oblik, trajanje i zvuk; bez njega probni prikaz, osim dok se zvuk tek preuzima
+export default function PlayerPanel({ datoteka, ucitava = false, greskaUcitavanja = null }) {
+  const [svira, setSvira] = useState(false);
+  const [adresa, setAdresa] = useState(null); // adresa zvuka za element <audio>
+  const [trenutno, setTrenutno] = useState(0); // proteklo vrijeme u sekundama
+  const audio = useRef(null);
+  // rezultat dekodiranja lokalne datoteke: { visine, trajanje } ili greška
+  const [zvuk, setZvuk] = useState(null);
+  const [greska, setGreska] = useState(false);
+
+  const lokalna = datoteka.datoteka; // File sa zvukom, ako ga imamo
+  const cekaZvuk = ucitava || Boolean(greskaUcitavanja);
+
+  // preglednik napravi privremenu adresu iz datoteke; ništa se ne šalje na mrežu
+  useEffect(() => {
+    setSvira(false);
+    setTrenutno(0);
+    if (!lokalna) {
+      setAdresa(null);
+      return;
+    }
+    const nova = URL.createObjectURL(lokalna);
+    setAdresa(nova);
+    return () => URL.revokeObjectURL(nova);
+  }, [lokalna]);
+
+  // dok zvuk svira, položaj čitamo za svaki iscrtani okvir da se marker pomiče glatko;
+  // sam događaj timeupdate stiže tek nekoliko puta u sekundi
+  useEffect(() => {
+    if (!svira) return;
+    let okvir;
+    const korak = () => {
+      if (audio.current) setTrenutno(audio.current.currentTime);
+      okvir = requestAnimationFrame(korak);
+    };
+    okvir = requestAnimationFrame(korak);
+    return () => cancelAnimationFrame(okvir);
+  }, [svira]);
+
+  // na kraju pjesme se vraćamo na početak
+  function krajReprodukcije() {
+    setSvira(false);
+    if (audio.current) audio.current.currentTime = 0;
+    setTrenutno(0);
+  }
+
+  // premotavanje: klik ili povlačenje po valnom obliku pomiče zvuk na to mjesto
+  function premotaj(e) {
+    const a = audio.current;
+    if (!a || !trajanje) return;
+    const okvir = e.currentTarget.getBoundingClientRect();
+    const udio = Math.min(1, Math.max(0, (e.clientX - okvir.left) / okvir.width));
+    // malo prije kraja, da povlačenje do ruba ne pokrene kraj pjesme
+    a.currentTime = Math.min(udio * trajanje, trajanje - 0.05);
+    setTrenutno(a.currentTime);
+  }
+
+  function prebaci() {
+    const a = audio.current;
+    if (!a) return;
+    if (a.paused) a.play().catch(() => setSvira(false));
+    else a.pause();
+  }
+
+  useEffect(() => {
+    setZvuk(null);
+    setGreska(false);
+    if (!lokalna) return;
+
+    let aktivno = true;
+    dekodiraj(lokalna)
+      .then((buffer) => {
+        if (!aktivno) return;
+        setZvuk({
+          visine: visineStupica(buffer, BROJ_STUPICA),
+          trajanje: buffer.duration,
+        });
+      })
+      .catch(() => aktivno && setGreska(true));
+    return () => {
+      aktivno = false;
+    };
+  }, [lokalna]);
+
+  // probni valni oblik za zapise bez stvarnog zvuka
+  const probne = useMemo(() => {
+    let sjeme = 7;
+    for (const c of String(datoteka.id)) sjeme += c.charCodeAt(0);
+    return probneVisine(BROJ_STUPICA, sjeme);
+  }, [datoteka.id]);
+
+  const visine = lokalna ? zvuk?.visine : cekaZvuk ? null : probne;
+  // dok se zvuk preuzima ili dekodira, trajanje znamo iz podataka o datoteci
+  const trajanje = lokalna
+    ? (zvuk?.trajanje ?? datoteka.trajanje)
+    : (datoteka.trajanje ?? (cekaZvuk ? null : PROBNO_TRAJANJE));
+  // udio pjesme koji je odsviran (0 do 1)
+  const polozaj = lokalna
+    ? trajanje
+      ? Math.min(1, trenutno / trajanje)
+      : 0
+    : cekaZvuk
+      ? 0
+      : PROBNI_POLOZAJ;
+
+  return (
+    <section className="player" aria-label="Reprodukcija">
+      {adresa && (
+        <audio
+          ref={audio}
+          src={adresa}
+          onPlay={() => setSvira(true)}
+          onPause={() => setSvira(false)}
+          onEnded={krajReprodukcije}
+          onTimeUpdate={(e) => setTrenutno(e.currentTarget.currentTime)}
+        />
+      )}
+      <div className="player-top">
+        <button
+          type="button"
+          className="player-play"
+          aria-label={svira ? "Pauza" : "Pokreni"}
+          disabled={!adresa}
+          onClick={prebaci}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            {svira ? (
+              <>
+                <rect x="6" y="5" width="4" height="14" />
+                <rect x="14" y="5" width="4" height="14" />
+              </>
+            ) : (
+              <path d="M8 5v14l11-7z" />
+            )}
+          </svg>
+        </button>
+        <h1 className="player-title">{datoteka.naziv}</h1>
+        <div className="player-space" />
+        <div className="player-time">
+          <span className="player-time-now">
+            {trajanje ? oblikujVrijeme(polozaj * trajanje) : "–:––"}
+          </span>
+          <span className="player-time-total">
+            / {trajanje ? oblikujVrijeme(trajanje) : "–:––"}
+          </span>
+        </div>
+      </div>
+
+      <div
+        className="wave"
+        aria-label="Valni oblik — povuci za premotavanje"
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          premotaj(e);
+        }}
+        onPointerMove={(e) => e.currentTarget.hasPointerCapture(e.pointerId) && premotaj(e)}
+      >
+        {Array.from({ length: OZNAKE }, (_, i) => (
+          <span
+            key={i}
+            className="wave-tick"
+            style={{ left: (i / (OZNAKE - 1)) * 100 + "%" }}
+          />
+        ))}
+
+        {visine ? (
+          <div className="wave-bars">
+            {visine.map((h, i) => (
+              <span
+                key={i}
+                className={"wave-bar" + (i / BROJ_STUPICA < polozaj ? " wave-bar-played" : "")}
+                style={{ height: h + "%" }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="wave-message">
+            {greskaUcitavanja ||
+              (greska
+                ? "Zapis se ne može dekodirati"
+                : ucitava
+                  ? "Učitavanje zvuka..."
+                  : "Dekodiranje zvuka...")}
+          </div>
+        )}
+
+        <div className="wave-head" style={{ left: polozaj * 100 + "%" }}>
+          <span className="wave-head-top" />
+          <span className="wave-head-bottom" />
+        </div>
+      </div>
+    </section>
+  );
+}

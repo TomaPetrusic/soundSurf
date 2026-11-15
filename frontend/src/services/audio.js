@@ -45,48 +45,41 @@ export function highpass(buffer, granicna) {
   return biquad(buffer, "highpass", granicna);
 }
 
-// AudioBuffer -> wav Blob (16 bit PCM), to se onda salje na backend
+// AudioBuffer -> WAV (16-bitni PCM, kanali prepleteni), vraća Blob
 export function uWav(buffer) {
-  const brKanala = buffer.numberOfChannels;
-  const brUzoraka = buffer.length;
-  const velicinaPodataka = brUzoraka * brKanala * 2;
-
-  const out = new ArrayBuffer(44 + velicinaPodataka);
-  const v = new DataView(out);
-
-  const pisiTekst = (pos, s) => {
-    for (let i = 0; i < s.length; i++) v.setUint8(pos + i, s.charCodeAt(i));
+  const kanali = buffer.numberOfChannels;
+  const uzoraka = buffer.length;
+  const bajtova = uzoraka * kanali * 2;
+  const zapis = new DataView(new ArrayBuffer(44 + bajtova));
+  const tekst = (pomak, niz) => {
+    for (let i = 0; i < niz.length; i++) zapis.setUint8(pomak + i, niz.charCodeAt(i));
   };
 
-  // header, vidi http://soundfile.sapp.org/doc/WaveFormat/
-  pisiTekst(0, "RIFF");
-  v.setUint32(4, 36 + velicinaPodataka, true);
-  pisiTekst(8, "WAVE");
-  pisiTekst(12, "fmt ");
-  v.setUint32(16, 16, true);
-  v.setUint16(20, 1, true); // 1 = PCM
-  v.setUint16(22, brKanala, true);
-  v.setUint32(24, buffer.sampleRate, true);
-  v.setUint32(28, buffer.sampleRate * brKanala * 2, true);
-  v.setUint16(32, brKanala * 2, true);
-  v.setUint16(34, 16, true);
-  pisiTekst(36, "data");
-  v.setUint32(40, velicinaPodataka, true);
+  tekst(0, "RIFF");
+  zapis.setUint32(4, 36 + bajtova, true);
+  tekst(8, "WAVE");
+  tekst(12, "fmt ");
+  zapis.setUint32(16, 16, true); // veličina fmt bloka
+  zapis.setUint16(20, 1, true); // PCM
+  zapis.setUint16(22, kanali, true);
+  zapis.setUint32(24, buffer.sampleRate, true);
+  zapis.setUint32(28, buffer.sampleRate * kanali * 2, true); // bajtova u sekundi
+  zapis.setUint16(32, kanali * 2, true); // bajtova po uzorku svih kanala
+  zapis.setUint16(34, 16, true);
+  tekst(36, "data");
+  zapis.setUint32(40, bajtova, true);
 
-  const kanali = [];
-  for (let k = 0; k < brKanala; k++) kanali.push(buffer.getChannelData(k));
-
-  // kanali idu naizmjenicno (L R L R ...)
-  let pos = 44;
-  for (let i = 0; i < brUzoraka; i++) {
-    for (let k = 0; k < brKanala; k++) {
-      const s = Math.max(-1, Math.min(1, kanali[k][i]));
-      v.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7fff, true);
-      pos += 2;
+  const podaci = [];
+  for (let k = 0; k < kanali; k++) podaci.push(buffer.getChannelData(k));
+  let pomak = 44;
+  for (let i = 0; i < uzoraka; i++) {
+    for (let k = 0; k < kanali; k++) {
+      const x = Math.max(-1, Math.min(1, podaci[k][i])); // filtar može prijeći ±1
+      zapis.setInt16(pomak, x < 0 ? x * 0x8000 : x * 0x7fff, true);
+      pomak += 2;
     }
   }
-
-  return new Blob([out], { type: "audio/wav" });
+  return new Blob([zapis], { type: "audio/wav" });
 }
 
 // TODO gain, reverb, tremolo

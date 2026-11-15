@@ -1,0 +1,112 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam defaultFontName "DejaVu Sans"
+skinparam wrapWidth 200
+skinparam maxMessageSize 130
+skinparam linetype polyline
+
+title soundSurf - arhitektura komponenti (stanje implementacije)
+
+legend top left
+  Zeleno = implementirane komponente u kodu
+  Plavo = postojeći moduli s nedovršenom integracijom
+  Narančasto = planirane funkcionalnosti
+  Isprekidana veza = planirana integracija ili ovisnost
+endlegend
+
+actor "Korisnik" as User
+cloud "Google OAuth" as Google
+cloud "Supabase Auth" as Auth
+cloud "Freesound API" as Freesound
+database "PostgreSQL\n(Supabase)" as DB
+folder "Supabase Storage\nili lokalna pohrana" as Files
+
+rectangle "soundSurf" {
+
+  package "Web klijent - React / Vite" #E8F4EC {
+    [Google prijava\nSupabase SDK] as Login #E8F4EC
+    [API klijent\nprofil i radna okolina\n(services/api.js)] as ClientAPI #E8F4EC
+
+    [Radna okolina UI\nstablo, upload, dijalozi] as WorkspaceUI #E8F4EC
+    [Player i waveform\nreprodukcija i premotavanje] as Player #E8F4EC
+    [Web Audio modul\ngeneriraj / lowpass] as AudioClient #EBF0FA
+  }
+
+  package "Backend - Django / DRF" #E8F4EC {
+    [Supabase JWT autentikacija\ni provjera prava pristupa] as JWT #E8F4EC
+    [Profil korisnika\nGET/PATCH /api/me/] as ProfileAPI #E8F4EC
+    [API radne okoline\nstablo, mape, upload, download,\npreimenuj / premjesti / obriši] as WorkspaceAPI #E8F4EC
+    [Django ORM\nUserProfile / Node] as ORM #E8F4EC
+    [Storage adapteri\nSupabaseStorage / LocalStorage] as Storage #E8F4EC
+  }
+
+  package "Planirana proširenja" #FFF4E5 {
+    [Uvoz s Freesounda] as ImportExport #FFF4E5
+    [Cjelovita obrada zvuka\n5 filtara i spremanje] as Processing #FFF4E5
+    [Objave, javni profili\ni favoriti] as Social #FFF4E5
+  }
+}
+
+User --> Login : prijava
+User --> WorkspaceUI : rad u aplikaciji
+
+Login --> Auth : OAuth preko supabase-js
+Auth --> Google : provjera identiteta
+
+ClientAPI --> JWT : Bearer JWT
+JWT ..> Auth : javni JWKS ključevi
+JWT --> ProfileAPI : autorizirani zahtjev
+ProfileAPI --> ORM : korisnički profil
+JWT --> WorkspaceAPI : autorizirani zahtjev
+WorkspaceAPI --> ORM : metapodaci stavaka
+WorkspaceAPI --> Storage : sadržaj zvuka
+ORM --> DB : Django ORM / SQL
+
+WorkspaceUI --> ClientAPI : stablo, upload, download,\npreimenuj / premjesti / obriši
+WorkspaceUI --> Player : odabrana datoteka (File)
+
+WorkspaceUI ..> AudioClient : planirana UI integracija
+AudioClient ..> Processing : buduća dorada tijeka
+
+Storage --> Files : upload / download / remove
+ImportExport ..> Storage : planirano
+ImportExport ..> Freesound : planirano
+Processing ..> Storage : spremanje rezultata\nplanirano
+Social ..> ORM : modeli i API\nplanirani
+
+note bottom of WorkspaceUI
+  Prikazuje stvarno stablo prijavljenog korisnika.
+  Datoteka iz DropZone sprema se na poslužitelj u mapu odabrane
+  datoteke; preuzimanje u WAV, MP3 ili FLAC (ciljni_format).
+  Datoteka iz stabla preuzima se i predaje playeru kao File.
+  probniPodaci.js služi samo za lokalni pregled izgleda.
+end note
+
+note bottom of AudioClient
+  audio.js implementira OfflineAudioContext:
+  generator oscilatora i low-pass filtar.
+  Funkcije još nisu povezane s cjelovitim UI tijekom.
+  Preostali filtri, izvoz i spremanje su planirani.
+end note
+
+note bottom of Storage
+  Adapteri imaju upload(), download(), remove()
+  i signed_url(); koriste ih pogledi za upload,
+  download, zamjenu sadržaja i brisanje.
+end note
+
+note bottom of Auth
+  Supabase upravlja OAuth prijavom i sesijom.
+  Django verificira primljeni JWT i stvara ili
+  dohvaća UserProfile pri autoriziranom zahtjevu.
+end note
+
+note bottom of Freesound
+  Integracija je planirana.
+  Status obveznosti potrebno je uskladiti između
+  projektne dokumentacije i zahtjeva.
+end note
+
+@enduml

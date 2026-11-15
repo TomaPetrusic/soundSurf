@@ -1,0 +1,120 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam maxMessageSize 150
+hide footbox
+
+title soundSurf - UML dijagram slijeda: obrada zvuka (UC-07)
+
+autonumber
+
+actor "Korisnik" as User
+participant "React UI\nWorkspace / Toolbar" as UI
+participant "Audio modul\naudio.js" as Audio
+participant "Web Audio API\nOfflineAudioContext" as WebAudio
+participant "PlayerPanel\nprikaz zvuka" as Player
+participant "Django REST API\nplanirani endpointi" as API #FFF4E5
+participant "Django ORM\nNode" as ORM
+participant "Storage adapter\nSupabase / Local" as Storage
+
+== Postojeći implementacijski temelj ==
+
+note over UI,Player
+  Trenutačni React UI prikazuje radnu okolinu
+  s demonstracijskim podacima.
+
+  Toolbar nije povezan s potpunim tijekom
+  primjene filtara i spremanja rezultata.
+
+  PlayerPanel trenutačno ne reproducira stvarni zvuk.
+end note
+
+note over Audio,WebAudio
+  U frontend/src/services/audio.js postoje
+  funkcije generiraj() i lowpass().
+
+  Obrada se temelji na OfflineAudioContext.
+  Funkcije postoje u kodu, ali nisu povezane
+  s cjelovitim korisničkim tijekom UC-07.
+
+  Generiranje oscilatora zasebna je funkcionalnost,
+  a ne obvezni korak primjene filtra na datoteku.
+end note
+
+== Planirani cjeloviti tijek UC-07 ==
+
+group PLANIRANO - integracija korisničkog sučelja
+  User -> UI : odabire postojeći zvukovni zapis
+  UI -> UI : provjeri odabrani zapis
+
+  User -> UI : odabire filtar i podešava parametre
+
+  alt Low-pass filtar
+    UI -> Audio : pozovi postojeći lowpass()\n(planirano povezivanje)
+    Audio -> WebAudio : obradi zvučne podatke
+    WebAudio --> Audio : obrađeni zvučni podaci
+    Audio --> UI : rezultat obrade
+  else High-pass, gain, reverb ili tremolo
+    UI -> Audio : primijeni odabrani filtar\n(planirana implementacija)
+    note over Audio,WebAudio
+      Zahtjev F-14 predviđa najmanje pet filtara.
+      Preostali filtri nisu potvrđeni kao implementirani.
+      Konačna organizacija obrade još je projektna odluka.
+    end note
+    Audio --> UI : rezultat obrade (planirano)
+  end
+
+  UI -> Player : prikaži valni oblik i pripremi pregled
+  Player --> User : pregled obrađenog zvuka
+
+  alt Korisnik odustane
+    User -> UI : odbacuje rezultat
+    UI -> UI : ne sprema promjene
+  else Korisnik želi spremiti rezultat
+    User -> UI : odabire način spremanja
+
+    alt Spremi kao novu datoteku
+      UI -> API : zahtjev za spremanje nove datoteke
+      API -> Storage : upload obrađenog sadržaja
+      Storage --> API : ključ pohranjenog sadržaja
+      API -> ORM : stvori novi Node (kind=file)
+      ORM --> API : novi zapis
+      API --> UI : potvrda spremanja
+    else Prepiši postojeću datoteku
+      UI -> API : zahtjev za prepisivanje izvora
+      API -> API : provjeri vlasništvo i valjanost zahtjeva
+      API -> Storage : planirano ažuriranje sadržaja
+      Storage --> API : rezultat pohrane
+      API -> ORM : ažuriraj metapodatke Node
+      ORM --> API : ažurirani zapis
+      API --> UI : potvrda spremanja
+    end
+
+    UI --> User : prikaži spremljeni rezultat
+  end
+end
+
+note over API,Storage
+  Backend već sadrži model Node
+  i adaptere s upload() i download() metodama.
+
+  Međutim, u pregledanom API-ju nije potvrđen
+  cjeloviti endpoint za primjenu filtra,
+  spremanje rezultata ili prepisivanje datoteke.
+
+  Redoslijed pohrane, obrada pogrešaka,
+  rollback i konzistentnost metapodataka
+  trebaju se definirati pri implementaciji.
+end note
+
+note over User,Storage
+  F-14: najmanje pet filtara s parametrima.
+  F-15: spremanje kao nova datoteka ili prepisivanje izvora.
+
+  Prikazani planirani tok nije potvrda
+  da je UC-07 trenutačno potpuno implementiran.
+
+  Dijagram ne zahtijeva promjene aplikacijskog koda.
+end note
+
+@enduml
