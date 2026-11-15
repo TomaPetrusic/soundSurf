@@ -29,7 +29,7 @@ export default function Toolbar({
     <div className="toolbar">
       {odredisnaMapa && (
         <span className="toolbar-odrediste ws-lbl" title="Upload i nova mapa idu ovamo">
-          U mapu: {odredisnaMapa}
+          U mapi: {odredisnaMapa}
         </span>
       )}
       <button type="button" className="ws-btn" onClick={onNovaMapa}>
