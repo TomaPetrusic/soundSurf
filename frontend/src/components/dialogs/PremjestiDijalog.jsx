@@ -1,13 +1,29 @@
 import { Fragment, useState } from "react";
+import { porukaGreske } from "../../services/api";
 import Dialog from "../Dialog";
 
 const KORIJEN = "korijen";
 
-// za sada samo izgled: "Premjesti" zatvara dijalog, ništa se ne premješta
-export default function PremjestiDijalog({ stavke, stavka, trenutnaMapaId, onZatvori }) {
+// onPremjesti(mapaId) premješta stavku na poslužitelju (null = korijen);
+// greška (npr. zauzet naziv u odredištu) se prikaže u dijalogu
+export default function PremjestiDijalog({ stavke, stavka, trenutnaMapaId, onPremjesti, onZatvori }) {
   const [odabrano, setOdabrano] = useState(null);
   const [zatvoreno, setZatvoreno] = useState(new Set());
+  const [greska, setGreska] = useState("");
+  const [salje, setSalje] = useState(false);
   const trenutna = trenutnaMapaId ?? KORIJEN;
+
+  async function potvrdi() {
+    if (odabrano === null || salje) return;
+    setSalje(true);
+    try {
+      await onPremjesti(odabrano === KORIJEN ? null : odabrano);
+      onZatvori();
+    } catch (err) {
+      setGreska(porukaGreske(err));
+      setSalje(false);
+    }
+  }
 
   function prebaci(id) {
     const novo = new Set(zatvoreno);
@@ -27,7 +43,11 @@ export default function PremjestiDijalog({ stavke, stavka, trenutnaMapaId, onZat
         aria-selected={izabrana}
         aria-disabled={jeTrenutna || undefined}
         style={{ paddingLeft: 12 + dubina * 24 }}
-        onClick={() => !jeTrenutna && setOdabrano(id)}
+        onClick={() => {
+          if (jeTrenutna) return;
+          setOdabrano(id);
+          setGreska("");
+        }}
       >
         {imaPodmape ? (
           <span
@@ -77,8 +97,8 @@ export default function PremjestiDijalog({ stavke, stavka, trenutnaMapaId, onZat
       naslov="Premjesti"
       tekst={"Odaberi mapu u koju želiš premjestiti " + vrsta + " " + stavka.naziv + "."}
       potvrda="Premjesti"
-      potvrdaOnemogucena={odabrano === null}
-      onPotvrdi={onZatvori}
+      potvrdaOnemogucena={odabrano === null || salje}
+      onPotvrdi={potvrdi}
       onZatvori={onZatvori}
     >
       <div className="dlg-field">
@@ -89,6 +109,11 @@ export default function PremjestiDijalog({ stavke, stavka, trenutnaMapaId, onZat
           {redak(KORIJEN, "Sve datoteke", 0, stavke.some((s) => s.tip === "mapa"))}
           {!zatvoreno.has(KORIJEN) && mape(stavke, 1)}
         </div>
+        {greska && (
+          <p className="dlg-error" role="alert">
+            {greska}
+          </p>
+        )}
       </div>
     </Dialog>
   );

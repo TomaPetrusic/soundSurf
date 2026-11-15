@@ -1,10 +1,26 @@
+import { useState } from "react";
 import Dialog from "../Dialog";
+import { porukaGreske } from "../../services/api";
 import { brojDatoteka, datotekeUMapi } from "../../services/stablo";
 
-// za sada samo izgled: "Obriši" zatvara dijalog, ništa se ne briše
-export default function ObrisiDijalog({ stavka, onZatvori }) {
+// onObrisi() briše stavku na poslužitelju; greška se prikaže u dijalogu
+export default function ObrisiDijalog({ stavka, onObrisi, onZatvori }) {
   const jeMapa = stavka.tip === "mapa";
   const unutra = jeMapa ? datotekeUMapi(stavka) : [];
+  const [greska, setGreska] = useState("");
+  const [salje, setSalje] = useState(false);
+
+  async function potvrdi() {
+    if (salje) return;
+    setSalje(true);
+    try {
+      await onObrisi();
+      onZatvori();
+    } catch (err) {
+      setGreska(porukaGreske(err));
+      setSalje(false);
+    }
+  }
 
   return (
     <Dialog
@@ -18,9 +34,10 @@ export default function ObrisiDijalog({ stavka, onZatvori }) {
           <strong>Ovo se ne može poništiti.</strong>
         </>
       }
-      potvrda="Obriši"
+      potvrda={salje ? "Brisanje..." : "Obriši"}
+      potvrdaOnemogucena={salje}
       opasno
-      onPotvrdi={onZatvori}
+      onPotvrdi={potvrdi}
       onZatvori={onZatvori}
     >
       {jeMapa && unutra.length > 0 && (
@@ -39,6 +56,11 @@ export default function ObrisiDijalog({ stavka, onZatvori }) {
             ))}
           </ul>
         </div>
+      )}
+      {greska && (
+        <p className="dlg-error" role="alert">
+          {greska}
+        </p>
       )}
     </Dialog>
   );
