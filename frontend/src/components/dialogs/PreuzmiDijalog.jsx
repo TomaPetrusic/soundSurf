@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { porukaGreske } from "../../services/api";
 import Dialog from "../Dialog";
 
 const FORMATI = [
@@ -7,16 +8,35 @@ const FORMATI = [
   { oznaka: "FLAC", opis: "Bez gubitka" },
 ];
 
-// za sada samo izgled: "Preuzmi" zatvara dijalog, ništa se ne preuzima
-export default function PreuzmiDijalog({ stavka, onZatvori }) {
-  const [format, setFormat] = useState("WAV");
+// onPreuzmi(format) preuzima datoteku u odabranom formatu; greška se prikaže u dijalogu
+export default function PreuzmiDijalog({ stavka, onPreuzmi, onZatvori }) {
+  // ponuđen je izvorni format datoteke, jer za njega ne treba pretvorba
+  const [format, setFormat] = useState(
+    FORMATI.some((f) => f.oznaka === stavka.format) ? stavka.format : "WAV"
+  );
+  const [greska, setGreska] = useState("");
+  const [salje, setSalje] = useState(false);
+
+  async function potvrdi() {
+    if (salje) return;
+    setSalje(true);
+    setGreska("");
+    try {
+      await onPreuzmi(format);
+      onZatvori();
+    } catch (err) {
+      setGreska(porukaGreske(err));
+      setSalje(false);
+    }
+  }
 
   return (
     <Dialog
       naslov="Preuzmi"
       tekst={"Odaberi format za datoteku " + stavka.naziv + "."}
-      potvrda="Preuzmi"
-      onPotvrdi={onZatvori}
+      potvrda={salje ? "Preuzimanje..." : "Preuzmi"}
+      potvrdaOnemogucena={salje}
+      onPotvrdi={potvrdi}
       onZatvori={onZatvori}
     >
       <fieldset className="dlg-formati">
@@ -32,7 +52,10 @@ export default function PreuzmiDijalog({ stavka, onZatvori }) {
                 name="format"
                 value={f.oznaka}
                 checked={format === f.oznaka}
-                onChange={() => setFormat(f.oznaka)}
+                onChange={() => {
+                  setFormat(f.oznaka);
+                  setGreska("");
+                }}
               />
               <span className="dlg-format-naziv">{f.oznaka}</span>
               <span className="dlg-format-opis">{f.opis}</span>
@@ -40,6 +63,11 @@ export default function PreuzmiDijalog({ stavka, onZatvori }) {
           ))}
         </div>
       </fieldset>
+      {greska && (
+        <p className="dlg-error" role="alert">
+          {greska}
+        </p>
+      )}
     </Dialog>
   );
 }
