@@ -1,0 +1,103 @@
+' ==============================================================================
+' 4-2-soundsurf-podaci-ERD.puml
+'
+' Svrha:    Prikazuje trajne entitete sustava soundSurf koji su implementirani
+'           u bazi (korisnik, radna okolina, stavka radne okoline), njihove
+'           ključeve, reprezentativne atribute i kardinalnosti.
+' Autor:    Filip Čelić
+' AI:       Nacrt je izrađen uz pomoć AI alata (Claude). Autor je entitete,
+'           atribute i veze usporedio s Django modelima i migracijama i
+'           odgovara za konačni sadržaj.
+' Praćenje: backend/accounts/models.py, backend/workspace/models.py i
+'           backend/workspace/migrations/; pri promjeni modela ažurirati dijagram.
+'
+' Diagram level: Logical data model
+' Diagram type:  Entity-Relationship Diagram (ERD), crow's foot
+' Version:       1.0
+' ==============================================================================
+
+@startuml
+title Sustav soundSurf – logički podatkovni model
+left to right direction
+
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam ArrowColor #212529
+hide circle
+
+skinparam class {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+    FontColor #212529
+}
+
+skinparam entity {
+    BackgroundColor #E7F1FF
+    BorderColor #0D6EFD
+    FontColor #212529
+}
+
+' ==============================================================================
+' Korisnik (accounts_userprofile)
+' ==============================================================================
+
+entity "Korisnik" as User {
+    * id : ID <<PK>>
+    --
+    * supabase_user_id : UUID <<UNIQUE>>
+    * email : text
+    display_name : text
+    bio : text
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ==============================================================================
+' Radna okolina (workspace_workspace)
+' Jedan red po korisniku: bilježi da je korisnik dobio početne zapise (F-02).
+' ==============================================================================
+
+entity "Radna okolina" as Workspace {
+    * id : ID <<PK>>
+    --
+    * owner_id : ID <<FK, UNIQUE>>
+    created_at : datetime
+}
+
+' ==============================================================================
+' Stavka radne okoline (workspace_node)
+' Mape i datoteke u jednoj tablici; kind razlikuje mapu i datoteku.
+' ==============================================================================
+
+entity "Stavka radne okoline" as Node {
+    * id : ID <<PK>>
+    --
+    * owner_id : ID <<FK>>
+    parent_id : ID <<FK>>
+    * name : text
+    * kind : enum (folder, file)
+    format : enum (WAV, MP3, FLAC)
+    storage_key : text <<UNIQUE>>
+    size_bytes : integer
+    duration_sec : decimal
+    sample_rate : integer
+    channels : integer
+    origin : enum (upload, freesound, generated, copy)
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ==============================================================================
+' Veze između entiteta
+' ==============================================================================
+
+User ||--o| Workspace : ima ►
+User ||--o{ Node : posjeduje ►
+Node |o--o{ Node : sadrži ►
+
+note bottom of Node
+  UNIQUE (owner_id, parent_id, name), uključujući korijen (parent_id = NULL).
+  CHECK: za kind = file storage_key nije NULL.
+  Atributi od format do origin popunjeni su samo za datoteke.
+end note
+@enduml
