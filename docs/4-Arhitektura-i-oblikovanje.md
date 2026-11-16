@@ -97,28 +97,71 @@ Inicijalizacija radne okoline implementirana je funkcijom `ensure_workspace()` p
 
 **Cilj:** Objasniti jednu važnu interakciju među dijelovima koji se izvode i životni ciklus jednog smislenog objekta. Odaberite primjere koji otkrivaju odluke ili neuspješne putove umjesto izrade dijagrama za svaku CRUD radnju.
 
-### 4.4.1 Reprezentativni UML sekvencijski dijagram
+### 4.4.1 Reprezentativni UML sekvencijski dijagrami
 
-**Cilj:** Prikazati redoslijed poruka za jedan reprezentativni scenarij i odgovore na važnu alternativu.
+Sekvencijski dijagrami prikazuju vremenski slijed poruka i interakcija između korisnika, korisničkog sučelja, poslužiteljskih komponenti i vanjskih usluga.
 
-**Scenarij:** [Naziv interakcije; dodajte UC ID ako postoji.]  
-**sekvencijski dijagram:** [Ugradite čitljiv UML sekvencijski dijagram.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]
+U nastavku su prikazani sekvencijski dijagrami pet reprezentativnih scenarija sustava soundSurf. Neki dijagrami opisuju planirane funkcionalnosti, a ne u cijelosti implementirane postupke.
 
-<details>
-<summary><strong>Odabir lokacije, provjera valjanosti i podnošenje prijave</strong></summary>
+#### 4.4.1.1 Prijava u sustav
 
-**Primjer — CrisisMap:** Građanin podnosi prijavu kriznog događaja nakon što ručno odabere lokaciju ili zatraži položaj uređaja. Interakcija prikazuje i što se događa kada je pristup lokaciji odbijen, podaci prijave nisu valjani ili pohrana ne uspije.
+**Povezani obrazac uporabe:** UC-01
 
-![Sekvencijski dijagram podnošenja prijave kriznog događaja](./assets/diagrams/4-4-crisismap-report-submission-SD.svg)
+Prikazuje interakcije pri autentifikaciji korisnika.
 
-**Slika 4.4. Sekvencijski dijagram podnošenja prijave kriznog događaja**
+![UML sekvencijski dijagram - Prijava u sustav](./assets/diagrams/4-5-soundsurf-prijava-slijed.svg)
 
-**PlantUML izvor:** [izvor](./puml/4-4-crisismap-report-submission-SD.puml)
+**Dijagram: Prijava u sustav**
 
-**Analiza primjera:** Dva načina odabira lokacije te alternative provjere i pohrane imaju različite posljedice za korisnika; usporedite ih s odgovarajućim obrascem uporabe i njegovim alternativnim tijekovima. API preglednika za lokaciju mogućnost je preglednika; web-klijent, API, usluga i pohrana odgovaraju prikazu komponenata. Odaberite grane koje pomažu objasniti scenarij vašeg projekta i završni dijagram uskladite s implementiranom interakcijom.
+**PlantUML izvor:** [4-5-soundsurf-prijava-slijed.puml](./puml/4-5-soundsurf-prijava-slijed.puml)
 
-</details>
+#### 4.4.1.2 Obrada zvukovnog zapisa
+
+**Povezani obrazac uporabe:** UC-07
+
+Prikazuje tijek primjene filtra i spremanja rezultata.
+
+![UML sekvencijski dijagram - Obrada zvukovnog zapisa](./assets/diagrams/4-6-soundsurf-obrada-slijed.svg)
+
+**Dijagram: Obrada zvukovnog zapisa**
+
+**PlantUML izvor:** [4-6-soundsurf-obrada-slijed.puml](./puml/4-6-soundsurf-obrada-slijed.puml)
+
+#### 4.4.1.3 Uvoz zapisa s Freesounda
+
+**Povezani obrazac uporabe:** UC-04
+
+Prikazuje planiranu integraciju za pretraživanje i uvoz zvukovnih zapisa.
+
+![UML sekvencijski dijagram - Uvoz zapisa s Freesounda](./assets/diagrams/4-7-soundsurf-freesound-slijed.svg)
+
+**Dijagram: Uvoz zapisa s Freesounda**
+
+**PlantUML izvor:** [4-7-soundsurf-freesound-slijed.puml](./puml/4-7-soundsurf-freesound-slijed.puml)
+
+#### 4.4.1.4 Objavljivanje zvukovnog zapisa
+
+**Povezani obrazac uporabe:** UC-10
+
+Prikazuje planirani tijek stvaranja objave sa zvukovnim zapisom.
+
+![UML sekvencijski dijagram - Objavljivanje zvukovnog zapisa](./assets/diagrams/4-8-soundsurf-objava-slijed.svg)
+
+**Dijagram: Objavljivanje zvukovnog zapisa**
+
+**PlantUML izvor:** [4-8-soundsurf-objava-slijed.puml](./puml/4-8-soundsurf-objava-slijed.puml)
+
+#### 4.4.1.5 Uvoz tuđeg zvukovnog zapisa
+
+**Povezani obrazac uporabe:** UC-14
+
+Prikazuje planirano dodavanje tuđeg zapisa u vlastitu radnu okolinu.
+
+![UML sekvencijski dijagram - Uvoz tuđeg zvukovnog zapisa](./assets/diagrams/4-9-soundsurf-uvoz-tudjeg-zapisa-slijed.svg)
+
+**Dijagram: Uvoz tuđeg zvukovnog zapisa**
+
+**PlantUML izvor:** [4-9-soundsurf-uvoz-tudjeg-zapisa-slijed.puml](./puml/4-9-soundsurf-uvoz-tudjeg-zapisa-slijed.puml)
 
 ### 4.4.2 Reprezentativni UML dijagram stanja
 
