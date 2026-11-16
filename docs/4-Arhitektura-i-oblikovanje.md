@@ -29,38 +29,43 @@ Za svaki UML dijagram čuvajte čitljivu sliku i PlantUML izvor, kako je opisano
 
 ## 4.2 Gradivni blokovi i UML dijagram komponenata
 
-**Cilj:** Prikazati logičku podjelu programa na komponente, njihova sučelja i vanjske integracije. Dijagram komponenata prikazuje logičku organizaciju, dok dijagram razmještaja prikazuje fizičko izvođenje. Ovaj prikaz ažurirajte kako sustav poprima konačan oblik.
+Arhitektura sustava soundSurf temelji se na razdvajanju korisničkog sučelja, poslužiteljske aplikacijske logike, podatkovnog modela i pohrane zvukovnog sadržaja.
 
-**Dijagram komponenata:** [Ugradite čitljiv UML dijagram komponenata.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]
+UML dijagram komponenata prikazuje glavne dijelove sustava, njihove odgovornosti, međusobne ovisnosti i komunikaciju s vanjskim uslugama.
 
-| Komponenta | Odgovornost | Razlog za ovu granicu |
+![UML dijagram komponenata sustava soundSurf](./assets/diagrams/4-1-soundsurf-komponente.svg)
+
+**Slika 4.1. UML dijagram komponenata sustava soundSurf**
+
+**PlantUML izvor:** [4-1-soundsurf-komponente.puml](./puml/4-1-soundsurf-komponente.puml)
+
+### Glavne komponente
+
+| Komponenta | Odgovornost | Razlog za odvajanje |
 | --- | --- | --- |
-|  |  |  |
+| Web-klijent (React / Vite) | Korisničko sučelje, prijava, prikaz radne okoline, upravljanje datotekama i reprodukcija zvuka. | Odvajanje korisničke interakcije od poslužiteljske logike. |
+| Web Audio modul | Generiranje zvuka i obrada zvukovnih zapisa u pregledniku. | Lokalna obrada omogućuje pregled rezultata bez dodatnog opterećenja poslužitelja. |
+| Django REST API | Obrada zahtjeva, provjera autentifikacije i ovlasti te upravljanje resursima aplikacije. | Centralizacija poslovnih pravila i kontrole pristupa. |
+| Django ORM | Upravljanje modelima `UserProfile`, `Workspace` i `Node`. | Odvajanje rada s podacima od API sloja. |
+| Storage adapteri | Spremanje, dohvat, zamjena i uklanjanje zvukovnih datoteka. | Neovisnost aplikacijske logike o odabranom načinu pohrane. |
+| Supabase Auth | OAuth prijava, korisničke sesije i izdavanje pristupnih tokena. | Autentifikacija se delegira specijaliziranoj vanjskoj usluzi. |
+| PostgreSQL i spremište datoteka | Trajna pohrana metapodataka i sadržaja zvukovnih zapisa. | Odvajanje strukturiranih podataka od binarnog sadržaja. |
 
-Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dijelove s različitim odgovornostima; planiranu bazu podataka aplikacije smjestite unutar granice, a usluge trećih strana izvan nje. Važne veze označite podatkom ili uslugom koja njima prolazi. Logička komponenta može biti modul unutar jedne poslužiteljske aplikacije: zaseban pravokutnik ne znači zasebno postavljenu uslugu. Tijekom implementacije ažurirajte dijagram kada se promijene odgovornosti ili veze. U završnoj inačici čitatelj treba moći povezati njegove dijelove s kodom. Dijagram razmještaja odgovara na pitanje gdje se ti dijelovi stvarno izvode.
+### Vanjske integracije
 
-<details>
-<summary><strong>Granica sustava, odgovornosti i vanjske ovisnosti</strong></summary>
+Google OAuth koristi se za potvrdu identiteta korisnika, dok Supabase Auth upravlja autentificiranom sesijom. Django provjerava pristupni token i ovlasti prije izvršavanja zaštićenih API operacija.
 
-**Primjer — CrisisMap:** Predložena arhitektura podržava podnošenje prijava kriznih događaja, prikaz na karti i obavijesti o potvrđenim prijavama.
+Freesound API predviđen je za pretraživanje i uvoz vanjskih zvukovnih zapisa. Integracija je dio planiranih funkcionalnosti.
 
-![Dijagram komponenata sustava CrisisMap](./assets/diagrams/4-1-crisismap-system-CMP.svg)
+### Stanje implementacije i planirana proširenja
 
-**Slika 4.1. Dijagram komponenata sustava CrisisMap**
+Dijagram bojama razlikuje implementirane komponente, postojeće module s nedovršenom integracijom i planirane funkcionalnosti. Isprekidane veze označavaju planirane integracije ili ovisnosti.
 
-**PlantUML izvor:** [izvor](./puml/4-1-crisismap-system-CMP.puml)
+U Web Audio modulu implementirani su generator oscilatora, niskopropusni i visokopropusni filtar. Niskopropusni filtar integriran je u korisničko sučelje i omogućuje spremanje rezultata. Visokopropusni filtar postoji u audio servisu, ali još nije povezan s korisničkim sučeljem.
 
-| Dio | Odgovornost | Razlog za ovu granicu |
-| --- | --- | --- |
-| Web-klijent | Prikazuje prijave i prikuplja podatke za novu prijavu. | Korisnička interakcija odvojena je od pravila prijave i trajne pohrane. |
-| API za prijave | Prihvaća zahtjeve za rad s prijavama i vraća odgovore. | Odgovornosti izložene putem HTTP-a odvojene su od obrade prijava. |
-| Usluga za prijave | Primjenjuje pravila prijave i pristupa pohranjenim prijavama. | Pravila provjere valjanosti i pohrane prijava imaju jasno mjesto odgovornosti. |
-| Proces za obavijesti | Određuje korisnike koji trebaju primiti obavijest i traži od vanjskog pružatelja da je pošalje. | Obrada obavijesti odvojena je od odgovaranja na korisnikov zahtjev za prijavu. |
+Dodatni filtri (gain, reverb i tremolo), Freesound integracija te funkcionalnosti objava, javnih profila i favorita predstavljaju planirana proširenja.
 
-**Analiza primjera:** Vanjska granica odvaja predloženi sustav od pružatelja kartografskih usluga i pružatelja obavijesti. Unutarnja granica grupira API za prijave, uslugu za prijave i proces za obavijesti unutar jedne poslužiteljske aplikacije; njihovi zasebni simboli prikazuju predložene odgovornosti, a ne neovisno postavljene usluge. PostgreSQL pohranjuje podatke aplikacije, dok pružatelj kartografskih usluga osigurava kartografske pločice. Strelice sažimaju ovisnosti, a ne redoslijed transakcije; taj redoslijed prikazuje sekvencijski dijagram. Izostavite proces za obavijesti i Firebase Cloud Messaging ako obavijesti nisu dio odobrenog opsega. Pružatelja prijave u sustav uključite samo ako to zahtijeva odobreni zadatak. Kako implementacija napreduje, ispravite svaku predloženu granicu koja se pokaže netočnom; završni dijagram mora odgovarati onome što je tim izgradio. Jedan koherentan prikaz komponenata korisniji je od nekoliko gotovo jednakih inačica s proturječnim vezama.
-
-</details>
+Prikazane komponente predstavljaju logičke odgovornosti sustava. Njihova zasebna reprezentacija u dijagramu ne znači nužno da se izvršavaju kao samostalne poslužiteljske usluge.
 
 ## 4.3 Model podataka i oblikovanje razreda
 
@@ -86,63 +91,107 @@ Model `UserProfile` predstavlja korisnika, dok model `Workspace` predstavlja nje
 
 Inicijalizacija radne okoline implementirana je funkcijom `ensure_workspace()` pri prvom dohvaćanju stabla. Sustav pokušava dodati do tri početna zvukovna zapisa, ovisno o njihovoj dostupnosti u spremištu.
 
-`SupabaseStorage` i `LocalStorage` omogućuju spremanje, dohvat, uklanjanje i pristup zvukovnom sadržaju. Obrada niskopropusnim filtrom i spremanje rezultata postoje u aplikaciji, ali prikazane planirane servisne apstrakcije nisu zasebni implementirani Python razredi. Ostale vrste filtara predstavljaju planirana proširenja.
+`SupabaseStorage` i `LocalStorage` omogućuju spremanje, dohvat, uklanjanje i pristup zvukovnom sadržaju. Obrada niskopropusnim filtrom i spremanje rezultata integrirani su u korisničko sučelje. Visokopropusni filtar postoji u audio servisu, ali nije integriran u sučelje. Gain, reverb i tremolo ostaju planirani. Prikazane servisne apstrakcije nisu nužno zasebni implementirani Python razredi.
+
+### Dodatni UML dijagram razreda: objave i favoriti
+
+Sljedeći dijagram prikazuje **planirani domenski model** javnih objava, korisničkih profila i favorita. Prikazane klase i veze služe za oblikovanje funkcionalnosti F-18 do F-29 te se ne smiju tumačiti kao potvrda da su svi odgovarajući Django modeli i API-ji već implementirani.
+
+![UML dijagram razreda za objave i favorite sustava soundSurf](./assets/diagrams/4-4-soundsurf-razredi-objave.svg)
+
+**Dodatni UML dijagram razreda: planirani modul objava i favorita**
+
+**PlantUML izvor:** [4-4-soundsurf-razredi-objave.puml](./puml/4-4-soundsurf-razredi-objave.puml)
 
 ## 4.4 Ponašanje tijekom izvođenja
 
 **Cilj:** Objasniti jednu važnu interakciju među dijelovima koji se izvode i životni ciklus jednog smislenog objekta. Odaberite primjere koji otkrivaju odluke ili neuspješne putove umjesto izrade dijagrama za svaku CRUD radnju.
 
-### 4.4.1 Reprezentativni UML sekvencijski dijagram
+### 4.4.1 Reprezentativni UML sekvencijski dijagrami
 
-**Cilj:** Prikazati redoslijed poruka za jedan reprezentativni scenarij i odgovore na važnu alternativu.
+Sekvencijski dijagrami prikazuju vremenski slijed poruka i interakcija između korisnika, korisničkog sučelja, poslužiteljskih komponenti i vanjskih usluga.
 
-**Scenarij:** [Naziv interakcije; dodajte UC ID ako postoji.]  
-**sekvencijski dijagram:** [Ugradite čitljiv UML sekvencijski dijagram.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]
+U nastavku su prikazani sekvencijski dijagrami pet reprezentativnih scenarija sustava soundSurf. Neki dijagrami opisuju planirane funkcionalnosti, a ne u cijelosti implementirane postupke.
 
-<details>
-<summary><strong>Odabir lokacije, provjera valjanosti i podnošenje prijave</strong></summary>
+#### 4.4.1.1 Prijava u sustav
 
-**Primjer — CrisisMap:** Građanin podnosi prijavu kriznog događaja nakon što ručno odabere lokaciju ili zatraži položaj uređaja. Interakcija prikazuje i što se događa kada je pristup lokaciji odbijen, podaci prijave nisu valjani ili pohrana ne uspije.
+**Povezani obrazac uporabe:** UC-01
 
-![Sekvencijski dijagram podnošenja prijave kriznog događaja](./assets/diagrams/4-4-crisismap-report-submission-SD.svg)
+Prikazuje interakcije pri autentifikaciji korisnika.
 
-**Slika 4.4. Sekvencijski dijagram podnošenja prijave kriznog događaja**
+![UML sekvencijski dijagram - Prijava u sustav](./assets/diagrams/4-5-soundsurf-prijava-slijed.svg)
 
-**PlantUML izvor:** [izvor](./puml/4-4-crisismap-report-submission-SD.puml)
+**Dijagram: Prijava u sustav**
 
-**Analiza primjera:** Dva načina odabira lokacije te alternative provjere i pohrane imaju različite posljedice za korisnika; usporedite ih s odgovarajućim obrascem uporabe i njegovim alternativnim tijekovima. API preglednika za lokaciju mogućnost je preglednika; web-klijent, API, usluga i pohrana odgovaraju prikazu komponenata. Odaberite grane koje pomažu objasniti scenarij vašeg projekta i završni dijagram uskladite s implementiranom interakcijom.
+**PlantUML izvor:** [4-5-soundsurf-prijava-slijed.puml](./puml/4-5-soundsurf-prijava-slijed.puml)
 
-</details>
+#### 4.4.1.2 Obrada zvukovnog zapisa
+
+**Povezani obrazac uporabe:** UC-07
+
+Prikazuje tijek primjene filtra i spremanja rezultata.
+
+![UML sekvencijski dijagram - Obrada zvukovnog zapisa](./assets/diagrams/4-6-soundsurf-obrada-slijed.svg)
+
+**Dijagram: Obrada zvukovnog zapisa**
+
+**PlantUML izvor:** [4-6-soundsurf-obrada-slijed.puml](./puml/4-6-soundsurf-obrada-slijed.puml)
+
+#### 4.4.1.3 Uvoz zapisa s Freesounda
+
+**Povezani obrazac uporabe:** UC-04
+
+Prikazuje planiranu integraciju za pretraživanje i uvoz zvukovnih zapisa.
+
+![UML sekvencijski dijagram - Uvoz zapisa s Freesounda](./assets/diagrams/4-7-soundsurf-freesound-slijed.svg)
+
+**Dijagram: Uvoz zapisa s Freesounda**
+
+**PlantUML izvor:** [4-7-soundsurf-freesound-slijed.puml](./puml/4-7-soundsurf-freesound-slijed.puml)
+
+#### 4.4.1.4 Objavljivanje zvukovnog zapisa
+
+**Povezani obrazac uporabe:** UC-10
+
+Prikazuje planirani tijek stvaranja objave sa zvukovnim zapisom.
+
+![UML sekvencijski dijagram - Objavljivanje zvukovnog zapisa](./assets/diagrams/4-8-soundsurf-objava-slijed.svg)
+
+**Dijagram: Objavljivanje zvukovnog zapisa**
+
+**PlantUML izvor:** [4-8-soundsurf-objava-slijed.puml](./puml/4-8-soundsurf-objava-slijed.puml)
+
+#### 4.4.1.5 Uvoz tuđeg zvukovnog zapisa
+
+**Povezani obrazac uporabe:** UC-14
+
+Prikazuje planirano dodavanje tuđeg zapisa u vlastitu radnu okolinu.
+
+![UML sekvencijski dijagram - Uvoz tuđeg zvukovnog zapisa](./assets/diagrams/4-9-soundsurf-uvoz-tudjeg-zapisa-slijed.svg)
+
+**Dijagram: Uvoz tuđeg zvukovnog zapisa**
+
+**PlantUML izvor:** [4-9-soundsurf-uvoz-tudjeg-zapisa-slijed.puml](./puml/4-9-soundsurf-uvoz-tudjeg-zapisa-slijed.puml)
 
 ### 4.4.2 Reprezentativni UML dijagram stanja
 
-**Cilj:** Prikazati važna stanja jednog domenskog objekta ili eksplicitno upravljanog načina rada sustava te događaje ili uvjete koji ih mijenjaju.
+Dijagram stanja prikazuje **konceptualni životni ciklus sesije obrade zvukovnog zapisa** u sustavu soundSurf (UC-07, F-14 i F-15).
 
-**Vlasnik stanja i razlog odabira:** [Navedite objekt ili način rada sustava, kako se njegovo stanje prepoznaje i zašto su prijelazi važni.]  
-**Dijagram stanja:** [Ugradite čitljiv UML dijagram stanja.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]
+Vlasnik prikazanih stanja jest postupak obrade koji korisnik pokreće u aplikaciji, a ne trajno pohranjena datoteka. Stanja opisuju moguće faze od odabira zapisa do spremanja rezultata, odustajanja ili pojave pogreške.
 
-<details>
-<summary><strong>Složeno stanje sustava: koordinacija događaja i dostupnost usluge</strong></summary>
+![UML dijagram stanja obrade zvuka sustava soundSurf](./assets/diagrams/4-10-soundsurf-sesija-obrade-stanja.svg)
 
-**Primjer — CrisisMap:** Ovaj primjer ne prikazuje životni ciklus jednog domenskog objekta, nego dva neovisna aspekta stanja cijelog sustava CrisisMap. Jedna regija opisuje način koordinacije kriznog događaja, a druga opaženu dostupnost usluge. Budući da se ta dva aspekta mogu mijenjati neovisno jedan o drugome, prikazani su kao ortogonalne regije istog složenog stanja sustava.
+**UML dijagram stanja: sesija obrade zvukovnog zapisa**
 
-![Dijagram stanja prijave kriznog događaja](./assets/diagrams/4-5-crisismap-system-SM.svg)
+**PlantUML izvor:** [4-10-soundsurf-sesija-obrade-stanja.puml](./puml/4-10-soundsurf-sesija-obrade-stanja.puml)
 
-**Slika 4.5. Dijagram stanja sustava s ortogonalnim regijama**
+### Tumačenje prijelaza stanja
 
-**PlantUML izvor:** [izvor](./puml/4-5-crisismap-system-SM.puml)
+Postupak započinje odabirom zvukovnog zapisa i njegovim dekodiranjem. Nakon uspješnog dekodiranja moguće je primijeniti filtar i pregledati dobiveni rezultat.
 
-**Analiza primjera:** Vlasnik stanja u ovom je primjeru sustav CrisisMap, a ne pojedinačna prijava kriznog događaja. Dvije ortogonalne regije opisuju stanja koja vrijede istodobno: način koordinacije kriznog događaja i dostupnost usluge. Promjena stanja u jednoj regiji ne mora promijeniti stanje u drugoj; primjerice, aktivni krizni događaj može postojati dok je usluga potpuno ili djelomično dostupna.
+Korisnik može promijeniti parametre i ponovno primijeniti filtar ili odabrati spremanje kao nove datoteke odnosno prepisivanje izvornog zapisa. Uspješno spremanje završava postupak, dok se u slučaju pogreške prikazuje mogućnost ponovnog pokušaja ili odabira drugog zapisa.
 
-Prijelazi imaju imenovane događaje ili uvjete, a grane nakon oporavka poslužiteljskog sustava uzimaju u obzir da pružatelj kartografskih usluga može i dalje biti nedostupan. Time primjer pokazuje situaciju u kojoj ortogonalne regije imaju stvarnu semantičku svrhu, a nisu samo način vizualnog grupiranja elemenata.
-
-Ovo je napredniji primjer dijagrama stanja. Koristite takav oblik samo ako sustav stvarno održava dva ili više međusobno neovisnih aspekata stanja koji se mogu mijenjati istodobno. Za projekt u kojem je važan životni ciklus jednog objekta, primjerice prijave, rezervacije ili narudžbe, jednostavniji dijagram stanja tog objekta obično je prikladniji. Složenost dijagrama nije kriterij vrednovanja.
-
-Pri završnom pregledu svaki prikazani prijelaz i uvjet usporedite s ponašanjem koje implementirana aplikacija stvarno podržava.
-
-</details>
+Dijagram uključuje i moguće alternativne tijekove kao dio arhitekturnog modela. Ne podrazumijeva da su sva navedena stanja eksplicitno implementirana kao zasebna stanja React komponente. Trenutačno je u korisničkom sučelju integriran niskopropusni filtar; visokopropusni filtar postoji u audio servisu, a preostale vrste filtara planirane su.
 
 ## 4.5 Zapisi arhitekturnih odluka
 

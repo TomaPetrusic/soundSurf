@@ -31,20 +31,20 @@ rectangle "soundSurf" {
 
     [Radna okolina UI\nstablo, upload, dijalozi] as WorkspaceUI #E8F4EC
     [Player i waveform\nreprodukcija i premotavanje] as Player #E8F4EC
-    [Web Audio modul\ngeneriraj / lowpass] as AudioClient #EBF0FA
+    [Web Audio modul\ngeneriraj / lowpass / highpass] as AudioClient #EBF0FA
   }
 
   package "Backend - Django / DRF" #E8F4EC {
     [Supabase JWT autentikacija\ni provjera prava pristupa] as JWT #E8F4EC
     [Profil korisnika\nGET/PATCH /api/me/] as ProfileAPI #E8F4EC
     [API radne okoline\nstablo, mape, upload, download,\npreimenuj / premjesti / obriši] as WorkspaceAPI #E8F4EC
-    [Django ORM\nUserProfile / Node] as ORM #E8F4EC
+    [Django ORM\nUserProfile / Workspace / Node] as ORM #E8F4EC
     [Storage adapteri\nSupabaseStorage / LocalStorage] as Storage #E8F4EC
   }
 
   package "Planirana proširenja" #FFF4E5 {
     [Uvoz s Freesounda] as ImportExport #FFF4E5
-    [Cjelovita obrada zvuka\n5 filtara i spremanje] as Processing #FFF4E5
+    [Preostali filtri\ngain / reverb / tremolo] as Processing #FFF4E5
     [Objave, javni profili\ni favoriti] as Social #FFF4E5
   }
 }
@@ -67,13 +67,13 @@ ORM --> DB : Django ORM / SQL
 WorkspaceUI --> ClientAPI : stablo, upload, download,\npreimenuj / premjesti / obriši
 WorkspaceUI --> Player : odabrana datoteka (File)
 
-WorkspaceUI ..> AudioClient : planirana UI integracija
+WorkspaceUI --> AudioClient : integrirani low-pass
 AudioClient ..> Processing : buduća dorada tijeka
 
 Storage --> Files : upload / download / remove
 ImportExport ..> Storage : planirano
 ImportExport ..> Freesound : planirano
-Processing ..> Storage : spremanje rezultata\nplanirano
+Processing ..> Storage : planirana zasebna\nobrada i pohrana
 Social ..> ORM : modeli i API\nplanirani
 
 note bottom of WorkspaceUI
@@ -86,9 +86,9 @@ end note
 
 note bottom of AudioClient
   audio.js implementira OfflineAudioContext:
-  generator oscilatora i low-pass filtar.
-  Funkcije još nisu povezane s cjelovitim UI tijekom.
-  Preostali filtri, izvoz i spremanje su planirani.
+  generator oscilatora, low-pass i high-pass.
+  Low-pass je integriran u UI i spremanje rezultata.\n  High-pass postoji u servisu, ali ne i u UI-ju.
+  Gain, reverb i tremolo ostaju planirani.
 end note
 
 note bottom of Storage
