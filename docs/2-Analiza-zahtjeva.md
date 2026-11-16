@@ -113,7 +113,54 @@ Trenutno ne postoje.
 
 ## 2.6 Sljedivost zahtjeva
 
-Arhitektura još nije dizajnirana pa tako logički slijed programiranja još ne može biti odlučen.
+Arhitektura sustava soundSurf oblikovana je i dokumentirana u poglavlju [4. Arhitektura i oblikovanje](4-Arhitektura-i-oblikovanje.md). Na temelju definiranih funkcijskih i nefunkcijskih zahtjeva izrađeni su obrasci uporabe, UML dijagrami te implementirani odgovarajući dijelovi aplikacije.
+
+Sljedivost zahtjeva omogućuje povezivanje pojedinog zahtjeva s obrascem uporabe, odgovarajućom komponentom sustava i stanjem implementacije. Time se može provjeriti jesu li zahtjevi obuhvaćeni projektiranom arhitekturom i u kojoj su mjeri ostvareni.
+
+### Sljedivost funkcijskih zahtjeva
+
+| Zahtjevi | Obrasci uporabe | Odgovarajuće komponente | Stanje |
+|---|---|---|---|
+| F-01, F-02 | UC-01 – Prijava | Supabase Auth, Django autentikacija, `UserProfile`, `Workspace`, inicijalizacija početnih zapisa | Implementirano uz ograničenja F-02 |
+| F-03 | UC-15 – Odjava | Supabase Auth, React klijent | Implementirano |
+| F-04 | UC-03 – Učitavanje zapisa | React radna okolina, Django API, Storage | Implementirano |
+| F-05 | UC-04 – Freesound | Freesound API integracija | Planirano |
+| F-06 | UC-05 – Preuzimanje | Django API, spremišni adapteri, dijalog preuzimanja | Implementirano; puna podrška formatima zahtijeva provjeru |
+| F-07 – F-11 | UC-02 – Upravljanje radnom okolinom | `Node`, Django servisi i API, React prikaz stabla | Implementirane glavne operacije |
+| F-12, F-13 | UC-06 – Generiranje zvuka | Web Audio API, `audio.js`, radna okolina | Djelomično implementirano |
+| F-14, F-15 | UC-07 – Primjena filtra | Web Audio API, dijalog filtriranja, Django API za spremanje | Low-pass i spremanje rezultata integrirani su u sučelje; high-pass je implementiran u audio servisu, ali nije integriran u sučelje; gain, reverb i tremolo planirani. |
+| F-16, F-17 | UC-08 – Reprodukcija i valni oblik | `PlayerPanel`, modul za prikaz valnog oblika | Implementirano |
+| F-18 | UC-09 – Javni profil | Korisnički profil i planirano javno sučelje | Djelomično implementirano |
+| F-19 | UC-10 – Objava posta | Planirani modul objava | Planirano |
+| F-20 – F-22 | UC-11 – Upravljanje postovima | Planirani modul objava | Planirano |
+| F-23 | UC-12 – Pregled tuđe stranice | Planirane javne stranice | Planirano |
+| F-24 – F-27 | UC-13 – Favoriti | Planirani modul favorita | Planirano |
+| F-28, F-29 | UC-14 – Tuđi zvukovni zapisi | Planirani modul objava i kopiranja zapisa | Planirano |
+
+### Sljedivost nefunkcijskih zahtjeva
+
+Nefunkcijski zahtjevi povezani su s arhitekturnim odlukama i postupcima provjere:
+
+| Zahtjev | Arhitekturna poveznica i provjera |
+|---|---|
+| NF-01 | Ograničenje veličine datoteke provjerava se pri učitavanju putem API-ja i korisničkog sučelja. |
+| NF-02 | Performanse filtriranja zahtijevaju mjerenje vremena obrade zvukovnih zapisa. |
+| NF-03 | Privatnost korisničkih podataka ostvaruje se autentifikacijom, provjerom vlasništva i kontrolom pristupa. |
+| NF-04 | Kompatibilnost korisničkog sučelja potrebno je provjeriti u preglednicima Chrome i Firefox. |
+| NF-05 | Dostupnost aplikacije provjerava se pristupom javnoj produkcijskoj adresi. |
+| NF-06 | Prijava putem Supabase Auth omogućuje autentifikaciju bez pohranjivanja korisničkih lozinki u aplikaciji. |
+
+### Ovisnosti i redoslijed razvoja
+
+Arhitektura je omogućila definiranje logičkih ovisnosti između funkcionalnih cjelina. Temelj sustava čine autentifikacija korisnika, podatkovni modeli i radna okolina. Na njih se nadovezuju učitavanje, pohrana, reprodukcija i obrada zvukovnih zapisa, dok funkcionalnosti javnih stranica, objava i favorita ovise o već uspostavljenom upravljanju korisnicima i zvukovnim sadržajem.
+
+Redoslijed implementacije prati te ovisnosti, uz mogućnost paralelnog razvoja neovisnih komponenti.
+
+### Održavanje sljedivosti
+
+Detaljne veze između zahtjeva i korisničkih interakcija definirane su u [3. Obrasci uporabe](3-Obrasci-uporabe.md), dok su arhitekturne komponente, podatkovni modeli i UML dijagrami opisani u [4. Arhitektura i oblikovanje](4-Arhitektura-i-oblikovanje.md).
+
+Prikazano stanje implementacije temelji se na pregledanom izvornom kodu. Oznaka implementirano ne podrazumijeva automatski da su svi kriteriji prihvaćanja potvrđeni testiranjem. Sljedivost se ažurira pri promjenama zahtjeva, arhitekture ili implementacije, a potpuna usklađenost potvrđuje se odgovarajućim provjerama.
 
 ## 2.7 Pregled zahtjeva
 
