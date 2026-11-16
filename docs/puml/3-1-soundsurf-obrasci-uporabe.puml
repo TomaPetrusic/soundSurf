@@ -1,0 +1,73 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam linetype polyline
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam nodesep 20
+skinparam ranksep 20
+
+title soundSurf - UML dijagram obrazaca uporabe
+
+actor "Posjetitelj\n(A-01)" as Visitor
+actor "Korisnik\n(A-02)" as User
+actor "Vanjski pružatelj\nidentiteta (A-03)" as Identity
+actor "Freesound API\n(A-04)" as Freesound
+
+User --|> Visitor
+
+rectangle "soundSurf" {
+
+  package "Prijava i sesija" {
+    usecase "UC-01\nPrijava u sustav" as UC01
+    usecase "UC-15\nOdjava iz sustava" as UC15
+  }
+
+  package "Radna okolina i zvuk" {
+    usecase "UC-02\nUpravljanje datotekama\ni direktorijima" as UC02
+    usecase "UC-03\nUčitavanje\nzvukovnog zapisa" as UC03
+    usecase "UC-04\nUvoz zapisa\ns Freesounda" as UC04
+    usecase "UC-05\nPreuzimanje\nzvukovnog zapisa" as UC05
+    usecase "UC-06\nGeneriranje zvuka\noscilatorom" as UC06
+    usecase "UC-07\nPrimjena filtra\nna zapis" as UC07
+    usecase "UC-08\nPreslušavanje i prikaz\nvalnog oblika" as UC08
+  }
+
+  package "Javni profil i zajednica" {
+    usecase "UC-09\nUređivanje profila\njavne stranice" as UC09
+    usecase "UC-10\nObjava posta" as UC10
+    usecase "UC-11\nUpravljanje postovima" as UC11
+    usecase "UC-12\nPregled tuđe\njavne stranice" as UC12
+    usecase "UC-13\nUpravljanje favoritima" as UC13
+    usecase "UC-14\nPreuzimanje ili uvoz\ntuđeg zapisa" as UC14
+  }
+}
+
+Visitor -- UC01
+Identity -- UC01
+
+User -- UC02
+User -- UC03
+User -- UC04
+User -- UC05
+User -- UC06
+User -- UC07
+User -- UC08
+User -- UC09
+User -- UC10
+User -- UC11
+User -- UC12
+User -- UC13
+User -- UC14
+User -- UC15
+
+Freesound -- UC04
+
+note bottom of UC14
+  UC-01 do UC-15 predstavljaju projektni opseg.
+  Prisutnost obrasca u dijagramu ne znači
+  da je funkcionalnost u cijelosti implementirana.
+end note
+
+@enduml
