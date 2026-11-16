@@ -29,38 +29,43 @@ Za svaki UML dijagram čuvajte čitljivu sliku i PlantUML izvor, kako je opisano
 
 ## 4.2 Gradivni blokovi i UML dijagram komponenata
 
-**Cilj:** Prikazati logičku podjelu programa na komponente, njihova sučelja i vanjske integracije. Dijagram komponenata prikazuje logičku organizaciju, dok dijagram razmještaja prikazuje fizičko izvođenje. Ovaj prikaz ažurirajte kako sustav poprima konačan oblik.
+Arhitektura sustava soundSurf temelji se na razdvajanju korisničkog sučelja, poslužiteljske aplikacijske logike, podatkovnog modela i pohrane zvukovnog sadržaja.
 
-**Dijagram komponenata:** [Ugradite čitljiv UML dijagram komponenata.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]
+UML dijagram komponenata prikazuje glavne dijelove sustava, njihove odgovornosti, međusobne ovisnosti i komunikaciju s vanjskim uslugama.
 
-| Komponenta | Odgovornost | Razlog za ovu granicu |
+![UML dijagram komponenata sustava soundSurf](./assets/diagrams/4-1-soundsurf-komponente.svg)
+
+**Slika 4.1. UML dijagram komponenata sustava soundSurf**
+
+**PlantUML izvor:** [4-1-soundsurf-komponente.puml](./puml/4-1-soundsurf-komponente.puml)
+
+### Glavne komponente
+
+| Komponenta | Odgovornost | Razlog za odvajanje |
 | --- | --- | --- |
-|  |  |  |
+| Web-klijent (React / Vite) | Korisničko sučelje, prijava, prikaz radne okoline, upravljanje datotekama i reprodukcija zvuka. | Odvajanje korisničke interakcije od poslužiteljske logike. |
+| Web Audio modul | Generiranje zvuka i obrada zvukovnih zapisa u pregledniku. | Lokalna obrada omogućuje pregled rezultata bez dodatnog opterećenja poslužitelja. |
+| Django REST API | Obrada zahtjeva, provjera autentifikacije i ovlasti te upravljanje resursima aplikacije. | Centralizacija poslovnih pravila i kontrole pristupa. |
+| Django ORM | Upravljanje modelima `UserProfile`, `Workspace` i `Node`. | Odvajanje rada s podacima od API sloja. |
+| Storage adapteri | Spremanje, dohvat, zamjena i uklanjanje zvukovnih datoteka. | Neovisnost aplikacijske logike o odabranom načinu pohrane. |
+| Supabase Auth | OAuth prijava, korisničke sesije i izdavanje pristupnih tokena. | Autentifikacija se delegira specijaliziranoj vanjskoj usluzi. |
+| PostgreSQL i spremište datoteka | Trajna pohrana metapodataka i sadržaja zvukovnih zapisa. | Odvajanje strukturiranih podataka od binarnog sadržaja. |
 
-Započnite crtanjem granice oko predloženog sustava. Unutar nje prepoznajte dijelove s različitim odgovornostima; planiranu bazu podataka aplikacije smjestite unutar granice, a usluge trećih strana izvan nje. Važne veze označite podatkom ili uslugom koja njima prolazi. Logička komponenta može biti modul unutar jedne poslužiteljske aplikacije: zaseban pravokutnik ne znači zasebno postavljenu uslugu. Tijekom implementacije ažurirajte dijagram kada se promijene odgovornosti ili veze. U završnoj inačici čitatelj treba moći povezati njegove dijelove s kodom. Dijagram razmještaja odgovara na pitanje gdje se ti dijelovi stvarno izvode.
+### Vanjske integracije
 
-<details>
-<summary><strong>Granica sustava, odgovornosti i vanjske ovisnosti</strong></summary>
+Google OAuth koristi se za potvrdu identiteta korisnika, dok Supabase Auth upravlja autentificiranom sesijom. Django provjerava pristupni token i ovlasti prije izvršavanja zaštićenih API operacija.
 
-**Primjer — CrisisMap:** Predložena arhitektura podržava podnošenje prijava kriznih događaja, prikaz na karti i obavijesti o potvrđenim prijavama.
+Freesound API predviđen je za pretraživanje i uvoz vanjskih zvukovnih zapisa. Integracija je dio planiranih funkcionalnosti.
 
-![Dijagram komponenata sustava CrisisMap](./assets/diagrams/4-1-crisismap-system-CMP.svg)
+### Stanje implementacije i planirana proširenja
 
-**Slika 4.1. Dijagram komponenata sustava CrisisMap**
+Dijagram bojama razlikuje implementirane komponente, postojeće module s nedovršenom integracijom i planirane funkcionalnosti. Isprekidane veze označavaju planirane integracije ili ovisnosti.
 
-**PlantUML izvor:** [izvor](./puml/4-1-crisismap-system-CMP.puml)
+U Web Audio modulu implementirani su generator oscilatora, niskopropusni i visokopropusni filtar. Niskopropusni filtar integriran je u korisničko sučelje i omogućuje spremanje rezultata. Visokopropusni filtar postoji u audio servisu, ali još nije povezan s korisničkim sučeljem.
 
-| Dio | Odgovornost | Razlog za ovu granicu |
-| --- | --- | --- |
-| Web-klijent | Prikazuje prijave i prikuplja podatke za novu prijavu. | Korisnička interakcija odvojena je od pravila prijave i trajne pohrane. |
-| API za prijave | Prihvaća zahtjeve za rad s prijavama i vraća odgovore. | Odgovornosti izložene putem HTTP-a odvojene su od obrade prijava. |
-| Usluga za prijave | Primjenjuje pravila prijave i pristupa pohranjenim prijavama. | Pravila provjere valjanosti i pohrane prijava imaju jasno mjesto odgovornosti. |
-| Proces za obavijesti | Određuje korisnike koji trebaju primiti obavijest i traži od vanjskog pružatelja da je pošalje. | Obrada obavijesti odvojena je od odgovaranja na korisnikov zahtjev za prijavu. |
+Dodatni filtri (gain, reverb i tremolo), Freesound integracija te funkcionalnosti objava, javnih profila i favorita predstavljaju planirana proširenja.
 
-**Analiza primjera:** Vanjska granica odvaja predloženi sustav od pružatelja kartografskih usluga i pružatelja obavijesti. Unutarnja granica grupira API za prijave, uslugu za prijave i proces za obavijesti unutar jedne poslužiteljske aplikacije; njihovi zasebni simboli prikazuju predložene odgovornosti, a ne neovisno postavljene usluge. PostgreSQL pohranjuje podatke aplikacije, dok pružatelj kartografskih usluga osigurava kartografske pločice. Strelice sažimaju ovisnosti, a ne redoslijed transakcije; taj redoslijed prikazuje sekvencijski dijagram. Izostavite proces za obavijesti i Firebase Cloud Messaging ako obavijesti nisu dio odobrenog opsega. Pružatelja prijave u sustav uključite samo ako to zahtijeva odobreni zadatak. Kako implementacija napreduje, ispravite svaku predloženu granicu koja se pokaže netočnom; završni dijagram mora odgovarati onome što je tim izgradio. Jedan koherentan prikaz komponenata korisniji je od nekoliko gotovo jednakih inačica s proturječnim vezama.
-
-</details>
+Prikazane komponente predstavljaju logičke odgovornosti sustava. Njihova zasebna reprezentacija u dijagramu ne znači nužno da se izvršavaju kao samostalne poslužiteljske usluge.
 
 ## 4.3 Model podataka i oblikovanje razreda
 
