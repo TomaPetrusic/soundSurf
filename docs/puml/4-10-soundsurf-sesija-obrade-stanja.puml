@@ -1,0 +1,73 @@
+@startuml
+title soundSurf - UML dijagram stanja sesije obrade zvuka (UC-07)
+
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam linetype ortho
+skinparam state {
+    BackgroundColor #EAF2FC
+    BorderColor #456B9A
+    FontColor #172B4D
+}
+
+hide empty description
+
+state "Odabir zvukovnog zapisa" as Odabir
+state "Učitavanje i dekodiranje" as Dekodiranje
+state "Spremno za obradu" as Spremno
+state "Primjena filtra" as Obrada
+state "Pregled rezultata" as Pregled
+state "Spremanje rezultata" as Spremanje
+state "Uspješno spremljeno" as Uspjeh
+state "Pogreška" as Greska
+
+[*] --> Odabir
+
+Odabir --> Dekodiranje : odaberi zapis i otvori filtar
+Dekodiranje --> Spremno : dekodiranje uspješno
+Dekodiranje --> Greska : dekodiranje neuspješno
+
+Spremno --> Obrada : primijeni filtar [parametri valjani]
+Spremno --> Greska : nevaljani parametri
+Obrada --> Pregled : obrada uspješna
+Obrada --> Greska : obrada neuspješna
+
+Pregled --> Obrada : promijeni parametre
+Pregled --> Spremanje : spremi novo / prepiši izvor
+
+Spremanje --> Uspjeh : pohrana potvrđena
+Spremanje --> Greska : pohrana neuspješna
+
+Greska --> Spremno : ponovi [zapis učitan]
+Greska --> Odabir : odaberi drugi zapis
+
+Uspjeh --> Odabir : obradi drugi zapis
+
+Odabir --> [*] : zatvori
+Spremno --> [*] : odustani
+Pregled --> [*] : odustani
+Uspjeh --> [*] : završi
+
+note right of Obrada
+  Integrirano u korisničko sučelje:
+  low-pass.
+
+  High-pass postoji u audio servisu,
+  ali nije integriran u sučelje.
+
+  Gain, reverb i tremolo su planirani.
+end note
+
+note bottom of Spremanje
+  F-15:
+  1. spremanje kao nova datoteka
+  2. prepisivanje izvorne datoteke
+end note
+
+note bottom of Odabir
+  Konceptualna stanja sesije obrade.
+  Ne predstavljaju trajna polja
+  modela Node u bazi podataka.
+end note
+
+@enduml

@@ -91,7 +91,17 @@ Model `UserProfile` predstavlja korisnika, dok model `Workspace` predstavlja nje
 
 Inicijalizacija radne okoline implementirana je funkcijom `ensure_workspace()` pri prvom dohvaćanju stabla. Sustav pokušava dodati do tri početna zvukovna zapisa, ovisno o njihovoj dostupnosti u spremištu.
 
-`SupabaseStorage` i `LocalStorage` omogućuju spremanje, dohvat, uklanjanje i pristup zvukovnom sadržaju. Obrada niskopropusnim filtrom i spremanje rezultata postoje u aplikaciji, ali prikazane planirane servisne apstrakcije nisu zasebni implementirani Python razredi. Ostale vrste filtara predstavljaju planirana proširenja.
+`SupabaseStorage` i `LocalStorage` omogućuju spremanje, dohvat, uklanjanje i pristup zvukovnom sadržaju. Obrada niskopropusnim filtrom i spremanje rezultata integrirani su u korisničko sučelje. Visokopropusni filtar postoji u audio servisu, ali nije integriran u sučelje. Gain, reverb i tremolo ostaju planirani. Prikazane servisne apstrakcije nisu nužno zasebni implementirani Python razredi.
+
+### Dodatni UML dijagram razreda: objave i favoriti
+
+Sljedeći dijagram prikazuje **planirani domenski model** javnih objava, korisničkih profila i favorita. Prikazane klase i veze služe za oblikovanje funkcionalnosti F-18 do F-29 te se ne smiju tumačiti kao potvrda da su svi odgovarajući Django modeli i API-ji već implementirani.
+
+![UML dijagram razreda za objave i favorite sustava soundSurf](./assets/diagrams/4-4-soundsurf-razredi-objave.svg)
+
+**Dodatni UML dijagram razreda: planirani modul objava i favorita**
+
+**PlantUML izvor:** [4-4-soundsurf-razredi-objave.puml](./puml/4-4-soundsurf-razredi-objave.puml)
 
 ## 4.4 Ponašanje tijekom izvođenja
 
@@ -165,32 +175,23 @@ Prikazuje planirano dodavanje tuđeg zapisa u vlastitu radnu okolinu.
 
 ### 4.4.2 Reprezentativni UML dijagram stanja
 
-**Cilj:** Prikazati važna stanja jednog domenskog objekta ili eksplicitno upravljanog načina rada sustava te događaje ili uvjete koji ih mijenjaju.
+Dijagram stanja prikazuje **konceptualni životni ciklus sesije obrade zvukovnog zapisa** u sustavu soundSurf (UC-07, F-14 i F-15).
 
-**Vlasnik stanja i razlog odabira:** [Navedite objekt ili način rada sustava, kako se njegovo stanje prepoznaje i zašto su prijelazi važni.]  
-**Dijagram stanja:** [Ugradite čitljiv UML dijagram stanja.]  
-**PlantUML izvor:** [Poveznica na odgovarajuću `.puml` datoteku.]
+Vlasnik prikazanih stanja jest postupak obrade koji korisnik pokreće u aplikaciji, a ne trajno pohranjena datoteka. Stanja opisuju moguće faze od odabira zapisa do spremanja rezultata, odustajanja ili pojave pogreške.
 
-<details>
-<summary><strong>Složeno stanje sustava: koordinacija događaja i dostupnost usluge</strong></summary>
+![UML dijagram stanja obrade zvuka sustava soundSurf](./assets/diagrams/4-10-soundsurf-sesija-obrade-stanja.svg)
 
-**Primjer — CrisisMap:** Ovaj primjer ne prikazuje životni ciklus jednog domenskog objekta, nego dva neovisna aspekta stanja cijelog sustava CrisisMap. Jedna regija opisuje način koordinacije kriznog događaja, a druga opaženu dostupnost usluge. Budući da se ta dva aspekta mogu mijenjati neovisno jedan o drugome, prikazani su kao ortogonalne regije istog složenog stanja sustava.
+**UML dijagram stanja: sesija obrade zvukovnog zapisa**
 
-![Dijagram stanja prijave kriznog događaja](./assets/diagrams/4-5-crisismap-system-SM.svg)
+**PlantUML izvor:** [4-10-soundsurf-sesija-obrade-stanja.puml](./puml/4-10-soundsurf-sesija-obrade-stanja.puml)
 
-**Slika 4.5. Dijagram stanja sustava s ortogonalnim regijama**
+### Tumačenje prijelaza stanja
 
-**PlantUML izvor:** [izvor](./puml/4-5-crisismap-system-SM.puml)
+Postupak započinje odabirom zvukovnog zapisa i njegovim dekodiranjem. Nakon uspješnog dekodiranja moguće je primijeniti filtar i pregledati dobiveni rezultat.
 
-**Analiza primjera:** Vlasnik stanja u ovom je primjeru sustav CrisisMap, a ne pojedinačna prijava kriznog događaja. Dvije ortogonalne regije opisuju stanja koja vrijede istodobno: način koordinacije kriznog događaja i dostupnost usluge. Promjena stanja u jednoj regiji ne mora promijeniti stanje u drugoj; primjerice, aktivni krizni događaj može postojati dok je usluga potpuno ili djelomično dostupna.
+Korisnik može promijeniti parametre i ponovno primijeniti filtar ili odabrati spremanje kao nove datoteke odnosno prepisivanje izvornog zapisa. Uspješno spremanje završava postupak, dok se u slučaju pogreške prikazuje mogućnost ponovnog pokušaja ili odabira drugog zapisa.
 
-Prijelazi imaju imenovane događaje ili uvjete, a grane nakon oporavka poslužiteljskog sustava uzimaju u obzir da pružatelj kartografskih usluga može i dalje biti nedostupan. Time primjer pokazuje situaciju u kojoj ortogonalne regije imaju stvarnu semantičku svrhu, a nisu samo način vizualnog grupiranja elemenata.
-
-Ovo je napredniji primjer dijagrama stanja. Koristite takav oblik samo ako sustav stvarno održava dva ili više međusobno neovisnih aspekata stanja koji se mogu mijenjati istodobno. Za projekt u kojem je važan životni ciklus jednog objekta, primjerice prijave, rezervacije ili narudžbe, jednostavniji dijagram stanja tog objekta obično je prikladniji. Složenost dijagrama nije kriterij vrednovanja.
-
-Pri završnom pregledu svaki prikazani prijelaz i uvjet usporedite s ponašanjem koje implementirana aplikacija stvarno podržava.
-
-</details>
+Dijagram uključuje i moguće alternativne tijekove kao dio arhitekturnog modela. Ne podrazumijeva da su sva navedena stanja eksplicitno implementirana kao zasebna stanja React komponente. Trenutačno je u korisničkom sučelju integriran niskopropusni filtar; visokopropusni filtar postoji u audio servisu, a preostale vrste filtara planirane su.
 
 ## 4.5 Zapisi arhitekturnih odluka
 
