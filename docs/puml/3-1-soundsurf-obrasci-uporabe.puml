@@ -70,4 +70,28 @@ note bottom of UC14
   da je funkcionalnost u cijelosti implementirana.
 end note
 
+
+' Neobavezni tijekovi obrazaca uporabe
+
+UC14 ..> UC12 : <<extend>>
+
+
+note right of UC04
+  UC-03 i UC-04 dva su načina
+  dodavanja zapisa u radnu okolinu.
+
+  Nakon uvoza mogući su:
+  UC-08 - preslušavanje
+  UC-07 - primjena filtra
+  UC-05 - preuzimanje
+
+  To nisu obvezni koraci UC-04.
+end note
+
+note right of UC12
+  Korisnik može odabrati zapis
+  iz tuđe javne objave i pokrenuti
+  UC-14 za preuzimanje ili uvoz.
+end note
+
 @enduml
