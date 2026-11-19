@@ -47,6 +47,40 @@ Korisnik je specijalizacija aktera Posjetitelj. Uloge vlasnika radne okoline, au
 
 Tablica povezuje obrasce uporabe s funkcijskim zahtjevima F-01 do F-29 iz dokumenta [2. Analiza zahtjeva](2-Analiza-zahtjeva.md).
 
+### Ovisnosti i logički slijed obrazaca uporabe
+
+Obrasci uporabe nisu nužno međusobno neovisni. Za neke su potrebni rezultati prethodnih radnji, primjerice postojeći zvukovni zapis, objavljen post ili aktivna korisnička sesija. Isti preduvjet često se može ispuniti na više načina.
+
+Tablica prikazuje funkcionalne ovisnosti svih petnaest obrazaca uporabe, bez nametanja obveznog redoslijeda ondje gdje ga zahtjevi ne propisuju.
+
+| Obrazac uporabe | Nužni preduvjet | Povezanost s ostalim obrascima uporabe |
+| --- | --- | --- |
+| UC-01 – Prijava | Posjetitelj nije prijavljen. | Uspješna prijava uspostavlja sesiju potrebnu za UC-02 do UC-15. To je zajednički preduvjet, a ne UML odnos `include`. |
+| UC-02 – Upravljanje datotekama | Aktivna sesija i dostupna radna okolina. | Upravlja stavkama nastalima kroz UC-03, UC-04, UC-06, UC-07 ili uvozom u UC-14. Korisnik može upravljati i ranije postojećim datotekama. |
+| UC-03 – Učitavanje zapisa | Aktivna sesija i radna okolina. | Stvara zapis koji se kasnije može koristiti u UC-02, UC-05, UC-07, UC-08 i UC-10. |
+| UC-04 – Uvoz s Freesounda | Aktivna sesija, radna okolina i dostupan Freesound API. | Alternativni način pribavljanja zapisa u odnosu na UC-03 i UC-06. Nakon uspješnog uvoza mogući su UC-02, UC-05, UC-07, UC-08 i UC-10. |
+| UC-05 – Preuzimanje zapisa | Postojeći zvukovni zapis u vlastitoj radnoj okolini. | Zapis može biti početni, učitan kroz UC-03, uvezen kroz UC-04 ili UC-14, generiran kroz UC-06 ili spremljen nakon UC-07. Nije obvezni nastavak nijednog od tih UC-ova. |
+| UC-06 – Generiranje zvuka | Aktivna sesija i radna okolina. | Generira novu datoteku za daljnje korištenje kroz UC-02, UC-05, UC-07, UC-08 ili UC-10. |
+| UC-07 – Primjena filtra | Postojeći zvukovni zapis u vlastitoj radnoj okolini. | Obrađuje zapis koji već postoji, neovisno o njegovu porijeklu. Spremljeni rezultat može se koristiti u UC-02, UC-05, UC-08 i UC-10 ili ponovno obraditi. |
+| UC-08 – Preslušavanje zapisa | Postojeći zvukovni zapis u vlastitoj radnoj okolini. | Može se izvršiti prije ili nakon UC-07 te nad zapisima iz različitih izvora. Prikaz rezultata u UC-07 ne znači obvezno izvođenje cijelog UC-08. |
+| UC-09 – Uređivanje profila | Aktivna sesija. | Promjene podataka profila mogu biti vidljive drugim korisnicima u UC-12. Uređivanje profila nije obvezan preduvjet za UC-10. |
+| UC-10 – Objava posta | Aktivna sesija i barem jedan zvukovni zapis u vlastitoj radnoj okolini. | Zapis može potjecati iz početnih datoteka, UC-03, UC-04, UC-06, UC-07 ili uvoznog ishoda UC-14. Uspješna objava stvara post kojim se upravlja kroz UC-11. Ako je post javan, može biti dostupan drugim korisnicima u UC-12, UC-13 i UC-14. |
+| UC-11 – Upravljanje postovima | Postoji vlastiti post. | Upravlja postom nastalim kroz UC-10, uključujući ranije objavljene postove. Promjena vidljivosti ili brisanje utječe na dostupnost u UC-12, UC-13 i UC-14. |
+| UC-12 – Pregled tuđe stranice | Aktivna sesija i postojeća tuđa javna stranica. | Omogućuje pregled dostupnih javnih postova. Korisnik može opcionalno pokrenuti UC-13 ili UC-14, ali pregled ne zahtijeva njihovo izvođenje. |
+| UC-13 – Upravljanje favoritima | Aktivna sesija; za dodavanje je potrebna dostupna tuđa javna stranica ili post. | Dodavanje favorita može slijediti pregled u UC-12. Pregled ili uklanjanje ranije spremljenih favorita ne zahtijeva ponovno izvođenje UC-12 u istoj sesiji. |
+| UC-14 – Preuzimanje ili uvoz tuđeg zapisa | Aktivna sesija i dostupan tuđi javni post sa zvukovnim zapisom. | Opcionalna radnja tijekom UC-12. Preuzimanje daje lokalnu datoteku, a uvoz stvara kopiju u radnoj okolini za mogući UC-02, UC-05, UC-07, UC-08 ili UC-10. |
+| UC-15 – Odjava | Aktivna sesija. | Završava sesiju potrebnu za zaštićene funkcionalnosti. Za njihovo ponovno korištenje potrebno je ponovno izvršiti UC-01. |
+
+**Tumačenje ovisnosti:** Navedene veze uglavnom predstavljaju preduvjete, moguće nastavke rada ili ovisnosti o podacima. Ne predstavljaju automatski UML odnose `include` ili `extend`.
+
+**Više izvora zvuka:** Zapis potreban za UC-05, UC-07, UC-08 i UC-10 može već postojati u radnoj okolini, primjerice kao početni zapis. Stoga UC-03, UC-04 ili UC-06 ne moraju biti izvršeni prije svake od tih funkcionalnosti.
+
+**Formalna veza:** UC-14 može proširiti UC-12 odnosom `extend` kada korisnik tijekom pregledavanja tuđeg javnog sadržaja pokrene preuzimanje ili uvoz zapisa. Ostale navedene mogućnosti nastavka rada nisu same po sebi UML odnosi proširenja.
+
+**Razlika između UC-04 i UC-05:** UC-04 uvozi zapis s vanjske usluge u radnu okolinu, dok UC-05 preuzima zapis iz radne okoline na korisnikovo računalo. Te radnje nisu međusobno obvezne.
+
+**Napomena o UC-07 i UC-08:** Prikaz valnog oblika obrađenog rezultata u UC-07 sadržajno je povezan s UC-08, ali ne zahtijeva izvođenje cijelog zasebnog obrasca preslušavanja.
+
 ## 3.2 Specifikacije obrazaca uporabe
 
 ### UC-01: Prijava u sustav
@@ -181,6 +215,7 @@ Tablica povezuje obrasce uporabe s funkcijskim zahtjevima F-01 do F-29 iz dokume
 | Preduvjeti | Korisnik je prijavljen; tuđa javna stranica postoji. |
 | Glavni uspješni tok | 1. Korisnik otvara javnu stranicu drugog korisnika.<br>2. Aplikacija prikazuje korisničko ime, profilnu sliku i opis vlasnika stranice.<br>3. Aplikacija prikazuje samo postove označene kao javne.<br>4. Korisnik pregledava dostupne postove. |
 | Alternativni tokovi i iznimke | 3a — Stranica nema javnih postova: aplikacija prikazuje prazan popis uz odgovarajuću poruku. |
+| Točka proširenja | Nakon prikaza javnih postova, korisnik može odabrati zvukovni zapis i pokrenuti UC-14 za njegovo preuzimanje ili uvoz. |
 | Posljedice | Korisnik je vidio profil i javne postove drugog korisnika. |
 
 ### UC-13: Upravljanje favoritima
@@ -189,7 +224,7 @@ Tablica povezuje obrasce uporabe s funkcijskim zahtjevima F-01 do F-29 iz dokume
 | --- | --- |
 | Primarni akter | Korisnik (A-02) |
 | Povezani zahtjevi | F-24, F-25, F-26, F-27 |
-| Preduvjeti | Korisnik je prijavljen; tuđa javna stranica ili post iz UC-12 dostupan je. |
+| Preduvjeti | Korisnik je prijavljen. Za dodavanje favorita potrebna je dostupna tuđa javna stranica ili javni post. Za uklanjanje mora postojati spremljeni favorit. Pregled popisa favorita moguć je i kada je popis prazan. |
 | Glavni uspješni tok | 1. Korisnik otvara tuđu javnu stranicu ili javni post odnosno svoj popis favorita.<br>2. Korisnik odabire dodavanje stranice ili posta u favorite ili uklanjanje postojeće stavke.<br>3. Aplikacija ažurira popis favorita.<br>4. Korisnik može pregledati ažurirani popis favorita. |
 | Alternativni tokovi i iznimke | 2a — Stavka više nije javno dostupna: aplikacija ne dopušta dodavanje nedostupnog posta u favorite. |
 | Posljedice | Popis favorita korisnika odražava izvedenu radnju. |
